@@ -118,3 +118,107 @@ Any time you want to work on a new feature, ticket, bug fix, etc., follow these 
    git checkout main
    git pull
    ```
+
+## Tech Stack Crash Course
+
+### Next.js
+
+Next.js is a React framework that provides features such as server-side rendering and generating static websites.
+
+Key features:
+
+- **File-based Routing**: Next.js uses a file-system based router built on the concept of pages.
+
+  - Pages are associated with a route based on their file name. For example, `pages/about.js` is mapped to `/about`.
+  - In the App Router (which we're using), you create routes by adding folders to the `app` directory. The UI for each route is defined by a `page.js` file inside the folder.
+
+- **Server-Side Rendering (SSR)**: Next.js can render React components on the server before sending them to the client.
+
+- **API Routes**: Next.js allows you to create API endpoints as Node.js serverless functions.
+
+Usage example:
+
+```
+// app/page.tsx
+export default function Home() {
+  return <h1>Welcome to Next.js!</h1>
+}
+```
+
+### shadcn/ui
+
+shadcn/ui is a collection of re-usable components built using Radix UI and Tailwind CSS.
+
+Key features:
+
+- Pre-built, accessible components
+- Customizable with Tailwind CSS
+- Copy and paste the components you need
+
+Usage:
+
+1. Add components as needed:
+
+```
+pnpm dlx shadcn@latest add button
+```
+
+2. Use the component in your code:
+
+```
+import { Button } from "@/components/ui/button"
+
+export default function Home() {
+  return <Button>Click me</Button>
+}
+```
+
+### Tailwind CSS
+
+Tailwind CSS is a utility-first CSS framework that allows you to rapidly build custom user interfaces.
+
+Key features:
+
+- Utility classes for styling
+- Highly customizable
+- Responsive design out of the box
+
+Usage example:
+
+```
+<div className="p-4 m-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600">
+  This is a Tailwind styled div
+</div>
+```
+
+### pnpm
+
+pnpm is a fast, disk space efficient package manager that uses a content-addressable filesystem to store all files from all modules on disk.
+
+Key commands:
+
+- Install dependencies: `pnpm install`
+- Add a dependency: `pnpm add [package-name]`
+
+Example usage:
+
+```
+# Install project dependencies
+pnpm install
+
+# Add a new package
+pnpm add react-icons
+
+# Run the development server
+pnpm dev
+
+# Build the project
+pnpm build
+```
+
+For more detailed information on each technology, refer to their official documentation:
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [shadcn/ui Documentation](https://ui.shadcn.com/)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [pnpm Documentation](https://pnpm.io/)
