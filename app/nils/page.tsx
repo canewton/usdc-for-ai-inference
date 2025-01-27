@@ -71,7 +71,7 @@ export default function Home() {
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					<Image
+					<Imag
 						aria-hidden
 						src="https://nextjs.org/icons/window.svg"
 						alt="Window icon"
