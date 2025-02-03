@@ -4,10 +4,7 @@ import { Geist } from 'next/font/google';
 import Link from 'next/link';
 import { ThemeProvider } from 'next-themes';
 
-import { EnvVarWarning } from '@/components/env-var-warning';
 import HeaderAuth from '@/components/header-auth';
-import { ThemeSwitcher } from '@/components/theme-switcher';
-// import { hasEnvVars } from '@/utils/supabase/check-env-vars';
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
