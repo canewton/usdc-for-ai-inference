@@ -1,61 +1,49 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-
 export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
-    const token = req.headers.get("Authorization")?.split("Bearer ")[1];
-    
-    // Verify user
-    const { data: { user } } = await supabase.auth.getUser(token);
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // Generate image
-    const dalleResponse = await openai.images.generate({
-      prompt,
-      model: "dall-e-3",
-      n: 1,
-      size: "1024x1024"
+    const replicateUrl =
+      "https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions";
+
+    const response = await fetch(replicateUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.REPLICATE_API_TOKEN}`,
+        "Content-Type": "application/json",
+        Prefer: "wait",
+      },
+      body: JSON.stringify({
+        input: {
+          prompt,
+          go_fast: true,
+          megapixels: "1",
+          num_outputs: 1,
+          aspect_ratio: "1:1",
+          output_format: "webp",
+          output_quality: 80,
+          num_inference_steps: 4,
+        },
+      }),
     });
 
-    const imageUrl = dalleResponse.data[0].url;
+    if (!response.ok) {
+      throw new Error(`Replicate API Error: ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+
+    const imageUrl = responseData?.output?.[0] || null;
     if (!imageUrl) throw new Error("No image URL returned");
 
-    // Download and store image
-    const imageResponse = await fetch(imageUrl);
-    const buffer = Buffer.from(await imageResponse.arrayBuffer());
-    const fileName = `${user.id}/${Date.now()}.png`;
-    
-    const { error: uploadError } = await supabase.storage
-      .from("user-images")
-      .upload(fileName, buffer, { contentType: "image/png" });
-
-    if (uploadError) throw uploadError;
-
-    // Get permanent URL
-    const { data: { publicUrl } } = supabase.storage
-      .from("user-images")
-      .getPublicUrl(fileName);
-
-    // Store metadata
-    const { error: dbError } = await supabase.from("image_generations").insert({
-      user: user.id,
-      prompt,
-      url: publicUrl,
-      provider: "dall-e"
-    });
-
-    if (dbError) throw dbError;
-
-    return NextResponse.json({ imageUrl: publicUrl });
+    return NextResponse.json({ imageUrl });
   } catch (error) {
     console.error("Generation error:", error);
     return NextResponse.json(
