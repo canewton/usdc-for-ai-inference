@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { v4 as uuidv4 } from "uuid";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,11 +40,54 @@ export async function POST(req: Request) {
     }
 
     const responseData = await response.json();
-
     const imageUrl = responseData?.output?.[0] || null;
-    if (!imageUrl) throw new Error("No image URL returned");
+    if (!imageUrl) {
+      throw new Error("No image URL returned from Replicate");
+    }
 
-    return NextResponse.json({ imageUrl });
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to fetch the generated image from URL: ${imageUrl}`);
+    }
+    const imageBlob = await imageResponse.blob();
+
+    const fileName = `${uuidv4()}.webp`;
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from("user-images")
+      .upload(fileName, imageBlob, {
+        contentType: "image/webp",
+      });
+
+    if (storageError) {
+      throw new Error(`Error uploading image to Supabase: ${storageError.message}`);
+    }
+
+    const { data: publicURLData } = supabase.storage
+      .from("user-images")
+      .getPublicUrl(fileName);
+
+    if (!publicURLData.publicUrl) {
+      throw new Error("Failed to retrieve public URL for image");
+    }
+
+    const storedImageUrl = publicURLData.publicUrl;
+
+    const { error: dbError } = await supabase.from("image_generations").insert([
+      {
+        prompt,
+        user: "example-user",
+        url: storedImageUrl,
+        provider: "Replicate",
+      },
+    ]);
+
+    if (dbError) {
+      throw new Error(`Error inserting record into Supabase: ${dbError.message}`);
+    }
+
+    console.log('returning imageurl', storedImageUrl)
+
+    return NextResponse.json({ imageUrl: storedImageUrl });
   } catch (error) {
     console.error("Generation error:", error);
     return NextResponse.json(
