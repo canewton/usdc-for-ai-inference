@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     const imageBlob = await imageResponse.blob();
 
     const fileName = `${uuidv4()}.webp`;
-    const { data: storageData, error: storageError } = await supabase.storage
+    const { error: storageError } = await supabase.storage
       .from('user-images')
       .upload(fileName, imageBlob, {
         contentType: 'image/webp',
