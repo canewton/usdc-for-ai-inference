@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import Replicate from 'replicate';
 import { v4 as uuidv4 } from 'uuid';
 
 import { createClient } from '@/utils/supabase/client';
@@ -9,36 +10,25 @@ export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
 
-    const replicateUrl =
-      'https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions';
-
-    const response = await fetch(replicateUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.REPLICATE_API_TOKEN}`,
-        'Content-Type': 'application/json',
-        Prefer: 'wait',
-      },
-      body: JSON.stringify({
-        input: {
-          prompt,
-          go_fast: true,
-          megapixels: '1',
-          num_outputs: 1,
-          aspect_ratio: '1:1',
-          output_format: 'webp',
-          output_quality: 80,
-          num_inference_steps: 4,
-        },
-      }),
+    const replicate = new Replicate({
+      auth: process.env.REPLICATE_API_TOKEN,
     });
 
-    if (!response.ok) {
-      throw new Error(`Replicate API Error: ${response.statusText}`);
-    }
+    const model = 'black-forest-labs/flux-schnell';
 
-    const responseData = await response.json();
-    const imageUrl = responseData?.output?.[0] || null;
+    const input = {
+      prompt,
+      go_fast: true,
+      megapixels: '1',
+      num_outputs: 1,
+      aspect_ratio: '1:1',
+      output_format: 'webp',
+      output_quality: 80,
+      num_inference_steps: 4,
+    };
+
+    const output = (await replicate.run(model, { input })) as string[];
+    const imageUrl = output[0];
     if (!imageUrl) {
       throw new Error('No image URL returned from Replicate');
     }
@@ -88,8 +78,6 @@ export async function POST(req: Request) {
         `Error inserting record into Supabase: ${dbError.message}`,
       );
     }
-
-    console.log('returning imageurl', storedImageUrl);
 
     return NextResponse.json({ imageUrl: storedImageUrl });
   } catch (error) {
