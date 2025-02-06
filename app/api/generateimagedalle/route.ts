@@ -30,7 +30,9 @@ export async function POST(req: Request) {
     const output = (await replicate.run(model, { input })) as string[];
     const imageUrl = output[0];
     if (!imageUrl) {
-      throw new Error('No image URL returned from Replicate');
+      throw new Error(
+        'No image URL returned from Replicate. Please try again later.',
+      );
     }
 
     const imageResponse = await fetch(imageUrl);
