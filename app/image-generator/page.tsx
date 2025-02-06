@@ -8,12 +8,14 @@ export default function ImageGeneratorPage() {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [showTryAgain, setShowTryAgain] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) return;
 
     setIsLoading(true);
+    setShowTryAgain(false);
     try {
       const response = await fetch('/api/generateimagedalle', {
         method: 'POST',
@@ -27,6 +29,7 @@ export default function ImageGeneratorPage() {
 
       const { imageUrl } = await response.json();
       setImageUrl(imageUrl);
+      setShowTryAgain(true);
     } catch (error) {
       console.error('Generation error:', error);
     } finally {
@@ -59,6 +62,15 @@ export default function ImageGeneratorPage() {
           {isLoading ? 'Generating...' : 'Generate Image'}
         </Button>
       </form>
+
+      {showTryAgain && (
+        <div
+          onClick={handleSubmit}
+          className="w-full mt-4 text-center text-xs hover:underline cursor-pointer"
+        >
+          Try Again?
+        </div>
+      )}
     </div>
   );
 }
