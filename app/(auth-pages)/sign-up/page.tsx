@@ -41,8 +41,9 @@ export default async function Signup(props: {
             required
           />
           <SubmitButton
-            formAction={(data) => {
-              signUpAction(data);
+            formAction={async (data) => {
+              'use server';
+              await signUpAction(data);
             }}
             pendingText="Signing up..."
           >
