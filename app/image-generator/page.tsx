@@ -1,18 +1,66 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { createClient } from '@/utils/supabase/client';
 
 import PromptSuggestions from '../components/PromptSuggestions';
 
 export default function ImageGeneratorPage() {
+  const supabase = createClient();
+
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [quality, setQuality] = useState(80);
   const [isLoading, setIsLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [showTryAgain, setShowTryAgain] = useState(false);
+  const [model, setModel] = useState('flux-schnell');
+  const [session, setSession] = useState('');
+  const [history, setHistory] = useState<
+    { id: string; url: string; prompt: string; created_at: string }[]
+  >([]);
+  const router = useRouter();
+
+  // Get session
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data: session } = await (await supabase).auth.getSession();
+      setSession(session.session?.access_token || '');
+    };
+    fetchSession();
+  }, []);
+
+  // Fetch user's images
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const response = await fetch(`/api/getgeneratedimages`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${session}`,
+          }
+        });
+        const data = await response.json();
+
+        // Check if the response is successful
+        if (response.ok) {
+          // Store the fetched images
+          console.log(data.images)
+          setHistory(data.images);
+        } else {
+          console.error('Error fetching images:', data.error);
+        }
+      } catch (error) {
+        console.error('Error fetching images:', error);
+      }
+    };
+    if (session) {
+      fetchImages();
+    }
+  }, [session, imageUrl]);
 
   const submitPrompt = async (promptToSubmit: string) => {
     if (!promptToSubmit.trim()) return;
@@ -21,7 +69,10 @@ export default function ImageGeneratorPage() {
     try {
       const response = await fetch('/api/generateimagedalle', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session}`,
+        },
         body: JSON.stringify({
           prompt: promptToSubmit,
           aspect_ratio: aspectRatio,
@@ -53,68 +104,134 @@ export default function ImageGeneratorPage() {
     await submitPrompt(prompt);
   };
 
+  const handleDeleteImage = (image_id: string) => {
+    const deleteImage = async (image_id: string) => {
+      try {
+        const response = await fetch(`/api/deleteimage?imageid=${image_id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session}`,
+          },
+        });
+  
+        const result = await response.json();
+        if (response.ok) {
+          // Remove deleted image from state
+          setHistory((prevImages) => prevImages.filter((img) => img.id !== image_id));
+        } else {
+          console.error('Error deleting image:', result.error);
+        }
+      } catch (error) {
+        console.error('Delete request failed:', error);
+      }
+    };
+
+    if (session) {
+      deleteImage(image_id);
+    }
+  }
+
+  // Function to navigate to image details page
+  const handleImageClick = (image_id: string, image_url: string) => {
+    router.push(`/image/${image_id}`);
+    setImageUrl(image_url);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-8">
+    <div className="w-full mx-auto">
       <h1 className="text-2xl font-bold mb-8">AI Image Generator</h1>
-      <PromptSuggestions onSelect={handlePromptSelect} />
-      {imageUrl && (
-        <div className="mb-8">
-          <img
-            src={imageUrl}
-            alt="Generated image"
-            className="w-full h-auto rounded-lg shadow-lg"
-          />
-        </div>
-      )}
+      <div className="flex w-full justify-between space-x-6">
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          placeholder="Describe the image you want to generate..."
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          className="w-full"
-        />
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Generating...' : 'Generate Image'}
-        </Button>
-        <div className="flex flex-col space-y-2">
-          <div className="flex items-center space-x-2">
-            <span className="font-medium">Aspect Ratio:</span>
-            <select
-              value={aspectRatio}
-              onChange={(e) => setAspectRatio(e.target.value)}
-              className="border rounded p-2"
-            >
-              <option value="1:1">1:1</option>
-              <option value="3:2">3:2</option>
-              <option value="4:3">4:3</option>
-              <option value="16:9">16:9</option>
-              <option value="21:9">21:9</option>
-            </select>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="font-medium">Image Quality:</span>
-            <select
-              value={quality}
-              onChange={(e) => setQuality(Number(e.target.value))}
-              className="border rounded p-2"
-            >
-              <option value={50}>Low (50)</option>
-              <option value={80}>Medium (80)</option>
-              <option value={100}>High (100)</option>
-            </select>
+        <div className="w-1/3 flex flex-col border-r-2 border-gray">
+          <h1 className="text-xl font-bold">History</h1>
+          <div className="h-96 overflow-y-auto mt-2">
+            {history.map((image) => (
+              <div key={image.id} className="image-item p-2 rounded hover:bg-gray-700">
+                <div className='flex flex-row justify-between'>
+                  <p className='text-lg'>{image.prompt}</p>
+                  <button
+                    onClick={() => handleDeleteImage(image.id)}
+                    className="border border-white m-1 p-1 rounded hover:bg-red-700"
+                  >Delete</button>
+                </div>
+                <img src={image.url} alt={image.prompt} className="image " onClick={() => handleImageClick(image.id, image.url)}/>
+              </div>
+            ))}
           </div>
         </div>
-      </form>
 
-      {showTryAgain && (
-        <div
-          onClick={handleTryAgain}
-          className="w-full mt-4 text-center text-xs hover:underline cursor-pointer"
-        >
-          Try Again?
+        <div className="w-2/3 flex flex-col">
+          <PromptSuggestions onSelect={handlePromptSelect} />
+          {imageUrl && (
+            <div className="mb-8">
+              <img
+                src={imageUrl}
+                alt="Generated image"
+                className="w-full h-auto rounded-lg shadow-lg"
+              />
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              placeholder="Describe the image you want to generate..."
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className="w-full"
+            />
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Generating...' : 'Generate Image'}
+            </Button>
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center space-x-2">
+                <span className="font-medium">Aspect Ratio:</span>
+                <select
+                  value={aspectRatio}
+                  onChange={(e) => setAspectRatio(e.target.value)}
+                  className="border rounded p-2"
+                >
+                  <option value="1:1">1:1</option>
+                  <option value="3:2">3:2</option>
+                  <option value="4:3">4:3</option>
+                  <option value="16:9">16:9</option>
+                  <option value="21:9">21:9</option>
+                </select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="font-medium">Image Quality:</span>
+                <select
+                  value={quality}
+                  onChange={(e) => setQuality(Number(e.target.value))}
+                  className="border rounded p-2"
+                >
+                  <option value={50}>Low (50)</option>
+                  <option value={80}>Medium (80)</option>
+                  <option value={100}>High (100)</option>
+                </select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="font-medium">Model:</span>
+                <select
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  className="border rounded p-2"
+                >
+                  <option value="flux-schnell">FLUX.1</option>
+                </select>
+              </div>
+            </div>
+          </form>
+
+          {showTryAgain && (
+            <div
+              onClick={handleTryAgain}
+              className="w-full mt-4 text-center text-xs hover:underline cursor-pointer"
+            >
+              Try Again?
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
