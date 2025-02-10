@@ -28,7 +28,7 @@ if (!process.env.CIRCLE_API_KEY || !process.env.CIRCLE_ENTITY_SECRET) {
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: any,
 ): Promise<NextResponse<TransactionResponse>> {
   try {
     // Validate the transaction ID is a Circle's transaction IDs
