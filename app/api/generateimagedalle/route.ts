@@ -8,6 +8,20 @@ const supabase = createClient();
 
 export async function POST(req: Request) {
   try {
+    // Get authenticated user
+    const token = req.headers.get('Authorization');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser(token.split(' ')[1]);
+    if (error || !user) {
+      console.error('Unauthorized', error);
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { prompt, aspect_ratio, output_quality } = await req.json();
 
     const replicate = new Replicate({
@@ -69,7 +83,7 @@ export async function POST(req: Request) {
     const { error: dbError } = await supabase.from('image_generations').insert([
       {
         prompt,
-        user: 'example-user',
+        user_id: user.id,
         url: storedImageUrl,
         provider: 'Replicate',
       },
