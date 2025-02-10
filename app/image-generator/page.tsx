@@ -4,29 +4,25 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+import PromptSuggestions from '../components/PromptSuggestions';
+
 export default function ImageGeneratorPage() {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [showTryAgain, setShowTryAgain] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!prompt.trim()) return;
-
+  const submitPrompt = async (promptToSubmit: string) => {
+    if (!promptToSubmit.trim()) return;
     setIsLoading(true);
     setShowTryAgain(false);
     try {
       const response = await fetch('/api/generateimagedalle', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: promptToSubmit }),
       });
-
       if (!response.ok) throw new Error(await response.text());
-
       const { imageUrl } = await response.json();
       setImageUrl(imageUrl);
       setShowTryAgain(true);
@@ -37,10 +33,24 @@ export default function ImageGeneratorPage() {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await submitPrompt(prompt);
+  };
+
+  const handlePromptSelect = async (selectedPrompt: string) => {
+    setPrompt(selectedPrompt);
+    await submitPrompt(selectedPrompt);
+  };
+
+  const handleTryAgain = async () => {
+    await submitPrompt(prompt);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-8">
       <h1 className="text-2xl font-bold mb-8">AI Image Generator</h1>
-
+      <PromptSuggestions onSelect={handlePromptSelect} />
       {imageUrl && (
         <div className="mb-8">
           <img
@@ -65,7 +75,7 @@ export default function ImageGeneratorPage() {
 
       {showTryAgain && (
         <div
-          onClick={handleSubmit}
+          onClick={handleTryAgain}
           className="w-full mt-4 text-center text-xs hover:underline cursor-pointer"
         >
           Try Again?
