@@ -8,7 +8,7 @@ const supabase = createClient();
 
 export async function POST(req: Request) {
   try {
-    const { prompt } = await req.json();
+    const { prompt, aspect_ratio, output_quality } = await req.json();
 
     const replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,
@@ -21,9 +21,9 @@ export async function POST(req: Request) {
       go_fast: true,
       megapixels: '1',
       num_outputs: 1,
-      aspect_ratio: '1:1',
+      aspect_ratio: aspect_ratio,
       output_format: 'webp',
-      output_quality: 80,
+      output_quality: output_quality,
       num_inference_steps: 4,
     };
 
