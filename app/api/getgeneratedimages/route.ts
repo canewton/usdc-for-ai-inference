@@ -24,7 +24,6 @@ export async function GET(req: NextRequest) {
     // Optional comma separated list of ids
     const url = new URL(req.url);
     const imageids = url.searchParams.get('imageids');
-    console.log(req.url);
 
     // Fetch user's images
     if (imageids) {

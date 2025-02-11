@@ -8,35 +8,30 @@ import { createClient } from '@/utils/supabase/client';
 export default function ImagePage() {
   const supabase = createClient();
 
-  const { imageid } = useParams();
+  const params = useParams();
+  const imageid = params.id;
   const [imageData, setImageData] = useState<{
     id: string;
     url: string;
     prompt: string;
     created_at: string;
   }>({ id: '', url: '', prompt: '', created_at: '' });
-  const [session, setSession] = useState('');
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Get session
   useEffect(() => {
-    const fetchSession = async () => {
-      const { data: session } = await (await supabase).auth.getSession();
-      setSession(session.session?.access_token || '');
-    };
-    fetchSession();
-  }, []);
+    const getSessionAndImage = async () => {
+      if (!supabase) return;
 
-  // Fetch image
-  useEffect(() => {
-    const fetchImages = async () => {
+      const { data: session } = await (await supabase).auth.getSession();
+      const sessionToken = session.session?.access_token;
       try {
         const response = await fetch(
           `/api/getgeneratedimages?imageids=${imageid}`,
           {
             method: 'GET',
             headers: {
-              Authorization: `Bearer ${session}`,
+              Authorization: `Bearer ${sessionToken}`,
             },
           },
         );
@@ -44,7 +39,7 @@ export default function ImagePage() {
 
         // Check if the response is successful
         if (response.ok) {
-          setImageUrl(data.images[0].url);
+          setImageData(data.images[0]);
         } else {
           console.error('Error fetching images:', data.error);
         }
@@ -52,17 +47,47 @@ export default function ImagePage() {
         console.error('Error fetching images:', error);
       }
     };
-    if (session && imageid) {
-      fetchImages();
+
+    getSessionAndImage();
+  }, [imageid]);
+
+  const handleDownload = async () => {
+    if (imageData) {
+      try {
+        setIsDownloading(true);
+        const response = await fetch(imageData.url);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${imageData.prompt}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error downloading image:', error);
+      } finally {
+        setIsDownloading(false);
+      }
     }
-  }, [session]);
+  };
 
   if (!imageData) return <div>Loading...</div>;
 
   return (
     <div>
       <h1>{imageData.prompt}</h1>
-      {imageUrl && <img src={imageData.url} alt={imageData.prompt} />}
+      <button
+        onClick={handleDownload}
+        disabled={isDownloading}
+        className="border border-white m-1 p-1 rounded"
+      >
+        Download
+      </button>
+      {imageData && (
+        <img src={imageData.url || undefined} alt={imageData.prompt} />
+      )}
     </div>
   );
 }
