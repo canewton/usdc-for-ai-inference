@@ -27,6 +27,7 @@ export default function ImageGeneratorPage() {
   // Get session
   useEffect(() => {
     const fetchSession = async () => {
+      if (!supabase) return;
       const { data: session } = await (await supabase).auth.getSession();
       setSession(session.session?.access_token || '');
     };
@@ -48,7 +49,6 @@ export default function ImageGeneratorPage() {
         // Check if the response is successful
         if (response.ok) {
           // Store the fetched images
-          console.log(data.images);
           setHistory(data.images);
         } else {
           console.error('Error fetching images:', data.error);
@@ -134,10 +134,9 @@ export default function ImageGeneratorPage() {
     }
   };
 
-  // Function to navigate to image details page
-  const handleImageClick = (image_id: string, image_url: string) => {
+  // Function to navigate to image page
+  const handleImageClick = (image_id: string) => {
     router.push(`/image/${image_id}`);
-    setImageUrl(image_url);
   };
 
   return (
@@ -164,8 +163,8 @@ export default function ImageGeneratorPage() {
                 <img
                   src={image.url}
                   alt={image.prompt}
-                  className="image "
-                  onClick={() => handleImageClick(image.id, image.url)}
+                  className="image hover:cursor-pointer"
+                  onClick={() => handleImageClick(image.id)}
                 />
               </div>
             ))}
