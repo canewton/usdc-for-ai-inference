@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { createClient } from '@/utils/supabase/client';
 
@@ -20,19 +21,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Optional comma separated list of ids 
+    // Optional comma separated list of ids
     const url = new URL(req.url);
-    const imageids = url.searchParams.get("imageids");
-    console.log(req.url)
+    const imageids = url.searchParams.get('imageids');
+    console.log(req.url);
 
     // Fetch user's images
     if (imageids) {
-      const ids = imageids.split(",");
+      const ids = imageids.split(',');
       const { data: images, error } = await supabase
-      .from('image_generations')
-      .select('id, url, prompt, created_at')
-      .eq('user_id', user.id)
-      .in('id', ids); 
+        .from('image_generations')
+        .select('id, url, prompt, created_at')
+        .eq('user_id', user.id)
+        .in('id', ids);
 
       if (error) {
         console.error('Database error:', error);
@@ -41,13 +42,13 @@ export async function GET(req: NextRequest) {
           { status: 500 },
         );
       }
-  
+
       return NextResponse.json({ images: images }, { status: 200 });
     } else {
       const { data: images, error } = await supabase
-      .from('image_generations')
-      .select('id, url, prompt, created_at')
-      .eq('user_id', user.id); 
+        .from('image_generations')
+        .select('id, url, prompt, created_at')
+        .eq('user_id', user.id);
 
       if (error) {
         console.error('Database error:', error);
@@ -56,10 +57,9 @@ export async function GET(req: NextRequest) {
           { status: 500 },
         );
       }
-  
+
       return NextResponse.json({ images: images }, { status: 200 });
     }
-     
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

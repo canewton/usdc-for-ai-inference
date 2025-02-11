@@ -21,18 +21,22 @@ export async function DELETE(req: Request) {
     }
 
     const url = new URL(req.url);
-    const imageid = url.searchParams.get("imageid");
+    const imageid = url.searchParams.get('imageid');
 
     if (!imageid) {
       return NextResponse.json({ error: 'Missing image_id' }, { status: 400 });
     }
 
-    const { error: dbError } = await supabase.from('image_generations').delete().eq('id', imageid);
+    const { error: dbError } = await supabase
+      .from('image_generations')
+      .delete()
+      .eq('id', imageid)
+      .eq('user_id', user.id);
 
     if (dbError) {
       return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
-    
+
     return NextResponse.json({ message: 'Image deleted successfully' });
   } catch (error) {
     console.error('Unexpected error:', error);

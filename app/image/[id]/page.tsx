@@ -1,14 +1,20 @@
-"use client";
+'use client';
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
 import { createClient } from '@/utils/supabase/client';
 
 export default function ImagePage() {
   const supabase = createClient();
 
-  const { imageid } = useParams();  
-  const [imageData, setImageData] = useState<{ id: string; url: string; prompt: string; created_at: string }>({id: "", url: "", prompt: "", created_at: ""});
+  const { imageid } = useParams();
+  const [imageData, setImageData] = useState<{
+    id: string;
+    url: string;
+    prompt: string;
+    created_at: string;
+  }>({ id: '', url: '', prompt: '', created_at: '' });
   const [session, setSession] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
@@ -25,12 +31,15 @@ export default function ImagePage() {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await fetch(`/api/getgeneratedimages?imageids=${imageid}`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${session}`,
-          }
-        });
+        const response = await fetch(
+          `/api/getgeneratedimages?imageids=${imageid}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${session}`,
+            },
+          },
+        );
         const data = await response.json();
 
         // Check if the response is successful
@@ -56,4 +65,4 @@ export default function ImagePage() {
       {imageUrl && <img src={imageData.url} alt={imageData.prompt} />}
     </div>
   );
-};
+}

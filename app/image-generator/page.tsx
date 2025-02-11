@@ -1,6 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,14 +41,14 @@ export default function ImageGeneratorPage() {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${session}`,
-          }
+          },
         });
         const data = await response.json();
 
         // Check if the response is successful
         if (response.ok) {
           // Store the fetched images
-          console.log(data.images)
+          console.log(data.images);
           setHistory(data.images);
         } else {
           console.error('Error fetching images:', data.error);
@@ -114,11 +114,13 @@ export default function ImageGeneratorPage() {
             Authorization: `Bearer ${session}`,
           },
         });
-  
+
         const result = await response.json();
         if (response.ok) {
           // Remove deleted image from state
-          setHistory((prevImages) => prevImages.filter((img) => img.id !== image_id));
+          setHistory((prevImages) =>
+            prevImages.filter((img) => img.id !== image_id),
+          );
         } else {
           console.error('Error deleting image:', result.error);
         }
@@ -130,7 +132,7 @@ export default function ImageGeneratorPage() {
     if (session) {
       deleteImage(image_id);
     }
-  }
+  };
 
   // Function to navigate to image details page
   const handleImageClick = (image_id: string, image_url: string) => {
@@ -142,20 +144,29 @@ export default function ImageGeneratorPage() {
     <div className="w-full mx-auto">
       <h1 className="text-2xl font-bold mb-8">AI Image Generator</h1>
       <div className="flex w-full justify-between space-x-6">
-
         <div className="w-1/3 flex flex-col border-r-2 border-gray">
           <h1 className="text-xl font-bold">History</h1>
           <div className="h-96 overflow-y-auto mt-2">
             {history.map((image) => (
-              <div key={image.id} className="image-item p-2 rounded hover:bg-gray-700">
-                <div className='flex flex-row justify-between'>
-                  <p className='text-lg'>{image.prompt}</p>
+              <div
+                key={image.id}
+                className="image-item p-2 rounded hover:bg-gray-700"
+              >
+                <div className="flex flex-row justify-between">
+                  <p className="text-lg">{image.prompt}</p>
                   <button
                     onClick={() => handleDeleteImage(image.id)}
                     className="border border-white m-1 p-1 rounded hover:bg-red-700"
-                  >Delete</button>
+                  >
+                    Delete
+                  </button>
                 </div>
-                <img src={image.url} alt={image.prompt} className="image " onClick={() => handleImageClick(image.id, image.url)}/>
+                <img
+                  src={image.url}
+                  alt={image.prompt}
+                  className="image "
+                  onClick={() => handleImageClick(image.id, image.url)}
+                />
               </div>
             ))}
           </div>
