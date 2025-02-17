@@ -3,11 +3,10 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { createClient } from '@/utils/supabase/client';
+import { Spinner } from '@/app/components/Spinner';
+import { useSession } from '@/app/contexts/SessionContext';
 
 export default function ImagePage() {
-  const supabase = createClient();
-
   const params = useParams();
   const imageid = params.id;
   const [imageData, setImageData] = useState<{
@@ -17,17 +16,17 @@ export default function ImagePage() {
     created_at: string;
   }>({ id: '', url: '', prompt: '', created_at: '' });
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const session = useSession();
 
-  // Get session
   useEffect(() => {
-    const getSessionAndImage = async () => {
-      if (!supabase) return;
-
-      const { data: session } = await (await supabase).auth.getSession();
-      const sessionToken = session.session?.access_token;
+    const getImage = async () => {
+      if (!session) return;
+      const sessionToken = session.access_token;
+      setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/getgeneratedimages?imageids=${imageid}`,
+          `/api/getgeneratedimages?imageids=${encodeURIComponent(JSON.stringify([imageid]))}`,
           {
             method: 'GET',
             headers: {
@@ -45,10 +44,12 @@ export default function ImagePage() {
         }
       } catch (error) {
         console.error('Error fetching images:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    getSessionAndImage();
+    getImage();
   }, [imageid]);
 
   const handleDownload = async () => {
@@ -73,7 +74,9 @@ export default function ImagePage() {
     }
   };
 
-  if (!imageData) return <div>Loading...</div>;
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   return (
     <div>
