@@ -21,13 +21,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Optional comma separated list of ids
+    // Parse JSON array from query param
     const url = new URL(req.url);
     const imageids = url.searchParams.get('imageids');
-
-    // Fetch user's images
+    // Fetch images by id
     if (imageids) {
-      const ids = imageids.split(',');
+      const ids = JSON.parse(imageids);
       const { data: images, error } = await supabase
         .from('image_generations')
         .select('id, url, prompt, created_at')
@@ -44,6 +43,7 @@ export async function GET(req: NextRequest) {
 
       return NextResponse.json({ images: images }, { status: 200 });
     } else {
+      // Fetch all of user's images
       const { data: images, error } = await supabase
         .from('image_generations')
         .select('id, url, prompt, created_at')
