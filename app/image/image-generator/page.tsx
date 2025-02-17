@@ -2,15 +2,13 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { useSession } from '@/app/contexts/SessionContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { createClient } from '@/utils/supabase/client';
 
-import PromptSuggestions from '../components/PromptSuggestions';
+import PromptSuggestions from '../../components/PromptSuggestions';
 
 export default function ImageGeneratorPage() {
-  const supabase = createClient();
-
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [quality, setQuality] = useState(80);
@@ -18,30 +16,22 @@ export default function ImageGeneratorPage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [showTryAgain, setShowTryAgain] = useState(false);
   const [model, setModel] = useState('flux-schnell');
-  const [session, setSession] = useState('');
   const [history, setHistory] = useState<
     { id: string; url: string; prompt: string; created_at: string }[]
   >([]);
   const router = useRouter();
-
-  // Get session
-  useEffect(() => {
-    const fetchSession = async () => {
-      if (!supabase) return;
-      const { data: session } = await (await supabase).auth.getSession();
-      setSession(session.session?.access_token || '');
-    };
-    fetchSession();
-  }, []);
+  const session = useSession();
 
   // Fetch user's images
   useEffect(() => {
     const fetchImages = async () => {
+      if (!session) return;
+      const sessionToken = session.access_token;
       try {
         const response = await fetch(`/api/getgeneratedimages`, {
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${session}`,
+            Authorization: `Bearer ${sessionToken}`,
           },
         });
         const data = await response.json();
