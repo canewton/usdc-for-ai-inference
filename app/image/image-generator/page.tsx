@@ -61,7 +61,7 @@ export default function ImageGeneratorPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           prompt: promptToSubmit,
@@ -101,7 +101,7 @@ export default function ImageGeneratorPage() {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${session}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
         });
 
