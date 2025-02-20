@@ -23,8 +23,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { createSupabaseBrowserClient } from '@/lib/supabase/browser-client';
 import type { Wallet } from '@/types/database.types';
+import { createClient } from '@/utils/supabase/client';
 
 interface Transaction {
   id: string;
@@ -157,7 +157,7 @@ const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? process.env.NEXT_PUBLIC_VERCEL_URL
   : 'http://localhost:3000';
 
-const supabase = createSupabaseBrowserClient();
+const supabase = createClient();
 
 export const Transactions: FunctionComponent<Props> = (props) => {
   const router = useRouter();

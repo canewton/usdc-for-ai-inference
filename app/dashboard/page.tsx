@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { USDCButton } from '@/components/usdc-button';
 import { WalletBalance } from '@/components/wallet-balance';
 import { WalletInformationDialog } from '@/components/wallet-information-dialog';
-import { createSupabaseServerComponentClient } from '@/lib/supabase/server-client';
+import { createClient } from '@/utils/supabase/server';
 
 export default async function ProtectedPage() {
-  const supabase = await createSupabaseServerComponentClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

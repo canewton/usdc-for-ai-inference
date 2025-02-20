@@ -4,7 +4,7 @@ import type { RealtimePostgresUpdatePayload } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { createSupabaseBrowserClient } from '@/lib/supabase/browser-client';
+import { createClient } from '@/utils/supabase/client';
 
 interface UseWalletBalanceResult {
   balance: number;
@@ -12,7 +12,7 @@ interface UseWalletBalanceResult {
   refreshBalance: () => Promise<void>;
 }
 
-const supabase = createSupabaseBrowserClient();
+const supabase = createClient();
 
 export function useWalletBalance(walletId: string): UseWalletBalanceResult {
   const [balance, setBalance] = useState(0);
