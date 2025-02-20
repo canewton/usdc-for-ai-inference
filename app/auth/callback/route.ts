@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { createSupabaseServerClient } from '@/lib/supabase/server-client';
+import { createClient } from '@/utils/supabase/server';
 
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? process.env.NEXT_PUBLIC_VERCEL_URL
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   const nextUrl = searchParams.get('next') ?? '/';
 
   if (code) {
-    const supabase = await createSupabaseServerClient();
+    const supabase = await createClient();
 
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
