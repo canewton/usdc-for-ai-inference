@@ -58,6 +58,12 @@ export default async function ProtectedPage() {
                   className="flex-1"
                   mode="SELL"
                   walletAddress={wallet?.wallet_address}
+                /> 
+                <USDCButton
+                  className="flex-1"
+                  mode="TRANSFER"
+                  walletAddress={wallet?.wallet_address}
+                  walletId={wallet?.circle_wallet_id}
                 />
                 {process.env.NODE_ENV === 'development' && (
                   <RequestUsdcButton walletAddress={wallet?.wallet_address} />
