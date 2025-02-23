@@ -72,47 +72,62 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
 
   return (
     <>
-      <Table className="mb-4">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Type</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedData.map((transaction) => (
-            <TableRow
-              onClick={() =>
-                router.push(
-                  `/dashboard/transaction/${transaction.circle_transaction_id}`,
-                )
-              }
-              className="cursor-pointer"
-              key={transaction.id}
-            >
-              <TableCell>{transaction.created_at}</TableCell>
-              {transaction.transaction_type === 'INBOUND' && (
-                <TableCell className="text-green-600">
-                  +{transaction.amount}
-                </TableCell>
-              )}
-              {transaction.transaction_type === 'DEPOSIT_PAYMENT' && (
-                <TableCell className="text-red-600">
-                  -{transaction.amount}
-                </TableCell>
-              )}
-              {transaction.transaction_type !== 'DEPOSIT_PAYMENT' &&
-                transaction.transaction_type !== 'INBOUND' && (
-                  <TableCell>{transaction.amount}</TableCell>
-                )}
-              <TableCell>{transaction.status}</TableCell>
-              <TableCell>{transaction.transaction_type}</TableCell>
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-4">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Status</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {paginatedData.map((transaction) => (
+              <TableRow
+                onClick={() =>
+                  router.push(
+                    `/dashboard/transaction/${transaction.circle_transaction_id}`,
+                  )
+                }
+                className="cursor-pointer"
+                key={transaction.id}
+              >
+                <TableCell>{transaction.created_at}</TableCell>
+                <TableCell>{transaction.transaction_type}</TableCell>
+                {transaction.transaction_type === 'INBOUND' && (
+                  <TableCell className="text-green-600">
+                    +{transaction.amount}
+                  </TableCell>
+                )}
+                {transaction.transaction_type === 'DEPOSIT_PAYMENT' && (
+                  <TableCell className="text-red-600">
+                    -{transaction.amount}
+                  </TableCell>
+                )}
+                {transaction.transaction_type !== 'DEPOSIT_PAYMENT' &&
+                  transaction.transaction_type !== 'INBOUND' && (
+                    <TableCell>{transaction.amount}</TableCell>
+                  )}
+                {transaction.status == 'CONFIRMED' && (
+                  <TableCell>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-green-100 text-green-800">
+                      Processed
+                    </span>
+                  </TableCell>
+                )}
+                {transaction.status !== 'CONFIRMED' && (
+                  <TableCell>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-red-100 text-red-800">
+                      Declined
+                    </span>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
       {totalPages > 1 && (
         <Pagination className="mt-4">
           <PaginationContent>

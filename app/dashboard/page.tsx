@@ -35,7 +35,7 @@ export default async function ProtectedPage() {
   return (
     <div className="px-20">
       {/* Wallet Card */}
-      <h1 className="text-xl font-medium mb-6">Wallet Balance</h1>
+      <h1 className="text-xl font-light mb-4">Wallet Balance</h1>
 
       {/* Balance Display */}
       <div className="flex items-center justify-between mb-20">
