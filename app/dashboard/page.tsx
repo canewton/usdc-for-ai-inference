@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { RequestUsdcButton } from '@/components/request-usdc-button';
-import { Transactions } from '@/components/transactions';
+import { TransactionHistory } from '@/components/transaction-history';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { USDCButton } from '@/components/usdc-button';
 import { WalletBalance } from '@/components/wallet-balance';
@@ -34,53 +34,40 @@ export default async function ProtectedPage() {
 
   return (
     <>
-      <div className="flex flex-wrap space-x-4 mb-4">
-        {/* Wallet Card */}
-        <Card className="break-inside-avoid w-[calc(50%-0.5rem)]">
-          <CardHeader className="flex-row items-center space-between">
-            <CardTitle>Account balance</CardTitle>
-            <WalletInformationDialog wallet={wallet} />
-          </CardHeader>
-          <CardContent>
-            <div className="grid w-full items-center gap-6">
-              <div className="flex flex-col space-y-1.5">
-                <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-                  <WalletBalance walletId={wallet?.circle_wallet_id} />
-                </h1>
-              </div>
-              <div className="flex gap-2">
-                <USDCButton
-                  className="flex-1"
-                  mode="BUY"
-                  walletAddress={wallet?.wallet_address}
-                />
-                <USDCButton
-                  className="flex-1"
-                  mode="SELL"
-                  walletAddress={wallet?.wallet_address}
-                />
-                {process.env.NODE_ENV === 'development' && (
-                  <RequestUsdcButton walletAddress={wallet?.wallet_address} />
-                )}
-              </div>
+      {/* Wallet Card */}
+      <Card className="break-inside-avoid w-[calc(50%-0.5rem)]">
+        <CardHeader className="flex-row items-center space-between">
+          <CardTitle>Account balance</CardTitle>
+          <WalletInformationDialog wallet={wallet} />
+        </CardHeader>
+        <CardContent>
+          <div className="grid w-full items-center gap-6">
+            <div className="flex flex-col space-y-1.5">
+              <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+                <WalletBalance walletId={wallet?.circle_wallet_id} />
+              </h1>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="flex gap-2">
+              <USDCButton
+                className="flex-1"
+                mode="BUY"
+                walletAddress={wallet?.wallet_address}
+              />
+              <USDCButton
+                className="flex-1"
+                mode="SELL"
+                walletAddress={wallet?.wallet_address}
+              />
+              {process.env.NODE_ENV === 'development' && (
+                <RequestUsdcButton walletAddress={wallet?.wallet_address} />
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Transactions Section */}
-      <div className="break-inside-avoid mb-4">
-        <div className="flex flex-col gap-2 items-start">
-          <Card className="break-inside-avoid mb-4 w-full">
-            <CardHeader>
-              <CardTitle>Your transactions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Transactions wallet={wallet} profile={profile} />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <TransactionHistory wallet={wallet} profile={profile} />
     </>
   );
 }
