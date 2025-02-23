@@ -1,14 +1,14 @@
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? process.env.NEXT_PUBLIC_VERCEL_URL
-  : "http://localhost:3000";
+  : 'http://localhost:3000';
 
 export default async function Transaction({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const response = await fetch(
-    `${baseUrl}/api/wallet/transactions/${params.id}`,
+    `${baseUrl}/api/wallet/transactions/${(await params).id}`,
   );
   const parsedResponse = await response.json();
 
