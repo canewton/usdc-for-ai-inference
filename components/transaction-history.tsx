@@ -295,7 +295,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-5xl mx-auto">
+      <div className="mx-auto">
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-6">
           <div className="flex gap-8">

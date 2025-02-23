@@ -1,8 +1,8 @@
+import { DollarSign } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 import { RequestUsdcButton } from '@/components/request-usdc-button';
 import { TransactionHistory } from '@/components/transaction-history';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { USDCButton } from '@/components/usdc-button';
 import { WalletBalance } from '@/components/wallet-balance';
 import { WalletInformationDialog } from '@/components/wallet-information-dialog';
@@ -33,41 +33,33 @@ export default async function ProtectedPage() {
     .single();
 
   return (
-    <>
+    <div className="px-20">
       {/* Wallet Card */}
-      <Card className="break-inside-avoid w-[calc(50%-0.5rem)]">
-        <CardHeader className="flex-row items-center space-between">
-          <CardTitle>Account balance</CardTitle>
+      <h1 className="text-xl font-medium mb-6">Wallet Balance</h1>
+
+      {/* Balance Display */}
+      <div className="flex items-center justify-between mb-20">
+        <div className="flex items-center gap-2">
+          <h2 className="text-5xl font-bold">
+            <WalletBalance walletId={wallet?.circle_wallet_id} />
+          </h2>
+          <DollarSign className="w-6 h-6 text-blue-500" />
+        </div>
+        <div className="flex gap-4">
+          {process.env.NODE_ENV === 'development' && (
+            <RequestUsdcButton walletAddress={wallet?.wallet_address} />
+          )}
+          <USDCButton
+            className="flex-1"
+            mode="BUY"
+            walletAddress={wallet?.wallet_address}
+          />
           <WalletInformationDialog wallet={wallet} />
-        </CardHeader>
-        <CardContent>
-          <div className="grid w-full items-center gap-6">
-            <div className="flex flex-col space-y-1.5">
-              <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-                <WalletBalance walletId={wallet?.circle_wallet_id} />
-              </h1>
-            </div>
-            <div className="flex gap-2">
-              <USDCButton
-                className="flex-1"
-                mode="BUY"
-                walletAddress={wallet?.wallet_address}
-              />
-              <USDCButton
-                className="flex-1"
-                mode="SELL"
-                walletAddress={wallet?.wallet_address}
-              />
-              {process.env.NODE_ENV === 'development' && (
-                <RequestUsdcButton walletAddress={wallet?.wallet_address} />
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Transactions Section */}
       <TransactionHistory wallet={wallet} profile={profile} />
-    </>
+    </div>
   );
 }

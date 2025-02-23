@@ -41,9 +41,9 @@ export const USDCButton: FunctionComponent<Props> = ({
           Loading...
         </>
       ) : mode === 'BUY' ? (
-        'Deposit'
+        'Add Funds'
       ) : (
-        'Withdraw'
+        'Withdraw Funds'
       )}
     </Button>
   );
