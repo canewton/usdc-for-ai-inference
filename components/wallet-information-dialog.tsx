@@ -1,4 +1,3 @@
-import { Info } from 'lucide-react';
 import type { FunctionComponent } from 'react';
 
 import { CopyButton } from '@/components/copy-button';
@@ -29,9 +28,7 @@ export const WalletInformationDialog: FunctionComponent<Props> = (props) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="ml-auto" variant="ghost" size="icon">
-          <Info className="h-4 w-4" />
-        </Button>
+        <Button className="ml-auto">Wallet Information</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
