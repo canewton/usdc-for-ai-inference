@@ -4,29 +4,34 @@ import { Loader2 } from 'lucide-react';
 import { type FunctionComponent, type HTMLProps, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { useWalletTokenId } from '@/app/hooks/useWalletTokenId';
 
 interface Props extends HTMLProps<HTMLElement> {
   mode: 'BUY' | 'SELL' | 'TRANSFER';
-  walletAddress: string;
-  walletId?: string;
+  walletAddress?: string;
 }
+
+
 
 export const USDCButton: FunctionComponent<Props> = ({
   mode,
   walletAddress,
-  walletId,
   className,
 }) => {
   const [loading, setLoading] = useState(false);
+
+  
+  const { tokenId, tokenLoading, refreshTokenId } = useWalletTokenId(walletAddress || '');
+
 
   const handleAction = async () => {
     setLoading(true);
     try {
       if (mode === 'TRANSFER') {
         const transfer = {
-          walletId: walletId,
-          tokenId: /*idk what to add her */'', 
-          destinationAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e', 
+          walletId: walletAddress, 
+          tokenId: tokenId, 
+          destinationAddress: '0x6271eabf0d0ae95b4db6e8b6c01b7e7842803557', 
           amounts: ['1000000000'],
           feeLevel: 'MEDIUM' as const
         };

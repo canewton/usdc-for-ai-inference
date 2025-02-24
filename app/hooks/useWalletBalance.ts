@@ -29,10 +29,11 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
         body: JSON.stringify({ walletId }),
       });
 
-      const parsedBalance = await balanceResponse.json();
+      const response = await balanceResponse.json();
+      const parsedBalance = response.tokenBalances?.[0]?.amount;
 
-      if (parsedBalance.error) {
-        console.error('Error fetching wallet balance:', parsedBalance.error);
+      if (response.error) {
+        console.error('Error fetching wallet balance:', response.error);
         toast.error('Error fetching wallet balance', {
           description: parsedBalance.error,
         });

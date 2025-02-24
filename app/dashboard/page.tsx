@@ -32,6 +32,7 @@ export default async function ProtectedPage() {
     .eq('profile_id', profile?.id)
     .single();
 
+
   return (
     <>
       <div className="flex flex-wrap space-x-4 mb-4">
@@ -62,8 +63,7 @@ export default async function ProtectedPage() {
                 <USDCButton
                   className="flex-1"
                   mode="TRANSFER"
-                  walletAddress={wallet?.wallet_address}
-                  walletId={wallet?.circle_wallet_id}
+                  walletAddress={wallet?.circle_wallet_id}
                 />
                 {process.env.NODE_ENV === 'development' && (
                   <RequestUsdcButton walletAddress={wallet?.wallet_address} />
