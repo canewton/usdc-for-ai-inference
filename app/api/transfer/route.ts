@@ -5,7 +5,7 @@ interface TransferRequest {
   tokenId: string;
   destinationAddress: string;
   amounts: string[];
-  feeLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
+  feeLevel: any;
 }
 
 interface TransferResponse {

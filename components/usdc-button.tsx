@@ -32,9 +32,14 @@ export const USDCButton: FunctionComponent<Props> = ({
           walletId: walletAddress, 
           tokenId: tokenId, 
           destinationAddress: '0x6271eabf0d0ae95b4db6e8b6c01b7e7842803557', 
-          amounts: ['1000000000'],
-          feeLevel: 'MEDIUM' as const
-        };
+          amounts: ['0.1'],
+          fee: {
+            type: 'level',
+            config: {
+              feeLevel: 'MEDIUM'
+            }
+        }
+      };
 
         const response = await fetch('/api/transfer', {
           method: 'POST',

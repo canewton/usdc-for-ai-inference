@@ -29,7 +29,11 @@ export function useWalletTokenId(walletId: string): UseWalletTokenIdResult {
 			});
 
 			const response = await balanceResponse.json();
-			const parsedTokenId = response.tokenBalances?.[0]?.token?.id;
+			const parsedTokenId = response.tokenBalances?.find(
+        ({ token }: { token: { symbol: string } }) => token.symbol === 'USDC',
+      )?.token?.id;
+
+      console.log('response', parsedTokenId);
 
 			if (response.error) {
 				console.error('Error fetching wallet token ID:', response.error);
