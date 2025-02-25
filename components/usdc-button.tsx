@@ -31,7 +31,7 @@ export const USDCButton: FunctionComponent<Props> = ({
         const transfer = {
           walletId: walletAddress, 
           tokenId: tokenId, 
-          destinationAddress: '0x6271eabf0d0ae95b4db6e8b6c01b7e7842803557', 
+          destinationAddress: '0x211cd52130a35916fcbac5a267ee400b6583011c', 
           amounts: ['0.1'],
           fee: {
             type: 'level',

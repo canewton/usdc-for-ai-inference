@@ -23,21 +23,25 @@ interface TransferResponse {
   updateDate: string;
 }
 
-async function createTransfer(transferRequest: TransferRequest): Promise<TransferResponse> {
-  const response = await fetch('https://api.circle.com/v1/w3s/developer/transactions/transfer', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.CIRCLE_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(transferRequest)
+import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
+
+async function createTransfer(transferRequest: any): Promise<any> {
+
+  const response = await circleDeveloperSdk.createTransaction({
+    walletId: transferRequest.walletId,
+    tokenId: transferRequest.tokenId,
+    destinationAddress: transferRequest.destinationAddress,
+    amount: transferRequest.amounts[0],
+    fee: transferRequest.feeLevel
   });
 
-  if (!response.ok) {
-    throw new Error(`Transfer failed: ${response.statusText}`);
+  console.log(response);
+  if (!response.data) {
+    throw new Error('Transfer failed: No response received');
   }
+  console.log(response.data);
 
-  return response.json();
+  return response;
 }
 
 export async function POST(request: Request) {
