@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Replicate from 'replicate';
 import { v4 as uuidv4 } from 'uuid';
 
+import { IMAGE_MODEL_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
 
 const supabase = createClient();
@@ -86,6 +87,8 @@ export async function POST(req: Request) {
         user_id: user.id,
         url: storedImageUrl,
         provider: 'Replicate',
+        replicate_billed_amount: IMAGE_MODEL_PRICING.replicatePrice,
+        user_billed_amount: IMAGE_MODEL_PRICING.userBilledPrice,
       },
     ]);
 
