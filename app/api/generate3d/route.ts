@@ -24,11 +24,18 @@ interface TaskStatusResponse {
   model_urls?: { glb: string };
 }
 
-// TODO: UPDATE USER AUTHENTICATION AND UPLOAD TO SUPABASE
-
 // returns model url
 export async function POST(req: Request) {
   try {
+    const token = req.headers.get('Authorization');
+    if (!token) {
+      return NextResponse.json({error: "Unauthorized"}, {status: 401})
+    }
+    const {data: {user}, error} = await supabase.auth.getUser(token.split(' ')[1]);
+    if (error || !user) {
+      return NextResponse.json({error: "Unauthorized"}, {status: 401})
+    }
+
     /**
      * INPUTS
      * Two Modes (Defaults to 'preview') -> String:
@@ -121,6 +128,17 @@ export async function POST(req: Request) {
       .from('user-3d')
       .getPublicUrl(fileName);
     const storedModelUrl = publicURLData.publicUrl;
+
+    // inserting into DB
+    const {error: dbError} = await supabase.from('3d_generations').insert([{
+      prompt, user_id: user.id, url: storedModelUrl, provider: 'Meshy'
+    }]) 
+
+    if (dbError) {
+      throw new Error(
+        `Error inserting record into Supabase: ${dbError.message}`,
+      );
+    }
 
     // returns model url -> downloads an interactive 3D model
     return NextResponse.json({ modelUrl: storedModelUrl });
