@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/client';
 
 const supabase = createClient();
 
-// currently using meshy's test api key - the result will always be the same regardless of prompt
+// currently using meshy's test api key - the result 'should' always be the same regardless of prompt
 const MESHY_API_KEY = process.env.MESHY_TEST_API!;
 const MESHY_API_URL =
   process.env.MESHY_BASE_URL || 'https://api.meshy.ai/openapi/v2/text-to-3d';
@@ -29,11 +29,14 @@ export async function POST(req: Request) {
   try {
     const token = req.headers.get('Authorization');
     if (!token) {
-      return NextResponse.json({error: "Unauthorized"}, {status: 401})
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const {data: {user}, error} = await supabase.auth.getUser(token.split(' ')[1]);
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser(token.split(' ')[1]);
     if (error || !user) {
-      return NextResponse.json({error: "Unauthorized"}, {status: 401})
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     /**
@@ -130,9 +133,15 @@ export async function POST(req: Request) {
     const storedModelUrl = publicURLData.publicUrl;
 
     // inserting into DB
-    const {error: dbError} = await supabase.from('3d_generations').insert([{
-      prompt, user_id: user.id, url: storedModelUrl, provider: 'Meshy'
-    }]) 
+    const { error: dbError } = await supabase.from('3d_generations').insert([
+      {
+        prompt,
+        user_id: user.id,
+        url: storedModelUrl,
+        provider: 'Meshy',
+        mode,
+      },
+    ]);
 
     if (dbError) {
       throw new Error(

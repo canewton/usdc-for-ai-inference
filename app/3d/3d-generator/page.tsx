@@ -1,16 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+
+import { useSession } from '@/app/contexts/SessionContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useSession } from '@/app/contexts/SessionContext';
 
 export default function Generate3DModelPage() {
   const [prompt, setPrompt] = useState('');
+  const [mode, setMode] = useState('preview');
   const [isLoading, setIsLoading] = useState(false);
   const [modelUrl, setModelUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const session = useSession();
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!prompt.trim()) return;
@@ -28,7 +31,7 @@ export default function Generate3DModelPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${sessionToken}`,
         },
-        body: JSON.stringify({ mode: 'preview', prompt }),
+        body: JSON.stringify({ mode, prompt }),
       });
 
       const data = await response.json();
@@ -55,6 +58,14 @@ export default function Generate3DModelPage() {
           onChange={(e) => setPrompt(e.target.value)}
           className="w-full"
         />
+        <select
+          value={mode}
+          onChange={(e) => setMode(e.target.value)}
+          className="w-full p-2 border rounded"
+        >
+          <option value="preview">Preview</option>
+          <option value="refine">Refine</option>
+        </select>
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? 'Generating...' : 'Generate Model'}
         </Button>
