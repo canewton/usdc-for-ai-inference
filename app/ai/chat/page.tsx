@@ -305,3 +305,7 @@ export function Chat({ currChat }: ChatProps) {
     </div>
   );
 }
+
+export default function ChatPage() {
+  return <Chat currChat={''} />;
+}
