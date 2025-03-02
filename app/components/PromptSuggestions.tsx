@@ -6,14 +6,14 @@ interface PromptSuggestionsProps {
 }
 
 const allSuggestions = [
-  'Generate an image of a futuristic cityscape',
-  'Create a portrait of a mythical creature',
-  'Design a landscape with a sunset over mountains',
-  'Illustrate a scene from a classic novel',
-  'Visualize an abstract concept like time or space',
-  'Render a surreal dream-like scenario',
-  'Paint a natural scene with lush greenery and rivers',
-  'Sketch a busy futuristic market place',
+  'A sleek, futuristic USDC crypto debit card with neon blue accents and a cyber-inspired design',
+  'A premium black metal USDC debit card with engraved details and a brushed finish',
+  'A dynamic 3D render of a non-custodial crypto wallet with a glowing USDC logo and secure encryption visuals',
+  'A futuristic digital bank vault storing USDC securely, with glowing security layers and blockchain encryption',
+  'An abstract visualization of decentralized finance with floating USDC coins, blockchain connections, and liquidity pools.',
+  'A futuristic stock photo of a person making a seamless cross-border payment using USDC via a mobile wallet',
+  'A global-themed USDC card with a world map, blockchain icons, and futuristic typography',
+  'A luxury-tier USDC card with holographic details and a cutting-edge, Web3-inspired look',
 ];
 
 const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({ onSelect }) => {
