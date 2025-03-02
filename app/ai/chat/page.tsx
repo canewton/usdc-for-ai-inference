@@ -12,7 +12,7 @@ interface ChatProps {
   currChat: string;
 }
 
-export default function Chat({ currChat }: ChatProps) {
+export function Chat({ currChat }: ChatProps) {
   const [model, setModel] = useState('gpt-4o-mini');
   const [chatId, setChatId] = useState(currChat || '');
   const [chats, setChats] = useState<{ id: string; title: string }[]>([]);
