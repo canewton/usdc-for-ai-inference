@@ -1,7 +1,7 @@
 'use client';
 import { useParams } from 'next/navigation';
 
-import { Chat } from '../page';
+import { Chat } from '@/app/components/Chat';
 
 export default function ChatPage() {
   const params = useParams();
