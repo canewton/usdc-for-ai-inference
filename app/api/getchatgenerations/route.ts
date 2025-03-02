@@ -21,22 +21,33 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch all of user's chat generations
-    const { data: chats, error } = await supabase
-    .from('chat_generations')
-    .select('id, user_text, ai_text, created_at')
-    .eq('user_id', user.id)
-    .order('created_at', {ascending: true});
+    // Parse query param
+    const url = new URL(req.url);
+    const chat_id = url.searchParams.get('id');
+    if (chat_id) {
+      const { data: chats, error } = await supabase
+        .from('chat_generations')
+        .select(
+          'id, user_text, ai_text, created_at, prompt_tokens, completion_tokens',
+        )
+        .eq('user_id', user.id)
+        .eq('chat_id', chat_id)
+        .order('created_at', { ascending: true });
 
-    if (error) {
-      console.error('Database error:', error);
+      if (error) {
+        console.error('Database error:', error);
+        return NextResponse.json(
+          { error: 'Failed to fetch chat generations' },
+          { status: 500 },
+        );
+      }
+      return NextResponse.json({ chats: chats }, { status: 200 });
+    } else {
       return NextResponse.json(
-        { error: 'Failed to fetch chat generations' },
-        { status: 500 },
+        { error: 'Missing id parameter' },
+        { status: 400 },
       );
     }
-
-    return NextResponse.json({ chats: chats }, { status: 200 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(
