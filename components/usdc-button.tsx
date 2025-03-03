@@ -3,11 +3,12 @@
 import { Loader2 } from 'lucide-react';
 import { type FunctionComponent, type HTMLProps, useState } from 'react';
 
+import { useWalletTokenId } from '@/app/hooks/useWalletTokenId';
 import { Button } from '@/components/ui/button';
 
 interface Props extends HTMLProps<HTMLElement> {
-  mode: 'BUY' | 'SELL';
-  walletAddress: string;
+  mode: 'BUY' | 'SELL' | 'TRANSFER';
+  walletAddress?: string;
 }
 
 export const USDCButton: FunctionComponent<Props> = ({
@@ -17,33 +18,79 @@ export const USDCButton: FunctionComponent<Props> = ({
 }) => {
   const [loading, setLoading] = useState(false);
 
-  const redirectToRamp = async () => {
+  const { tokenId, tokenLoading, refreshTokenId } = useWalletTokenId(
+    walletAddress || '',
+  );
+
+  const handleAction = async () => {
     setLoading(true);
+    try {
+      if (mode === 'TRANSFER') {
+        const transfer = {
+          walletId: walletAddress,
+          tokenId: tokenId,
+          destinationAddress: process.env.NEXT_PUBLIC_TREASURY_WALLET_ADDRESS,
+          amounts: ['0.1'],
+          fee: {
+            type: 'level',
+            config: {
+              feeLevel: 'MEDIUM',
+            },
+          },
+        };
 
-    const usdcAccessResponse = await fetch(`/api/usdc/${mode.toLowerCase()}`, {
-      method: 'POST',
-      body: JSON.stringify({
-        wallet_address: walletAddress,
-      }),
-    });
+        const response = await fetch('/api/wallet/transfer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(transfer),
+        });
 
-    setLoading(false);
+        if (!response.ok) {
+          throw new Error('Transfer failed');
+        }
 
-    const parsedUsdcAccessResponse = await usdcAccessResponse.json();
-    window.open(parsedUsdcAccessResponse.url, 'popup', 'width=500,height=600');
+        const result = await response.json();
+        console.log('Transfer initiated:', result);
+      } else {
+        const usdcAccessResponse = await fetch(
+          `/api/usdc/${mode.toLowerCase()}`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              wallet_address: walletAddress,
+            }),
+          },
+        );
+
+        const parsedUsdcAccessResponse = await usdcAccessResponse.json();
+        window.open(
+          parsedUsdcAccessResponse.url,
+          'popup',
+          'width=500,height=600',
+        );
+      }
+    } catch (error) {
+      console.error('Action failed:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Button className={className} disabled={loading} onClick={redirectToRamp}>
+    <Button className={className} disabled={loading} onClick={handleAction}>
       {loading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Loading...
         </>
       ) : mode === 'BUY' ? (
-        'Add Funds'
+        'Deposit'
+      ) : mode === 'SELL' ? (
+        'Withdraw'
       ) : (
-        'Withdraw Funds'
+        'Transfer'
       )}
     </Button>
   );

@@ -29,10 +29,13 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
         body: JSON.stringify({ walletId }),
       });
 
-      const parsedBalance = await balanceResponse.json();
+      const response = await balanceResponse.json();
+      const parsedBalance = response.tokenBalances?.find(
+        ({ token }: { token: { symbol: string } }) => token.symbol === 'USDC',
+      )?.amount;
 
-      if (parsedBalance.error) {
-        console.error('Error fetching wallet balance:', parsedBalance.error);
+      if (response.error) {
+        console.error('Error fetching wallet balance:', response.error);
         toast.error('Error fetching wallet balance', {
           description: parsedBalance.error,
         });
@@ -40,8 +43,8 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
       }
 
       if (
-        parsedBalance.balance === null ||
-        parsedBalance.balance === undefined
+        parsedBalance === null ||
+        parsedBalance === undefined
       ) {
         console.log('Wallet has no balance');
         toast.info('Wallet has no balance');
@@ -49,7 +52,7 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
         return;
       }
 
-      setBalance(parsedBalance.balance);
+      setBalance(parsedBalance);
     } catch (error) {
       console.error('Error fetching balance:', error);
       toast.error('Failed to fetch balance');

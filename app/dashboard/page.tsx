@@ -61,6 +61,11 @@ export default async function ProtectedPage() {
             mode="BUY"
             walletAddress={wallet?.wallet_address}
           />
+          <USDCButton
+            className="flex-1"
+            mode="TRANSFER"
+            walletAddress={wallet?.circle_wallet_id}
+          />
           <WalletInformationDialog wallet={wallet} />
         </div>
       </div>
