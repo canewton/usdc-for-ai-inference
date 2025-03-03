@@ -9,7 +9,10 @@ interface WalletBalanceProps {
   walletId: string;
 }
 
-export function WalletBalance({ walletId, circleWalletId }: WalletBalanceProps) {
+export function WalletBalance({
+  walletId,
+  circleWalletId,
+}: WalletBalanceProps) {
   const { balance, loading } = useWalletBalance(walletId, circleWalletId);
 
   if (balance == 0 && loading) {

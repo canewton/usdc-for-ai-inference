@@ -3,7 +3,6 @@
 import { Loader2 } from 'lucide-react';
 import { type FunctionComponent, type HTMLProps, useState } from 'react';
 
-import { useWalletTokenId } from '@/app/hooks/useWalletTokenId';
 import { Button } from '@/components/ui/button';
 
 interface Props extends HTMLProps<HTMLElement> {
@@ -18,25 +17,13 @@ export const USDCButton: FunctionComponent<Props> = ({
 }) => {
   const [loading, setLoading] = useState(false);
 
-  const { tokenId, tokenLoading, refreshTokenId } = useWalletTokenId(
-    walletAddress || '',
-  );
-
   const handleAction = async () => {
     setLoading(true);
     try {
       if (mode === 'TRANSFER') {
         const transfer = {
-          walletId: walletAddress,
-          tokenId: tokenId,
-          destinationAddress: process.env.NEXT_PUBLIC_TREASURY_WALLET_ADDRESS,
-          amounts: ['0.1'],
-          fee: {
-            type: 'level',
-            config: {
-              feeLevel: 'MEDIUM',
-            },
-          },
+          circleWalletAddress: walletAddress,
+          amount: '0.1',
         };
 
         const response = await fetch('/api/wallet/transfer', {

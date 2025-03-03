@@ -48,7 +48,10 @@ export default async function ProtectedPage() {
       <div className="flex items-center justify-between mb-20">
         <div className="flex items-center gap-2">
           <h2 className="text-5xl font-bold">
-            <WalletBalance circleWalletId={wallet?.circle_wallet_id} walletId={wallet?.id}/>
+            <WalletBalance
+              circleWalletId={wallet?.circle_wallet_id}
+              walletId={wallet?.id}
+            />
           </h2>
           <DollarSign className="w-6 h-6 text-blue-500" />
         </div>
@@ -61,11 +64,13 @@ export default async function ProtectedPage() {
             mode="BUY"
             walletAddress={wallet?.wallet_address}
           />
-          <USDCButton
-            className="flex-1"
-            mode="TRANSFER"
-            walletAddress={wallet?.circle_wallet_id}
-          />
+          {wallet?.circle_wallet_id != null && (
+            <USDCButton
+              className="flex-1"
+              mode="TRANSFER"
+              walletAddress={wallet?.wallet_address}
+            />
+          )}
           <WalletInformationDialog wallet={wallet} />
         </div>
       </div>

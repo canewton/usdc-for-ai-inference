@@ -15,9 +15,11 @@ import type { Database } from '@/types/database.types';
 
 const supabase = createClient<Database>(
   // @ts-ignore
-  Deno.env.get('NEXT_PUBLIC_SUPABASE_URL'),
+  // Deno.env.get('NEXT_PUBLIC_SUPABASE_URL'),
   // @ts-ignore
-  Deno.env.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+  // Deno.env.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+  'https://gnsrqnjozcseghlllguk.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imduc3JxbmpvemNzZWdobGxsZ3VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzczMjUzMzcsImV4cCI6MjA1MjkwMTMzN30.P1FOAGHFnzPYqZ12WVZvK0ByTTVjyauB3dsIoji0kro',
 );
 
 console.log('Hello from Functions!');
@@ -28,7 +30,10 @@ serve(async (req: any) => {
 
   console.log('notification', res);
 
-  if (res.notificationType == 'transactions.outbound' && data.state == 'CONFIRMED') {
+  if (
+    res.notificationType == 'transactions.outbound' &&
+    data.state == 'CONFIRMED'
+  ) {
     try {
       console.log('storing transaction', data);
       console.log('storing transaction id', data.id);

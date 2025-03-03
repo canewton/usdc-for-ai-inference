@@ -27,14 +27,14 @@ export async function POST(
       );
     }
 
-    const { walletId } = parseResult.data;
+    const { walletId: circleWalletId } = parseResult.data;
 
     const response = await circleDeveloperSdk.getWalletTokenBalance({
-      id: walletId,
+      id: circleWalletId,
       includeAll: true,
     });
 
-    return NextResponse.json({ tokenBalances: response.data?.tokenBalances }); 
+    return NextResponse.json({ tokenBalances: response.data?.tokenBalances });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

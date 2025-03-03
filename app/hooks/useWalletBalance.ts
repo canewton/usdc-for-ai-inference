@@ -14,7 +14,10 @@ interface UseWalletBalanceResult {
 
 const supabase = createClient();
 
-export function useWalletBalance(walletId: string, circleWalletId: string): UseWalletBalanceResult {
+export function useWalletBalance(
+  walletId: string,
+  circleWalletId: string,
+): UseWalletBalanceResult {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -73,14 +76,14 @@ export function useWalletBalance(walletId: string, circleWalletId: string): UseW
     },
     [],
   );
-  
+
   useEffect(() => {
     fetchBalance();
   }, [fetchBalance]);
 
   useEffect(() => {
     const walletChangeSubscription = supabase
-      .channel('wallet')
+      .channel('wallet:' + walletId)
       .on(
         'postgres_changes',
         {
@@ -94,7 +97,7 @@ export function useWalletBalance(walletId: string, circleWalletId: string): UseW
       .subscribe();
 
     const walletTransactionSubscription = supabase
-      .channel('wallet')
+      .channel('wallet:' + walletId)
       .on(
         'postgres_changes',
         {

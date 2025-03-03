@@ -9,6 +9,7 @@ import type { Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
 import { Transactions } from './transactions';
+import { WalletBalance } from './wallet-balance';
 
 interface Transaction {
   id: string;
@@ -361,7 +362,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
             </button>
             <button
               className={`pb-4 px-1 ${
-                activeTab === 'billing'
+                activeTab === 'treasury'
                   ? 'border-b-2 border-blue-500 text-blue-600'
                   : 'text-gray-500'
               }`}
@@ -512,8 +513,26 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         )}
 
         {/* Transaction Table */}
-        {activeTab !== "treasury" && <Transactions data={filteredAndSortedTransactions} loading={loading} />}
-        {activeTab == "treasury" && <Transactions data={formattedTreasuryData} loading={loading} />}
+        {activeTab !== 'treasury' && (
+          <Transactions
+            data={filteredAndSortedTransactions}
+            loading={loading}
+          />
+        )}
+        {activeTab == 'treasury' && (
+          <>
+            <p>
+              Treasury Wallet Balance:{' '}
+              <WalletBalance
+                circleWalletId={
+                  process.env.NEXT_PUBLIC_TREASURY_WALLET_ID ?? ''
+                }
+                walletId={process.env.NEXT_PUBLIC_TREASURY_WALLET_DB_ID ?? ''}
+              />
+            </p>
+            <Transactions data={formattedTreasuryData} loading={loading} />
+          </>
+        )}
       </div>
     </div>
   );
