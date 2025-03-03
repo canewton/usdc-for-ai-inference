@@ -32,7 +32,6 @@ export default async function ProtectedPage() {
     .eq('profile_id', profile?.id)
     .single();
 
-
   return (
     <>
       <div className="flex flex-wrap space-x-4 mb-4">
@@ -59,7 +58,7 @@ export default async function ProtectedPage() {
                   className="flex-1"
                   mode="SELL"
                   walletAddress={wallet?.wallet_address}
-                /> 
+                />
                 <USDCButton
                   className="flex-1"
                   mode="TRANSFER"
