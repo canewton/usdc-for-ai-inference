@@ -19,8 +19,32 @@ export default function ImageGeneratorPage() {
   const [history, setHistory] = useState<
     { id: string; url: string; prompt: string; created_at: string }[]
   >([]);
+  const [totalBilledAmount, setTotalBilledAmount] = useState(0);
   const router = useRouter();
   const session = useSession();
+
+  const fetchTotalBilledAmount = async () => {
+    if (!session) return;
+    const sessionToken = session.access_token;
+    try {
+      const response = await fetch(`/api/gettotalbilledamount`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
+        },
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        const total = data.totalBilledAmount;
+        setTotalBilledAmount(total);
+      } else {
+        console.error('Error fetching billed amount:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching billed amount:', error);
+    }
+  };
 
   // Fetch user's images
   useEffect(() => {
@@ -49,6 +73,7 @@ export default function ImageGeneratorPage() {
     };
     if (session) {
       fetchImages();
+      fetchTotalBilledAmount();
     }
   }, [session, imageUrl]);
 
@@ -73,6 +98,7 @@ export default function ImageGeneratorPage() {
       const { imageUrl } = await response.json();
       setImageUrl(imageUrl);
       setShowTryAgain(true);
+      await fetchTotalBilledAmount();
     } catch (error) {
       console.error('Generation error:', error);
     } finally {
@@ -218,6 +244,10 @@ export default function ImageGeneratorPage() {
                 >
                   <option value="flux-schnell">FLUX.1</option>
                 </select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="font-medium">Total Billed Amount:</span>
+                <span>${totalBilledAmount.toFixed(4)}</span>
               </div>
             </div>
           </form>

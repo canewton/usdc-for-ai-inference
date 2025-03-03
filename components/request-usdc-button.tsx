@@ -55,7 +55,7 @@ export const RequestUsdcButton: FunctionComponent<Props> = ({
           Loading...
         </>
       ) : (
-        'Request 20 USDC via Faucet'
+        'Dev Environment: Request 20 USDC via Faucet'
       )}
     </Button>
   );
