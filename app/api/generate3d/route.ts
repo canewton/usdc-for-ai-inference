@@ -4,8 +4,10 @@ import { createClient } from '@/utils/supabase/client';
 
 const supabase = createClient();
 
-// currently using meshy's test api key - the result 'should' always be the same regardless of prompt
-const MESHY_API_KEY = process.env.MESHY_TEST_API!;
+// -------------------------------------------
+// WORKING API KEY - LIMITED NUMBER OF TOKENS
+// -------------------------------------------
+const MESHY_API_KEY = process.env.MESHY_API!;
 const MESHY_API_URL =
   process.env.MESHY_BASE_URL || 'https://api.meshy.ai/openapi/v2/text-to-3d';
 
