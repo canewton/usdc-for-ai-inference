@@ -42,10 +42,7 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
         return;
       }
 
-      if (
-        parsedBalance === null ||
-        parsedBalance === undefined
-      ) {
+      if (parsedBalance === null || parsedBalance === undefined) {
         console.log('Wallet has no balance');
         toast.info('Wallet has no balance');
         setBalance(0);
@@ -77,12 +74,20 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
     [],
   );
 
+  async function createWalletChannels() {
+    const { data: existingWallet } = await supabase
+      .from('wallets')
+      .select('*')
+      .eq('circle_wallet_id', walletId)
+      .single();
+  }
+
   useEffect(() => {
     fetchBalance();
   }, [fetchBalance]);
 
   useEffect(() => {
-    const walletSubscription = supabase
+    const walletChangeSubscription = supabase
       .channel('wallet')
       .on(
         'postgres_changes',
@@ -96,8 +101,22 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
       )
       .subscribe();
 
+    const walletTransactionSubscription = supabase
+      .channel('wallet')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'transactions',
+        },
+        () => fetchBalance(),
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(walletSubscription);
+      supabase.removeChannel(walletChangeSubscription);
+      supabase.removeChannel(walletTransactionSubscription);
     };
   }, [supabase, walletId, balance, updateWalletBalance]);
 

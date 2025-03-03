@@ -488,7 +488,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
 
         {/* Transaction Table */}
         <Transactions data={filteredAndSortedTransactions} loading={loading} />
-        <Transactions data={treasuryData} loading={loading} />
+        <Transactions data={formattedTreasuryData} loading={loading} />
       </div>
     </div>
   );
