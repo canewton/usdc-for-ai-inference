@@ -344,6 +344,16 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
             >
               Billing History
             </button>
+            <button
+              className={`pb-4 px-1 ${
+                activeTab === 'billing'
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-500'
+              }`}
+              onClick={() => setActiveTab('treasury')}
+            >
+              Treasury Wallet
+            </button>
           </div>
         </div>
 
@@ -487,8 +497,8 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         )}
 
         {/* Transaction Table */}
-        <Transactions data={filteredAndSortedTransactions} loading={loading} />
-        <Transactions data={formattedTreasuryData} loading={loading} />
+        {activeTab !== "treasury" && <Transactions data={filteredAndSortedTransactions} loading={loading} />}
+        {activeTab == "treasury" && <Transactions data={formattedTreasuryData} loading={loading} />}
       </div>
     </div>
   );

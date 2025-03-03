@@ -12,7 +12,7 @@ interface WalletBalanceProps {
 export function WalletBalance({ walletId, circleWalletId }: WalletBalanceProps) {
   const { balance, loading } = useWalletBalance(walletId, circleWalletId);
 
-  if (loading) {
+  if (balance == 0 && loading) {
     return <Skeleton className="w-[103px] h-[28px] rounded-full" />;
   }
 
