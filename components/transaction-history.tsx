@@ -253,10 +253,25 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       )
       .subscribe();
 
+    const walletTransactionSubscription = supabase
+      .channel('wallet-history')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'transactions',
+          filter: `wallet_id=eq.${props.wallet?.id}`,
+        },
+        () => updateTransactions(),
+      )
+      .subscribe();
+
     updateTransactions();
 
     return () => {
       supabase.removeChannel(transactionSubscription);
+      supabase.removeChannel(walletTransactionSubscription);
     };
   }, []);
 

@@ -51,7 +51,7 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
 
-  if (loading) {
+  if (data.length == 0 && loading) {
     return <Skeleton className="w-[206px] h-[28px] rounded-full" />;
   }
 
