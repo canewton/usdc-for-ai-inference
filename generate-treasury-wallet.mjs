@@ -1,5 +1,4 @@
 import { config } from 'dotenv';
-import inquirer from 'inquirer';
 import { initiateDeveloperControlledWalletsClient } from '@circle-fin/developer-controlled-wallets';
 import fs from 'fs';
 import path from 'path';
@@ -20,37 +19,10 @@ export const circleDeveloperSdk = initiateDeveloperControlledWalletsClient({
   entitySecret: process.env.CIRCLE_ENTITY_SECRET,
 });
 
-const choices = [
-  'ETH',
-  'ETH-SEPOLIA',
-  'AVAX',
-  'AVAX-FUJI',
-  'MATIC',
-  'MATIC-AMOY',
-  'ARB',
-  'ARB-SEPOLIA',
-  'NEAR',
-  'NEAR-TESTNET',
-  'EVM',
-  'EVM-TESTNET',
-  'UNI-SEPOLIA',
-];
-
-// Prompts the user
-const { selectedOption } = await inquirer.prompt([
-  {
-    type: 'list',
-    name: 'selectedOption',
-    message: 'Select a blockchain to create the agent wallet on:',
-    choices: choices,
-  },
-]);
-
 // Makes the request to Circle's API to create the wallet
 try {
-  console.log(`Creating agent wallet on ${selectedOption}...`);
   const createdWalletSetResponse = await circleDeveloperSdk.createWalletSet({
-    name: 'Escrow Agent Wallet',
+    name: 'Treasury Wallet',
   });
 
   const walletSetId = createdWalletSetResponse.data.walletSet.id;
@@ -58,7 +30,7 @@ try {
 
   const createdWalletResponse = await circleDeveloperSdk.createWallets({
     accountType: 'SCA',
-    blockchains: [selectedOption],
+    blockchains: ['ARB-SEPOLIA'],
     walletSetId,
   });
 
@@ -77,22 +49,18 @@ try {
 
   // Update the environment variables
   envContent = envContent.replace(
-    /^NEXT_PUBLIC_AGENT_WALLET_ID=.*$/m,
-    `NEXT_PUBLIC_AGENT_WALLET_ID=${createdWallet.id}`,
+    /^NEXT_PUBLIC_TREASURY_WALLET_ID=.*$/m,
+    `NEXT_PUBLIC_TREASURY_WALLET_ID=${createdWallet.id}`,
   );
   envContent = envContent.replace(
-    /^NEXT_PUBLIC_AGENT_WALLET_ADDRESS=.*$/m,
-    `NEXT_PUBLIC_AGENT_WALLET_ADDRESS=${createdWallet.address}`,
-  );
-  envContent = envContent.replace(
-    /^CIRCLE_BLOCKCHAIN=.*$/m,
-    `CIRCLE_BLOCKCHAIN=${selectedOption}`,
+    /^NEXT_PUBLIC_TREASURY_WALLET_ADDRESS=.*$/m,
+    `NEXT_PUBLIC_TREASURY_WALLET_ADDRESS=${createdWallet.address}`,
   );
 
   // Write the updated content back to .env.local
   fs.writeFileSync(envPath, envContent);
   console.log('Environment variables updated successfully in .env.local');
 } catch (error) {
-  console.error('Failed to create agent wallet:', error.message);
+  console.error('Failed to create treasury wallet:', error.message);
   process.exit(1);
 }

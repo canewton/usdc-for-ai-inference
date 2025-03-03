@@ -30,6 +30,7 @@ interface CircleTransaction {
 
 interface Props {
   wallet: Wallet;
+  treasuryWallet: Wallet;
   profile: {
     id: any;
   } | null;
@@ -177,6 +178,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   });
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Transaction[]>([]);
+  const [treasuryData, setTreasuryData] = useState<Transaction[]>([]);
 
   const formattedData = useMemo(
     () =>
@@ -193,6 +195,21 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     [data],
   );
 
+  const formattedTreasuryData = useMemo(
+    () =>
+      treasuryData.map((transaction) => ({
+        ...transaction,
+        created_at: new Date(transaction.created_at).toLocaleString(),
+        amount: new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(Number(transaction.amount)),
+      })),
+    [treasuryData],
+  );
+
   const updateTransactions = async () => {
     try {
       setLoading(true);
@@ -205,7 +222,15 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         props.wallet?.circle_wallet_id,
       );
 
+      const treasuryTransactions = await syncTransactions(
+        supabase,
+        props.treasuryWallet?.id,
+        props.treasuryWallet?.profile_id,
+        props.treasuryWallet?.circle_wallet_id,
+      );
+
       setData(transactions);
+      setTreasuryData(treasuryTransactions);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {
@@ -463,6 +488,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
 
         {/* Transaction Table */}
         <Transactions data={filteredAndSortedTransactions} loading={loading} />
+        <Transactions data={treasuryData} loading={loading} />
       </div>
     </div>
   );

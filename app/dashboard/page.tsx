@@ -32,6 +32,13 @@ export default async function ProtectedPage() {
     .eq('profile_id', profile?.id)
     .single();
 
+  const { data: treasuryWallet } = await supabase
+    .schema('public')
+    .from('wallets')
+    .select()
+    .eq('circle_wallet_id', process.env.NEXT_PUBLIC_TREASURY_WALLET_ID)
+    .single();
+
   return (
     <div className="px-20">
       {/* Wallet Card */}
@@ -59,7 +66,11 @@ export default async function ProtectedPage() {
       </div>
 
       {/* Transactions Section */}
-      <TransactionHistory wallet={wallet} profile={profile} />
+      <TransactionHistory
+        wallet={wallet}
+        treasuryWallet={treasuryWallet}
+        profile={profile}
+      />
     </div>
   );
 }

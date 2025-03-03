@@ -9,7 +9,7 @@
     "lint": "next lint",
     "format": "prettier --write . && eslint --fix .",
     "format:check": "prettier --check . && eslint .",
-    "generate-wallet": "node generate-wallet.mjs"
+    "generate-treasury-wallet": "node generate-treasury-wallet.mjs"
   },
   "dependencies": {
     "@circle-fin/developer-controlled-wallets": "^4.6.0",
@@ -63,6 +63,7 @@
     "tailwindcss": "3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "~5.1.6",
-    "supabase": "^2.9.6"
+    "supabase": "^2.9.6",
+    "dotenv": "^16.4.7"
   }
 }
