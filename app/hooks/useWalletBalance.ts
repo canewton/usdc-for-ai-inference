@@ -14,7 +14,7 @@ interface UseWalletBalanceResult {
 
 const supabase = createClient();
 
-export function useWalletBalance(walletId: string): UseWalletBalanceResult {
+export function useWalletBalance(walletId: string, circleWalletId: string): UseWalletBalanceResult {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +26,7 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ walletId }),
+        body: JSON.stringify({ walletId: circleWalletId }),
       });
 
       const response = await balanceResponse.json();
@@ -56,7 +56,7 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
     } finally {
       setLoading(false);
     }
-  }, [walletId]);
+  }, [circleWalletId]);
 
   const updateWalletBalance = useCallback(
     (
@@ -73,15 +73,7 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
     },
     [],
   );
-
-  async function createWalletChannels() {
-    const { data: existingWallet } = await supabase
-      .from('wallets')
-      .select('*')
-      .eq('circle_wallet_id', walletId)
-      .single();
-  }
-
+  
   useEffect(() => {
     fetchBalance();
   }, [fetchBalance]);
@@ -95,7 +87,7 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
           event: 'UPDATE',
           schema: 'public',
           table: 'wallets',
-          filter: `circle_wallet_id=eq.${walletId}`,
+          filter: `circle_wallet_id=eq.${circleWalletId}`,
         },
         (payload) => updateWalletBalance(payload, balance),
       )
@@ -109,6 +101,7 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
           event: 'INSERT',
           schema: 'public',
           table: 'transactions',
+          filter: `wallet_id=eq.${walletId}`,
         },
         () => fetchBalance(),
       )
@@ -118,7 +111,7 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
       supabase.removeChannel(walletChangeSubscription);
       supabase.removeChannel(walletTransactionSubscription);
     };
-  }, [supabase, walletId, balance, updateWalletBalance]);
+  }, [supabase, circleWalletId, updateWalletBalance]);
 
   return {
     balance,

@@ -5,11 +5,12 @@ import { useWalletBalance } from '@/app/hooks/useWalletBalance';
 import { Skeleton } from './ui/skeleton';
 
 interface WalletBalanceProps {
+  circleWalletId: string;
   walletId: string;
 }
 
-export function WalletBalance({ walletId }: WalletBalanceProps) {
-  const { balance, loading } = useWalletBalance(walletId);
+export function WalletBalance({ walletId, circleWalletId }: WalletBalanceProps) {
+  const { balance, loading } = useWalletBalance(walletId, circleWalletId);
 
   if (loading) {
     return <Skeleton className="w-[103px] h-[28px] rounded-full" />;

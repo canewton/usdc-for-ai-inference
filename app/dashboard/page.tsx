@@ -48,7 +48,7 @@ export default async function ProtectedPage() {
       <div className="flex items-center justify-between mb-20">
         <div className="flex items-center gap-2">
           <h2 className="text-5xl font-bold">
-            <WalletBalance walletId={wallet?.circle_wallet_id} />
+            <WalletBalance circleWalletId={wallet?.circle_wallet_id} walletId={wallet?.id}/>
           </h2>
           <DollarSign className="w-6 h-6 text-blue-500" />
         </div>

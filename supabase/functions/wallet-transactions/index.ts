@@ -14,8 +14,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.0.0';
 import type { Database } from '@/types/database.types';
 
 const supabase = createClient<Database>(
-  'https://gnsrqnjozcseghlllguk.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imduc3JxbmpvemNzZWdobGxsZ3VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzczMjUzMzcsImV4cCI6MjA1MjkwMTMzN30.P1FOAGHFnzPYqZ12WVZvK0ByTTVjyauB3dsIoji0kro',
+  // @ts-ignore
+  Deno.env.get('NEXT_PUBLIC_SUPABASE_URL'),
+  // @ts-ignore
+  Deno.env.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
 );
 
 console.log('Hello from Functions!');
@@ -26,7 +28,7 @@ serve(async (req: any) => {
 
   console.log('notification', res);
 
-  if (res.notificationType == 'transactions.inbound') {
+  if (res.notificationType == 'transactions.outbound' && data.state == 'CONFIRMED') {
     try {
       console.log('storing transaction', data);
       console.log('storing transaction id', data.id);
@@ -77,6 +79,7 @@ serve(async (req: any) => {
             });
           }
 
+          console.log('Transaction updated:', updatedTransaction);
           new Response(JSON.stringify(updatedTransaction), {
             headers: { 'Content-Type': 'application/json' },
           });
@@ -123,15 +126,3 @@ serve(async (req: any) => {
     headers: { 'Content-Type': 'application/json' },
   });
 });
-
-/* To invoke locally:
-
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/hello-world' \
-    --header 'Authorization: Bearer ' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/
