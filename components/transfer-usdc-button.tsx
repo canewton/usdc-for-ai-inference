@@ -3,16 +3,15 @@
 import { Loader2 } from 'lucide-react';
 import { type FunctionComponent, type HTMLProps, useState } from 'react';
 
+import type { WalletTransferRequest } from '@/app/api/wallet/transfer/route';
 import { Button } from '@/components/ui/button';
 
 interface Props extends HTMLProps<HTMLElement> {
-  mode: 'BUY' | 'SELL' | 'TRANSFER';
-  walletAddress?: string;
+  walletId?: string;
 }
 
-export const USDCButton: FunctionComponent<Props> = ({
-  mode,
-  walletAddress,
+export const TransferUSDCButton: FunctionComponent<Props> = ({
+  walletId,
   className,
 }) => {
   const [loading, setLoading] = useState(false);
@@ -20,22 +19,27 @@ export const USDCButton: FunctionComponent<Props> = ({
   const handleAction = async () => {
     setLoading(true);
     try {
-      const usdcAccessResponse = await fetch(
-        `/api/usdc/${mode.toLowerCase()}`,
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            wallet_address: walletAddress,
-          }),
-        },
-      );
+      const transfer: WalletTransferRequest = {
+        circleWalletId: walletId ?? '',
+        amount: '0.1',
+        projectName: 'Test',
+        aiModel: 'Test',
+      };
 
-      const parsedUsdcAccessResponse = await usdcAccessResponse.json();
-      window.open(
-        parsedUsdcAccessResponse.url,
-        'popup',
-        'width=500,height=600',
-      );
+      const response = await fetch('/api/wallet/transfer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transfer),
+      });
+
+      if (!response.ok) {
+        throw new Error('Transfer failed');
+      }
+
+      const result = await response.json();
+      console.log('Transfer initiated:', result);
     } catch (error) {
       console.error('Action failed:', error);
     } finally {
@@ -50,10 +54,8 @@ export const USDCButton: FunctionComponent<Props> = ({
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Loading...
         </>
-      ) : mode === 'BUY' ? (
-        'Deposit'
       ) : (
-        'Withdraw'
+        'Transfer USDC'
       )}
     </Button>
   );

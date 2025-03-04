@@ -9,9 +9,11 @@
     "lint": "next lint",
     "format": "prettier --write . && eslint --fix .",
     "format:check": "prettier --check . && eslint .",
-    "generate-wallet": "node generate-wallet.mjs"
+    "generate-treasury-wallet": "node generate-treasury-wallet.mjs"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.1.13",
+    "@ai-sdk/react": "^1.1.19",
     "@circle-fin/developer-controlled-wallets": "^4.6.0",
     "@circle-fin/smart-contract-platform": "^4.3.0",
     "@circle-fin/user-controlled-wallets": "^4.5.0",
@@ -27,9 +29,11 @@
     "@react-three/fiber": "^9.0.4",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
+    "ai": "^4.1.45",
     "autoprefixer": "10.4.20",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "dotenv": "^16.4.7",
     "heroicons": "^2.2.0",
     "lucide-react": "^0.468.0",
     "next": "latest",
@@ -37,6 +41,7 @@
     "prettier": "^3.3.3",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-markdown": "^10.0.0",
     "react-three": "^0.9.7",
     "replicate": "^1.0.1",
     "sonner": "^1.5.0",

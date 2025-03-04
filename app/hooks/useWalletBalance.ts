@@ -14,7 +14,10 @@ interface UseWalletBalanceResult {
 
 const supabase = createClient();
 
-export function useWalletBalance(walletId: string): UseWalletBalanceResult {
+export function useWalletBalance(
+  walletId: string,
+  circleWalletId: string,
+): UseWalletBalanceResult {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -26,37 +29,37 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ walletId }),
+        body: JSON.stringify({ walletId: circleWalletId }),
       });
 
-      const parsedBalance = await balanceResponse.json();
+      const response = await balanceResponse.json();
+      const parsedBalance = response.tokenBalances?.find(
+        ({ token }: { token: { symbol: string } }) => token.symbol === 'USDC',
+      )?.amount;
 
-      if (parsedBalance.error) {
-        console.error('Error fetching wallet balance:', parsedBalance.error);
+      if (response.error) {
+        console.error('Error fetching wallet balance:', response.error);
         toast.error('Error fetching wallet balance', {
           description: parsedBalance.error,
         });
         return;
       }
 
-      if (
-        parsedBalance.balance === null ||
-        parsedBalance.balance === undefined
-      ) {
+      if (parsedBalance === null || parsedBalance === undefined) {
         console.log('Wallet has no balance');
         toast.info('Wallet has no balance');
         setBalance(0);
         return;
       }
 
-      setBalance(parsedBalance.balance);
+      setBalance(parsedBalance);
     } catch (error) {
       console.error('Error fetching balance:', error);
       toast.error('Failed to fetch balance');
     } finally {
       setLoading(false);
     }
-  }, [walletId]);
+  }, [circleWalletId]);
 
   const updateWalletBalance = useCallback(
     (
@@ -79,24 +82,39 @@ export function useWalletBalance(walletId: string): UseWalletBalanceResult {
   }, [fetchBalance]);
 
   useEffect(() => {
-    const walletSubscription = supabase
-      .channel('wallet')
+    const walletChangeSubscription = supabase
+      .channel('wallet:' + walletId)
       .on(
         'postgres_changes',
         {
           event: 'UPDATE',
           schema: 'public',
           table: 'wallets',
-          filter: `circle_wallet_id=eq.${walletId}`,
+          filter: `circle_wallet_id=eq.${circleWalletId}`,
         },
         (payload) => updateWalletBalance(payload, balance),
       )
       .subscribe();
 
+    const walletTransactionSubscription = supabase
+      .channel('wallet:' + walletId)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'transactions',
+          filter: `wallet_id=eq.${walletId}`,
+        },
+        () => fetchBalance(),
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(walletSubscription);
+      supabase.removeChannel(walletChangeSubscription);
+      supabase.removeChannel(walletTransactionSubscription);
     };
-  }, [supabase, walletId, balance, updateWalletBalance]);
+  }, [supabase, circleWalletId, updateWalletBalance]);
 
   return {
     balance,

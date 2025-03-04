@@ -39,7 +39,10 @@ export const WalletInformationDialog: FunctionComponent<Props> = (props) => {
             Balance
           </h4>
           <div className="text-xl text-muted-foreground cursor-pointer mb-4">
-            <WalletBalance walletId={props.wallet.circle_wallet_id} />
+            <WalletBalance
+              walletId={props.wallet.id}
+              circleWalletId={props.wallet.circle_wallet_id}
+            />
           </div>
           <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mb-2">
             ID

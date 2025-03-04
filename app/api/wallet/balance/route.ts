@@ -8,12 +8,11 @@ const WalletIdSchema = z.object({
 });
 
 const ResponseSchema = z.object({
-  balance: z.string().optional(),
+  tokenBalances: z.any().optional(),
   error: z.string().optional(),
 });
 
 type WalletBalanceResponse = z.infer<typeof ResponseSchema>;
-
 export async function POST(
   req: NextRequest,
 ): Promise<NextResponse<WalletBalanceResponse>> {
@@ -28,18 +27,14 @@ export async function POST(
       );
     }
 
-    const { walletId } = parseResult.data;
+    const { walletId: circleWalletId } = parseResult.data;
 
     const response = await circleDeveloperSdk.getWalletTokenBalance({
-      id: walletId,
+      id: circleWalletId,
       includeAll: true,
     });
 
-    const balance = response.data?.tokenBalances?.find(
-      ({ token }) => token.symbol === 'USDC',
-    )?.amount;
-
-    return NextResponse.json({ balance: balance || '0' });
+    return NextResponse.json({ tokenBalances: response.data?.tokenBalances });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

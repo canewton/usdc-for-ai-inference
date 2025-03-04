@@ -9,6 +9,7 @@ import type { Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
 import { Transactions } from './transactions';
+import { WalletBalance } from './wallet-balance';
 
 interface Transaction {
   id: string;
@@ -30,6 +31,7 @@ interface CircleTransaction {
 
 interface Props {
   wallet: Wallet;
+  treasuryWallet: Wallet;
   profile: {
     id: any;
   } | null;
@@ -177,6 +179,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   });
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Transaction[]>([]);
+  const [treasuryData, setTreasuryData] = useState<Transaction[]>([]);
 
   const formattedData = useMemo(
     () =>
@@ -193,6 +196,21 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     [data],
   );
 
+  const formattedTreasuryData = useMemo(
+    () =>
+      treasuryData.map((transaction) => ({
+        ...transaction,
+        created_at: new Date(transaction.created_at).toLocaleString(),
+        amount: new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(Number(transaction.amount)),
+      })),
+    [treasuryData],
+  );
+
   const updateTransactions = async () => {
     try {
       setLoading(true);
@@ -205,7 +223,15 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         props.wallet?.circle_wallet_id,
       );
 
+      const treasuryTransactions = await syncTransactions(
+        supabase,
+        props.treasuryWallet?.id,
+        props.treasuryWallet?.profile_id,
+        props.treasuryWallet?.circle_wallet_id,
+      );
+
       setData(transactions);
+      setTreasuryData(treasuryTransactions);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {
@@ -228,10 +254,25 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       )
       .subscribe();
 
+    const walletTransactionSubscription = supabase
+      .channel('wallet-history')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'transactions',
+          filter: `wallet_id=eq.${props.wallet?.id}`,
+        },
+        () => updateTransactions(),
+      )
+      .subscribe();
+
     updateTransactions();
 
     return () => {
       supabase.removeChannel(transactionSubscription);
+      supabase.removeChannel(walletTransactionSubscription);
     };
   }, []);
 
@@ -318,6 +359,16 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
               onClick={() => setActiveTab('billing')}
             >
               Billing History
+            </button>
+            <button
+              className={`pb-4 px-1 ${
+                activeTab === 'treasury'
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-500'
+              }`}
+              onClick={() => setActiveTab('treasury')}
+            >
+              Treasury Wallet
             </button>
           </div>
         </div>
@@ -462,7 +513,26 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         )}
 
         {/* Transaction Table */}
-        <Transactions data={filteredAndSortedTransactions} loading={loading} />
+        {activeTab !== 'treasury' && (
+          <Transactions
+            data={filteredAndSortedTransactions}
+            loading={loading}
+          />
+        )}
+        {activeTab == 'treasury' && (
+          <>
+            <span>
+              Treasury Wallet Balance:{' '}
+              <WalletBalance
+                circleWalletId={
+                  process.env.NEXT_PUBLIC_TREASURY_WALLET_ID ?? ''
+                }
+                walletId={process.env.NEXT_PUBLIC_TREASURY_WALLET_DB_ID ?? ''}
+              />
+            </span>
+            <Transactions data={formattedTreasuryData} loading={loading} />
+          </>
+        )}
       </div>
     </div>
   );
