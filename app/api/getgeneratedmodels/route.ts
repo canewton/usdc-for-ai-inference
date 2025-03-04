@@ -27,7 +27,8 @@ export async function GET(req: Request) {
         .from('3d_generations')
         .select('id, url, prompt, created_at')
         .eq('user_id', user.id)
-        .in('id', ids);
+        .in('id', ids)
+        .order('created_at', { ascending: false });
 
       if (error) {
         return NextResponse.json(
@@ -41,7 +42,8 @@ export async function GET(req: Request) {
       const { data: models, error } = await supabase
         .from('3d_generations')
         .select('id, url, prompt, created_at')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (error) {
         return NextResponse.json(
