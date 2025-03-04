@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { RequestUsdcButton } from '@/components/request-usdc-button';
 import { TransactionHistory } from '@/components/transaction-history';
+import { TransferUSDCButton } from '@/components/transfer-usdc-button';
 import { USDCButton } from '@/components/usdc-button';
 import { WalletBalance } from '@/components/wallet-balance';
 import { WalletInformationDialog } from '@/components/wallet-information-dialog';
@@ -64,13 +65,10 @@ export default async function ProtectedPage() {
             mode="BUY"
             walletAddress={wallet?.wallet_address}
           />
-          {wallet?.circle_wallet_id != null && (
-            <USDCButton
-              className="flex-1"
-              mode="TRANSFER"
-              walletAddress={wallet?.wallet_address}
-            />
-          )}
+          <TransferUSDCButton
+            className="flex-1"
+            walletId={wallet?.circle_wallet_id}
+          />
           <WalletInformationDialog wallet={wallet} />
         </div>
       </div>

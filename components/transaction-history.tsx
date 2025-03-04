@@ -521,7 +521,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         )}
         {activeTab == 'treasury' && (
           <>
-            <p>
+            <span>
               Treasury Wallet Balance:{' '}
               <WalletBalance
                 circleWalletId={
@@ -529,7 +529,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
                 }
                 walletId={process.env.NEXT_PUBLIC_TREASURY_WALLET_DB_ID ?? ''}
               />
-            </p>
+            </span>
             <Transactions data={formattedTreasuryData} loading={loading} />
           </>
         )}

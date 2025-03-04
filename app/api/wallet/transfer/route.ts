@@ -1,26 +1,14 @@
 import { NextResponse } from 'next/server';
 
 import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
-import { createClient } from '@/utils/supabase/server';
 
 async function buildTransfer(
-  circleWalletAddress: string,
+  circleWalletId: string,
   amount: string,
 ): Promise<any> {
   try {
-    console.log('starting', circleWalletAddress, amount);
-    const supabase = await createClient();
-    const { data: circleWallet } = await supabase
-      .schema('public')
-      .from('wallets')
-      .select('circle_wallet_id')
-      .eq('wallet_address', circleWalletAddress)
-      .single();
-
-    console.log('circleWallet', circleWallet);
-
     const balanceResponse = await circleDeveloperSdk.getWalletTokenBalance({
-      id: circleWallet?.circle_wallet_id,
+      id: circleWalletId,
       includeAll: true,
     });
     const parsedTokenId = balanceResponse.data?.tokenBalances?.find(
@@ -28,7 +16,7 @@ async function buildTransfer(
     )?.token?.id;
 
     const transfer = {
-      walletId: circleWallet?.circle_wallet_id,
+      walletId: circleWalletId,
       tokenId: parsedTokenId,
       destinationAddress: process.env.NEXT_PUBLIC_TREASURY_WALLET_ADDRESS,
       amounts: [amount],
@@ -50,8 +38,9 @@ async function buildTransfer(
 }
 
 async function createTransfer(transferRequest: any): Promise<any> {
+  console.log('transferRequest', transferRequest);
   const transfer = await buildTransfer(
-    transferRequest.circleWalletAddress,
+    transferRequest.circleWalletId,
     transferRequest.amount,
   );
   if (!transfer) {
