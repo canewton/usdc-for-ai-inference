@@ -15,27 +15,20 @@ import type { Database } from '@/types/database.types';
 
 const supabase = createClient<Database>(
   // @ts-ignore
-  Deno.env.get('NEXT_PUBLIC_SUPABASE_URL'),
+  Deno.env.get('PUBLIC_SUPABASE_URL'),
   // @ts-ignore
-  Deno.env.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+  Deno.env.get('PUBLIC_SUPABASE_ANON_KEY'),
 );
-
-console.log('Hello from Functions!');
 
 serve(async (req: any) => {
   const res = await req.json();
   const data = res.notification;
-
-  console.log('notification', res);
 
   if (
     res.notificationType == 'transactions.outbound' &&
     data.state == 'CONFIRMED'
   ) {
     try {
-      console.log('storing transaction', data);
-      console.log('storing transaction id', data.id);
-
       try {
         const { data: existingWallet, error: fetchWalletError } = await supabase
           .from('wallets')
@@ -59,8 +52,6 @@ serve(async (req: any) => {
             headers: { 'Content-Type': 'application/json' },
           });
         }
-
-        console.log('existingWallet', existingWallet);
 
         if (existingTransaction) {
           const { data: updatedTransaction, error: updateError } =

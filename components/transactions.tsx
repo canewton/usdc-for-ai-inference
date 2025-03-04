@@ -55,8 +55,6 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
     return <Skeleton className="w-[206px] h-[28px] rounded-full" />;
   }
 
-  console.log(loading, data);
-
   // Calculate pagination
   const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;

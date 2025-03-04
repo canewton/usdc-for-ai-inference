@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
+import { createClient } from '@/utils/supabase/server';
 
 async function buildTransfer(
   circleWalletId: string,
@@ -37,7 +38,16 @@ async function buildTransfer(
   }
 }
 
-async function createTransfer(transferRequest: any): Promise<any> {
+export interface WalletTransferRequest {
+  circleWalletId: string;
+  amount: string;
+  projectName: string;
+  aiModel: string;
+}
+
+async function createTransfer(
+  transferRequest: WalletTransferRequest,
+): Promise<any> {
   console.log('transferRequest', transferRequest);
   const transfer = await buildTransfer(
     transferRequest.circleWalletId,
@@ -56,10 +66,29 @@ async function createTransfer(transferRequest: any): Promise<any> {
 }
 
 export async function POST(request: Request) {
+  const supabase = await createClient();
   try {
-    const transferRequest = await request.json();
+    const transferRequest: WalletTransferRequest = await request.json();
     const result = await createTransfer(transferRequest);
-    return NextResponse.json(result, { status: 201 });
+    const { data: response, error } = await supabase
+      .schema('public')
+      .from('ai_projects')
+      .insert({
+        project_name: transferRequest.projectName,
+        ai_model: transferRequest.aiModel,
+        circle_transaction_id: result.id,
+      })
+      .select();
+
+    if (error) {
+      console.error('Error saving transaction:', error);
+      return NextResponse.json(
+        { error: 'Transfer succeeded but could not save transaction' },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json(response, { status: 201 });
   } catch (error) {
     console.error('Transfer failed:', error);
     return NextResponse.json(
