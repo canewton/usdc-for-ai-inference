@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { RequestUsdcButton } from '@/components/request-usdc-button';
 import { TransactionHistory } from '@/components/transaction-history';
+import { TransferUSDCButton } from '@/components/transfer-usdc-button';
 import { USDCButton } from '@/components/usdc-button';
 import { WalletBalance } from '@/components/wallet-balance';
 import { WalletInformationDialog } from '@/components/wallet-information-dialog';
@@ -32,6 +33,13 @@ export default async function ProtectedPage() {
     .eq('profile_id', profile?.id)
     .single();
 
+  const { data: treasuryWallet } = await supabase
+    .schema('public')
+    .from('wallets')
+    .select()
+    .eq('circle_wallet_id', process.env.NEXT_PUBLIC_TREASURY_WALLET_ID)
+    .single();
+
   return (
     <div className="px-20">
       {/* Wallet Card */}
@@ -41,7 +49,10 @@ export default async function ProtectedPage() {
       <div className="flex items-center justify-between mb-20">
         <div className="flex items-center gap-2">
           <h2 className="text-5xl font-bold">
-            <WalletBalance walletId={wallet?.circle_wallet_id} />
+            <WalletBalance
+              circleWalletId={wallet?.circle_wallet_id}
+              walletId={wallet?.id}
+            />
           </h2>
           <DollarSign className="w-6 h-6 text-blue-500" />
         </div>
@@ -54,12 +65,20 @@ export default async function ProtectedPage() {
             mode="BUY"
             walletAddress={wallet?.wallet_address}
           />
+          <TransferUSDCButton
+            className="flex-1"
+            walletId={wallet?.circle_wallet_id}
+          />
           <WalletInformationDialog wallet={wallet} />
         </div>
       </div>
 
       {/* Transactions Section */}
-      <TransactionHistory wallet={wallet} profile={profile} />
+      <TransactionHistory
+        wallet={wallet}
+        treasuryWallet={treasuryWallet}
+        profile={profile}
+      />
     </div>
   );
 }

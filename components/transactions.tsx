@@ -51,11 +51,9 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
 
-  if (loading) {
+  if (data.length == 0 && loading) {
     return <Skeleton className="w-[206px] h-[28px] rounded-full" />;
   }
-
-  console.log(loading, data);
 
   // Calculate pagination
   const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
@@ -100,7 +98,7 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
                     +{transaction.amount}
                   </TableCell>
                 )}
-                {transaction.transaction_type === 'DEPOSIT_PAYMENT' && (
+                {transaction.transaction_type === 'OUTBOUND' && (
                   <TableCell className="text-red-600">
                     -{transaction.amount}
                   </TableCell>
@@ -112,14 +110,14 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
                 {transaction.status == 'CONFIRMED' && (
                   <TableCell>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-green-100 text-green-800">
-                      Processed
+                      {transaction.status}
                     </span>
                   </TableCell>
                 )}
                 {transaction.status !== 'CONFIRMED' && (
                   <TableCell>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-red-100 text-red-800">
-                      Declined
+                      {transaction.status}
                     </span>
                   </TableCell>
                 )}
