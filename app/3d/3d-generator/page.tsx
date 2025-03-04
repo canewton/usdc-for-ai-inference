@@ -1,5 +1,6 @@
 'use client';
 
+import { TrashIcon } from '@heroicons/react/24/outline';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
@@ -97,6 +98,41 @@ export default function Generate3DModelPage() {
     setError(null);
   };
 
+  // delete handler
+  const handleDelete = async (modelId: string) => {
+    if (!session) return;
+
+    try {
+      const sessionToken = session.access_token;
+      const response = await fetch(
+        `http://localhost:3000/api/deletemodel?modelid=${modelId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        // remove the deleted model from the history state
+        setHistory(history.filter((item) => item.id !== modelId));
+
+        // clear model from canvas if it was being displayed
+        if (modelUrl === history.find((item) => item.id === modelId)?.url) {
+          setModelUrl(null);
+        }
+        console.log('Model deleted successfully:', data.message);
+      } else {
+        setError(data.error || 'Failed to delete model');
+      }
+    } catch (err) {
+      setError('An error occurred while deleting the model.');
+      console.error('Delete error:', err);
+    }
+  };
+
   return (
     <div className="w-full mx-auto p-4 flex h-screen">
       {/* History Sidebar */}
@@ -106,16 +142,25 @@ export default function Generate3DModelPage() {
           {history.length > 0 ? (
             <ul className="space-y-2">
               {history.map((item) => (
-                <li key={item.id}>
+                <li key={item.id} className="flex items-center justify-between">
+                  <div>
+                    <button
+                      onClick={() => handleHistoryClick(item.url)}
+                      className="text-blue-500 hover:underline text-left"
+                    >
+                      {item.prompt}
+                    </button>
+                    <p className="text-xs text-gray-500">
+                      {new Date(item.created_at).toLocaleString()}
+                    </p>
+                  </div>
                   <button
-                    onClick={() => handleHistoryClick(item.url)}
-                    className="text-blue-500 hover:underline text-left w-full"
+                    onClick={() => handleDelete(item.id)}
+                    className="text-red-500 hover:text-red-700"
+                    aria-label="Delete model"
                   >
-                    {item.prompt}
+                    <TrashIcon className="w-5 h-5" />
                   </button>
-                  <p className="text-xs text-gray-500">
-                    {new Date(item.created_at).toLocaleString()}
-                  </p>
                 </li>
               ))}
             </ul>
