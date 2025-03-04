@@ -152,7 +152,7 @@ export default function ImageGeneratorPage() {
 
   // Function to navigate to image page
   const handleImageClick = (image_id: string) => {
-    router.push(`/image/${image_id}`);
+    router.push(`/ai/image/${image_id}`);
   };
 
   return (
