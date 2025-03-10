@@ -1,6 +1,8 @@
 'use client';
 
+import { ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import React, { useEffect } from 'react';
 import { type FunctionComponent, useState } from 'react';
 
 import {
@@ -29,15 +31,7 @@ interface Transaction {
   circle_transaction_id: string;
   transaction_type: string;
   amount: string;
-}
-
-interface CircleTransaction {
-  id: string;
-  transactionType: string;
-  amount: string[];
-  status: string;
-  description?: string;
-  circle_contract_address?: string;
+  expanded: boolean;
 }
 
 interface Props {
@@ -51,14 +45,21 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
 
-  if (data.length == 0 && loading) {
-    return <Skeleton className="w-[206px] h-[28px] rounded-full" />;
-  }
-
   // Calculate pagination
   const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedData = data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const [paginatedData, setPaginatedData] = useState<Transaction[]>(
+    data.slice(startIndex, startIndex + ITEMS_PER_PAGE),
+  );
+
+  useEffect(() => {
+    setPaginatedData(data.slice(startIndex, startIndex + ITEMS_PER_PAGE));
+  }, [data, currentPage]);
+
+  if (data.length == 0 && loading) {
+    return <Skeleton className="w-[206px] h-[28px] rounded-full" />;
+  }
 
   if (data && data.length < 1) {
     return (
@@ -67,6 +68,17 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
       </p>
     );
   }
+
+  const toggleExpand = (id: string) => {
+    console.log('toggleExpand', id, paginatedData);
+    setPaginatedData(
+      paginatedData.map((tx) =>
+        tx.id === id ? { ...tx, expanded: !tx.expanded } : tx,
+      ),
+    );
+  };
+
+  const blockchain = process.env.CIRCLE_BLOCKCHAIN ?? 'ARB-SEPOLIA';
 
   return (
     <>
@@ -82,46 +94,77 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
           </TableHeader>
           <TableBody>
             {paginatedData.map((transaction) => (
-              <TableRow
-                onClick={() =>
-                  router.push(
-                    `/dashboard/transaction/${transaction.circle_transaction_id}`,
-                  )
-                }
-                className="cursor-pointer"
-                key={transaction.id}
-              >
-                <TableCell>{transaction.created_at}</TableCell>
-                <TableCell>{transaction.transaction_type}</TableCell>
-                {transaction.transaction_type === 'INBOUND' && (
-                  <TableCell className="text-green-600">
-                    +{transaction.amount}
+              <React.Fragment key={transaction.id}>
+                <TableRow
+                  onClick={() => toggleExpand(transaction.id)}
+                  className="border-b-0"
+                  key={transaction.id}
+                >
+                  <TableCell className="p-4" colSpan={1}>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`transition-transform duration-300 ${transaction.expanded ? 'rotate-90' : ''}`}
+                      >
+                        <ChevronRight className="text-gray-500" size={20} />
+                      </div>
+                      {transaction.created_at}
+                    </div>
                   </TableCell>
-                )}
-                {transaction.transaction_type === 'OUTBOUND' && (
-                  <TableCell className="text-red-600">
-                    -{transaction.amount}
-                  </TableCell>
-                )}
-                {transaction.transaction_type !== 'DEPOSIT_PAYMENT' &&
-                  transaction.transaction_type !== 'INBOUND' && (
-                    <TableCell>{transaction.amount}</TableCell>
+                  <TableCell>{transaction.transaction_type}</TableCell>
+                  {transaction.transaction_type === 'INBOUND' && (
+                    <TableCell className="text-green-600" colSpan={1}>
+                      +{transaction.amount}
+                    </TableCell>
                   )}
-                {transaction.status == 'CONFIRMED' && (
-                  <TableCell>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-green-100 text-green-800">
-                      {transaction.status}
-                    </span>
+                  {transaction.transaction_type === 'OUTBOUND' && (
+                    <TableCell className="text-red-600" colSpan={1}>
+                      -{transaction.amount}
+                    </TableCell>
+                  )}
+                  {transaction.status == 'CONFIRMED' && (
+                    <TableCell colSpan={1}>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-green-100 text-green-800">
+                        {transaction.status}
+                      </span>
+                    </TableCell>
+                  )}
+                  {transaction.status !== 'CONFIRMED' && (
+                    <TableCell colSpan={1}>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-red-100 text-red-800">
+                        {transaction.status}
+                      </span>
+                    </TableCell>
+                  )}
+                </TableRow>
+                <TableRow>
+                  <TableCell className={`p-0`} colSpan={1}>
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        transaction.expanded
+                          ? 'max-h-20 opacity-100'
+                          : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="p-6 px-11 align-middle">
+                        <div>ID: {transaction.id}</div>
+                      </div>
+                    </div>
                   </TableCell>
-                )}
-                {transaction.status !== 'CONFIRMED' && (
-                  <TableCell>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-red-100 text-red-800">
-                      {transaction.status}
-                    </span>
+                  <TableCell className={`p-0`} colSpan={1}>
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        transaction.expanded
+                          ? 'max-h-20 opacity-100'
+                          : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="p-6 align-middle">
+                        <div>Blockchain: {blockchain}</div>
+                      </div>
+                    </div>
                   </TableCell>
-                )}
-              </TableRow>
+                </TableRow>
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>

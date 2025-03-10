@@ -186,6 +186,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       data.map((transaction) => ({
         ...transaction,
         created_at: new Date(transaction.created_at).toLocaleString(),
+        expanded: false,
         amount: new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: 'USD',
@@ -201,6 +202,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       treasuryData.map((transaction) => ({
         ...transaction,
         created_at: new Date(transaction.created_at).toLocaleString(),
+        expanded: false,
         amount: new Intl.NumberFormat('en-US', {
           style: 'currency',
           currency: 'USD',
