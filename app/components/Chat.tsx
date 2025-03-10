@@ -7,6 +7,14 @@ import { ChatInput } from '@/app/components/ChatInput';
 import { ChatMessages } from '@/app/components/ChatMessages';
 import { ChatSidebar } from '@/app/components/ChatSidebar';
 import { useSession } from '@/app/contexts/SessionContext';
+import { Slider } from "@/components/ui/slider";
+import PromptSuggestions from './PromptSuggestions';
+
+const promptSuggestions = [
+  'Explain how to load my wallet',
+  'Tell me about USDC security',
+  'Surprise me',
+];
 
 interface ChatProps {
   currChat: string;
@@ -14,10 +22,13 @@ interface ChatProps {
 
 export function Chat({ currChat }: ChatProps) {
   const [model, setModel] = useState('gpt-4o-mini');
+  const [maxTokens, setMaxTokens] = useState(200);
   const [chatId, setChatId] = useState(currChat || '');
   const [chats, setChats] = useState<{ id: string; title: string }[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatIdRef = useRef<string | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editedContent, setEditedContent] = useState<string>("");
 
   const session = useSession();
 
@@ -28,6 +39,8 @@ export function Chat({ currChat }: ChatProps) {
     isLoading,
     setMessages,
     handleSubmit,
+    stop,
+    setInput,
   } = useChat({
     api: '/api/generatetext',
     headers: {
@@ -35,6 +48,7 @@ export function Chat({ currChat }: ChatProps) {
     },
     body: {
       model: model,
+      maxTokens: maxTokens,
     },
     onFinish: async (message: any, { usage }: any) => {
       if (chatIdRef.current || chatId) {
@@ -240,12 +254,86 @@ export function Chat({ currChat }: ChatProps) {
       handleSubmit(e, {
         body: {
           model: model,
+          maxTokens: maxTokens,
         },
       });
     } catch (error) {
       console.error('Error in message submission:', error);
     }
   };
+
+  const handlePromptSelect = (selectedPrompt: string) => {
+    setInput(selectedPrompt);
+  }
+
+  const stopGeneration = () => {
+    stop();
+  }
+
+  const handleEditMessage = (messageId: string, content: string) => {
+    setEditingMessageId(messageId);
+    setEditedContent(content);
+  }
+
+  const submitEditedMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editedContent.trim()) return;
+    // Get original message 
+    const originalMessage = messages.find((msg) => msg.id === editingMessageId);
+    if (!originalMessage || originalMessage.role !== "user") return;
+
+    // Find the next assistant message (if any)
+    const messageIndex = messages.findIndex((msg) => msg.id === editingMessageId);
+
+    // Remove user message and all subsequent messages
+    setMessages(messages.slice(0, messageIndex));
+    
+    const chatGenerationId = editingMessageId?.slice(0,-4);
+    try {
+      const response = await fetch(`/api/deletechatgenerations?id=${chatGenerationId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        // Remove deleted chat from state
+        console.log(result)
+      } else {
+        console.error('Error deleting chat generations:', result.error);
+      }
+    } catch (error) {
+      console.error('Delete request failed:', error);
+    }
+
+    // Submit the edited message to generate a new response
+    try {
+      handleSubmit(e, {
+        body: {
+          messages: [{
+            role: 'user',
+            content: editedContent,
+          }],
+          model: model,
+          maxTokens: maxTokens,
+        },
+      });
+    } catch (error) {
+      console.error('Error in message submission:', error);
+    }
+
+    // Reset editing state
+    setEditingMessageId(null);
+    setEditedContent("");
+  }
+
+  const cancelEdit = () => {
+    setEditingMessageId(null);
+    setEditedContent("");
+  }
 
   useEffect(() => {
     // Get all user's chats
@@ -254,7 +342,9 @@ export function Chat({ currChat }: ChatProps) {
 
   useEffect(() => {
     // Scroll to bottom of messages
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!editingMessageId) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -278,15 +368,28 @@ export function Chat({ currChat }: ChatProps) {
         <div className="flex w-full h-full">
           <div className="flex flex-col h-[500px] w-full">
             <div className="flex-1 overflow-y-auto p-4">
-              <ChatMessages messages={messages} isLoading={isLoading} />
+              <ChatMessages 
+                messages={messages} 
+                isLoading={isLoading} 
+                editingMessageId={editingMessageId}
+                editedContent={editedContent}
+                setEditedContent={setEditedContent}
+                onEditMessage={handleEditMessage}
+                onCancelEdit={cancelEdit}
+                onSubmitEdit={submitEditedMessage}
+                handleInputChange={handleInputChange}
+                />
               <div ref={messagesEndRef} />
             </div>
             <div className="p-4 space-y-6">
+              <PromptSuggestions onSelect={handlePromptSelect} suggestions={promptSuggestions}/>
               <ChatInput
                 input={input}
                 handleInputChange={handleInputChange}
                 handleSubmit={handleMessageSubmit}
                 isLoading={isLoading}
+                onStopGeneration={stopGeneration}
+                editingMessage={editingMessageId !== null}
               />
               <div className="flex items-center space-x-2">
                 <span className="font-medium">Model:</span>
@@ -296,7 +399,12 @@ export function Chat({ currChat }: ChatProps) {
                   className="border rounded p-2"
                 >
                   <option value={'gpt-4o-mini'}>gpt-4o-mini</option>
+                  <option value={'gpt-4o'}>gpt-4o</option>
                 </select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="font-medium">Max Tokens: {maxTokens}</div>
+                <Slider defaultValue={[maxTokens]} max={1000} step={1} onValueChange={(val) => setMaxTokens(val[0])}/>
               </div>
             </div>
           </div>
