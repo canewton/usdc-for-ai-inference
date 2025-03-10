@@ -8,12 +8,13 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   try {
     // Parse req body
-    const { messages, model } = await req.json();
+    const { messages, model, maxTokens } = await req.json();
 
     // Get result
     const result = streamText({
       model: openai(model),
       messages,
+      maxTokens,
     });
 
     // Return result
