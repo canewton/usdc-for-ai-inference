@@ -2,6 +2,7 @@ import type { Message } from 'ai';
 import { PencilIcon } from 'lucide-react';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+
 import { Textarea } from '@/components/ui/textarea';
 
 interface ChatMessagesProps {
@@ -13,11 +14,11 @@ interface ChatMessagesProps {
   onEditMessage: (messageId: string, content: string) => void;
   onCancelEdit: () => void;
   onSubmitEdit: (e: React.FormEvent<HTMLFormElement>) => void;
-  handleInputChange: any,
+  handleInputChange: any;
 }
 
-export function ChatMessages({ 
-  messages, 
+export function ChatMessages({
+  messages,
   isLoading,
   editingMessageId,
   editedContent,
@@ -28,7 +29,7 @@ export function ChatMessages({
   handleInputChange,
 }: ChatMessagesProps) {
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
-  
+
   return (
     <div className="space-y-4">
       {messages.map((message: any) => (
@@ -37,11 +38,13 @@ export function ChatMessages({
           className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start '}`}
         >
           <div
-            onMouseEnter={() => message.role === "user" && setHoveredMessageId(message.id)}
+            onMouseEnter={() =>
+              message.role === 'user' && setHoveredMessageId(message.id)
+            }
             onMouseLeave={() => setHoveredMessageId(null)}
-            className='flex flex-row'
+            className="flex flex-row"
           >
-            {message.role === "user" && hoveredMessageId === message.id && (
+            {message.role === 'user' && hoveredMessageId === message.id && (
               <button
                 className="h-8 w-8 text-white"
                 onClick={() => onEditMessage(message.id, message.content)}
@@ -56,17 +59,18 @@ export function ChatMessages({
                 <div className="space-y-2 w-full">
                   <Textarea
                     value={editedContent}
-                    onChange={(e: any) => {setEditedContent(e.target.value); handleInputChange(e)}}
+                    onChange={(e: any) => {
+                      setEditedContent(e.target.value);
+                      handleInputChange(e);
+                    }}
                     className=" text-black bg-gray-200"
-                    
                   />
-                  <form onSubmit={onSubmitEdit} className="flex justify-end space-x-2">
-                    <button onClick={onCancelEdit}>
-                      Cancel
-                    </button>
-                    <button type='submit'>
-                      Send
-                    </button>
+                  <form
+                    onSubmit={onSubmitEdit}
+                    className="flex justify-end space-x-2"
+                  >
+                    <button onClick={onCancelEdit}>Cancel</button>
+                    <button type="submit">Send</button>
                   </form>
                 </div>
               ) : (

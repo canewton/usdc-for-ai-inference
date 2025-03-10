@@ -7,7 +7,7 @@ interface ChatInputProps {
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
   isLoading: boolean;
   onStopGeneration: () => void;
-  editingMessage: boolean,
+  editingMessage: boolean;
 }
 
 export function ChatInput({
@@ -22,7 +22,7 @@ export function ChatInput({
     <form onSubmit={handleSubmit} className="flex space-x-2">
       <input
         type="text"
-        value={editingMessage? "" : input}
+        value={editingMessage ? '' : input}
         onChange={handleInputChange}
         placeholder="Type a message"
         className="flex-1 p-2 border rounded"
@@ -30,7 +30,7 @@ export function ChatInput({
       {isLoading ? (
         <button
           type="button"
-          className='px-4 py-2 bg-gray-600 text-black rounded'
+          className="px-4 py-2 bg-gray-600 text-black rounded"
           onClick={onStopGeneration}
         >
           Stop
@@ -38,7 +38,7 @@ export function ChatInput({
       ) : (
         <button
           type="submit"
-          className='px-4 py-2 bg-white text-black rounded'
+          className="px-4 py-2 bg-white text-black rounded"
           disabled={!input.trim()}
         >
           Generate

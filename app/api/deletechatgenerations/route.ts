@@ -26,8 +26,8 @@ export async function DELETE(req: Request) {
     if (!id) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     }
-    
-    // Get the timestamp for this row 
+
+    // Get the timestamp for this row
     const { data: row, error: rowError } = await supabase
       .from('chat_generations')
       .select('created_at')
@@ -37,10 +37,10 @@ export async function DELETE(req: Request) {
     if (rowError) {
       return NextResponse.json({ error: rowError.message }, { status: 500 });
     }
-    console.log(row.created_at)
+    console.log(row.created_at);
 
-    // Delete all rows created after this row 
-    const { data, error: dbError } = await supabase 
+    // Delete all rows created after this row
+    const { data, error: dbError } = await supabase
       .from('chat_generations')
       .delete()
       .eq('user_id', user.id)
@@ -50,7 +50,9 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ message: 'Chat generations deleted successfully' });
+    return NextResponse.json({
+      message: 'Chat generations deleted successfully',
+    });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

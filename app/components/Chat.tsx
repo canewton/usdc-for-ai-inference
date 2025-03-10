@@ -7,7 +7,8 @@ import { ChatInput } from '@/app/components/ChatInput';
 import { ChatMessages } from '@/app/components/ChatMessages';
 import { ChatSidebar } from '@/app/components/ChatSidebar';
 import { useSession } from '@/app/contexts/SessionContext';
-import { Slider } from "@/components/ui/slider";
+import { Slider } from '@/components/ui/slider';
+
 import PromptSuggestions from './PromptSuggestions';
 
 const promptSuggestions = [
@@ -28,7 +29,7 @@ export function Chat({ currChat }: ChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatIdRef = useRef<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [editedContent, setEditedContent] = useState<string>("");
+  const [editedContent, setEditedContent] = useState<string>('');
 
   const session = useSession();
 
@@ -264,44 +265,49 @@ export function Chat({ currChat }: ChatProps) {
 
   const handlePromptSelect = (selectedPrompt: string) => {
     setInput(selectedPrompt);
-  }
+  };
 
   const stopGeneration = () => {
     stop();
-  }
+  };
 
   const handleEditMessage = (messageId: string, content: string) => {
     setEditingMessageId(messageId);
     setEditedContent(content);
-  }
+  };
 
   const submitEditedMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editedContent.trim()) return;
-    // Get original message 
+    // Get original message
     const originalMessage = messages.find((msg) => msg.id === editingMessageId);
-    if (!originalMessage || originalMessage.role !== "user") return;
+    if (!originalMessage || originalMessage.role !== 'user') return;
 
     // Find the next assistant message (if any)
-    const messageIndex = messages.findIndex((msg) => msg.id === editingMessageId);
+    const messageIndex = messages.findIndex(
+      (msg) => msg.id === editingMessageId,
+    );
 
     // Remove user message and all subsequent messages
     setMessages(messages.slice(0, messageIndex));
-    
-    const chatGenerationId = editingMessageId?.slice(0,-4);
+
+    const chatGenerationId = editingMessageId?.slice(0, -4);
     try {
-      const response = await fetch(`/api/deletechatgenerations?id=${chatGenerationId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
+      const response = await fetch(
+        `/api/deletechatgenerations?id=${chatGenerationId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
         },
-      });
+      );
 
       const result = await response.json();
       if (response.ok) {
         // Remove deleted chat from state
-        console.log(result)
+        console.log(result);
       } else {
         console.error('Error deleting chat generations:', result.error);
       }
@@ -313,10 +319,12 @@ export function Chat({ currChat }: ChatProps) {
     try {
       handleSubmit(e, {
         body: {
-          messages: [{
-            role: 'user',
-            content: editedContent,
-          }],
+          messages: [
+            {
+              role: 'user',
+              content: editedContent,
+            },
+          ],
           model: model,
           maxTokens: maxTokens,
         },
@@ -327,13 +335,13 @@ export function Chat({ currChat }: ChatProps) {
 
     // Reset editing state
     setEditingMessageId(null);
-    setEditedContent("");
-  }
+    setEditedContent('');
+  };
 
   const cancelEdit = () => {
     setEditingMessageId(null);
-    setEditedContent("");
-  }
+    setEditedContent('');
+  };
 
   useEffect(() => {
     // Get all user's chats
@@ -368,9 +376,9 @@ export function Chat({ currChat }: ChatProps) {
         <div className="flex w-full h-full">
           <div className="flex flex-col h-[500px] w-full">
             <div className="flex-1 overflow-y-auto p-4">
-              <ChatMessages 
-                messages={messages} 
-                isLoading={isLoading} 
+              <ChatMessages
+                messages={messages}
+                isLoading={isLoading}
                 editingMessageId={editingMessageId}
                 editedContent={editedContent}
                 setEditedContent={setEditedContent}
@@ -378,11 +386,14 @@ export function Chat({ currChat }: ChatProps) {
                 onCancelEdit={cancelEdit}
                 onSubmitEdit={submitEditedMessage}
                 handleInputChange={handleInputChange}
-                />
+              />
               <div ref={messagesEndRef} />
             </div>
             <div className="p-4 space-y-6">
-              <PromptSuggestions onSelect={handlePromptSelect} suggestions={promptSuggestions}/>
+              <PromptSuggestions
+                onSelect={handlePromptSelect}
+                suggestions={promptSuggestions}
+              />
               <ChatInput
                 input={input}
                 handleInputChange={handleInputChange}
@@ -404,7 +415,12 @@ export function Chat({ currChat }: ChatProps) {
               </div>
               <div className="flex items-center space-x-2">
                 <div className="font-medium">Max Tokens: {maxTokens}</div>
-                <Slider defaultValue={[maxTokens]} max={1000} step={1} onValueChange={(val) => setMaxTokens(val[0])}/>
+                <Slider
+                  defaultValue={[maxTokens]}
+                  max={1000}
+                  step={1}
+                  onValueChange={(val) => setMaxTokens(val[0])}
+                />
               </div>
             </div>
           </div>

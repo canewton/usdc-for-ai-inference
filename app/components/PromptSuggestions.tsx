@@ -3,10 +3,13 @@ import React, { useEffect, useState } from 'react';
 
 interface PromptSuggestionsProps {
   onSelect: (prompt: string) => void;
-  suggestions: string[],
+  suggestions: string[];
 }
 
-const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({ onSelect, suggestions }) => {
+const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({
+  onSelect,
+  suggestions,
+}) => {
   const [shuffledSuggestions, setShuffledSuggestions] = useState<string[]>([]);
   useEffect(() => {
     const shuffled = [...suggestions].sort(() => Math.random() - 0.5);

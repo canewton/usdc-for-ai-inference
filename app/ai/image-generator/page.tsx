@@ -199,7 +199,10 @@ export default function ImageGeneratorPage() {
         </div>
 
         <div className="w-2/3 flex flex-col">
-          <PromptSuggestions onSelect={handlePromptSelect} suggestions={allSuggestions}/>
+          <PromptSuggestions
+            onSelect={handlePromptSelect}
+            suggestions={allSuggestions}
+          />
           {imageUrl && (
             <div className="mb-8">
               <img
