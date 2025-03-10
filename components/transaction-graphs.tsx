@@ -183,80 +183,80 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
   const imageToVideoTotal = calculateTotal(imageToVideoData);
 
   return (
-      <div>
-        <div className="bg-gray-100 rounded-xl shadow-sm p-6 mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-lg font-medium mb-1">Monthly Spend</h2>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-semibold text-blue-500">
-                  ${monthlyTotal.toFixed(2)}
-                </span>
-                <Info size={20} className="text-gray-400" />
-              </div>
-            </div>
+    <div>
+      <div className="bg-gray-100 rounded-xl shadow-sm p-6 mb-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-lg font-medium mb-1">Monthly Spend</h2>
             <div className="flex items-center gap-2">
-              <button
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                onClick={handlePrevMonth}
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <span className="text-gray-600 min-w-[80px] text-center">
-                {months[currentMonthIndex]}
+              <span className="text-2xl font-semibold text-blue-500">
+                ${monthlyTotal.toFixed(2)}
               </span>
-              <button
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                onClick={handleNextMonth}
-              >
-                <ChevronRight size={20} />
-              </button>
+              <Info size={20} className="text-gray-400" />
             </div>
           </div>
-          <SpendingCard
-            title=""
-            amount={monthlyTotal}
-            data={monthlyData}
-            colors={[
-              MODEL_COLORS['text-to-text'],
-              MODEL_COLORS['text-to-image'],
-              MODEL_COLORS['2d-to-3d'],
-              MODEL_COLORS['image-to-video'],
-            ]}
-            stacked={true}
-          />
+          <div className="flex items-center gap-2">
+            <button
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={handlePrevMonth}
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <span className="text-gray-600 min-w-[80px] text-center">
+              {months[currentMonthIndex]}
+            </span>
+            <button
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={handleNextMonth}
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <SpendingCard
-            title="Text to Text"
-            amount={textToTextTotal}
-            data={textToTextData}
-            className="bg-purple-50"
-            colors={[MODEL_COLORS['text-to-text']]}
-          />
-          <SpendingCard
-            title="Text to Image"
-            amount={textToImageTotal}
-            data={textToImageData}
-            className="bg-orange-50"
-            colors={[MODEL_COLORS['text-to-image']]}
-          />
-          <SpendingCard
-            title="2D to 3D Image"
-            amount={imageToImageTotal}
-            data={imageToImageData}
-            className="bg-green-50"
-            colors={[MODEL_COLORS['2d-to-3d']]}
-          />
-          <SpendingCard
-            title="Image to Video"
-            amount={imageToVideoTotal}
-            data={imageToVideoData}
-            className="bg-blue-50"
-            colors={[MODEL_COLORS['image-to-video']]}
-          />
-        </div>
+        <SpendingCard
+          title=""
+          amount={monthlyTotal}
+          data={monthlyData}
+          colors={[
+            MODEL_COLORS['text-to-text'],
+            MODEL_COLORS['text-to-image'],
+            MODEL_COLORS['2d-to-3d'],
+            MODEL_COLORS['image-to-video'],
+          ]}
+          stacked={true}
+        />
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <SpendingCard
+          title="Text to Text"
+          amount={textToTextTotal}
+          data={textToTextData}
+          className="bg-purple-50"
+          colors={[MODEL_COLORS['text-to-text']]}
+        />
+        <SpendingCard
+          title="Text to Image"
+          amount={textToImageTotal}
+          data={textToImageData}
+          className="bg-orange-50"
+          colors={[MODEL_COLORS['text-to-image']]}
+        />
+        <SpendingCard
+          title="2D to 3D Image"
+          amount={imageToImageTotal}
+          data={imageToImageData}
+          className="bg-green-50"
+          colors={[MODEL_COLORS['2d-to-3d']]}
+        />
+        <SpendingCard
+          title="Image to Video"
+          amount={imageToVideoTotal}
+          data={imageToVideoData}
+          className="bg-blue-50"
+          colors={[MODEL_COLORS['image-to-video']]}
+        />
+      </div>
+    </div>
   );
 };
