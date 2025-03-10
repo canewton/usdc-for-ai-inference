@@ -165,7 +165,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
               'Updating transaction:',
               parseFloat(transaction.balance),
             );
-            await supabase
+            supabase
               .from('transactions')
               .update({ balance: parseFloat(transaction.balance) })
               .eq('id', transaction.id)
@@ -191,7 +191,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
                 token.symbol === 'USDC',
             )?.amount;
             transaction.balance = parsedBalance;
-            await supabase
+            supabase
               .from('transactions')
               .update({ balance: parseFloat(transaction.balance) })
               .eq('id', transaction.id)
@@ -224,13 +224,22 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
 
       var hasNull = false;
 
-      const billingTransactions: BillingTransaction[] = await Promise.all(
-        (projects ?? []).map(async (project: any) => {
-          const { data: transaction } = await supabase
-            .from('transactions')
-            .select('*')
-            .eq('circle_transaction_id', project.circle_transaction_id)
-            .single();
+      const circleTransactionIds = (projects ?? []).map(
+        (p) => p.circle_transaction_id,
+      );
+
+      const { data: transactions } = await supabase
+        .from('transactions')
+        .select('*')
+        .in('circle_transaction_id', circleTransactionIds);
+
+      const transactionMap = new Map(
+        (transactions ?? []).map((tx) => [tx.circle_transaction_id, tx]),
+      );
+
+      const billingTransactions: BillingTransaction[] = (projects ?? []).map(
+        (project) => {
+          const transaction = transactionMap.get(project.circle_transaction_id);
 
           if (!transaction) {
             hasNull = true;
@@ -246,7 +255,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
             created_at: project.created_at,
             expanded: false,
           };
-        }),
+        },
       );
 
       if (!hasNull) {
