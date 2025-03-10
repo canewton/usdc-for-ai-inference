@@ -2,6 +2,7 @@ import { DollarSign } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 import { RequestUsdcButton } from '@/components/request-usdc-button';
+import { ScanToPayDialog } from '@/components/scan-to-pay-dialog';
 import { TransactionHistory } from '@/components/transaction-history';
 import { TransferUSDCButton } from '@/components/transfer-usdc-button';
 import { USDCButton } from '@/components/usdc-button';
@@ -69,6 +70,7 @@ export default async function ProtectedPage() {
             className="flex-1"
             walletId={wallet?.circle_wallet_id}
           />
+          <ScanToPayDialog wallet={wallet} />
           <WalletInformationDialog wallet={wallet} />
         </div>
       </div>
