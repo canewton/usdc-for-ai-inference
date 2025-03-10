@@ -1,10 +1,8 @@
 'use client';
 
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { ArrowDownUp, Search, SlidersHorizontal, X } from 'lucide-react';
 import { type FunctionComponent, useEffect, useMemo, useState } from 'react';
 
-import type { WalletTransactionsResponse } from '@/app/api/wallet/transactions/route';
 import type { Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
@@ -13,20 +11,17 @@ import { WalletBalance } from './wallet-balance';
 
 interface Transaction {
   id: string;
+  wallet_id: string;
+  profile_id: string;
   status: string;
   created_at: string;
   circle_transaction_id: string;
   transaction_type: string;
   amount: string;
-}
-
-interface CircleTransaction {
-  id: string;
-  transactionType: string;
-  amount: string[];
-  status: string;
-  description?: string;
-  circle_contract_address?: string;
+  balance: string;
+  currency: string;
+  description: string;
+  circle_contact_address: string;
 }
 
 interface Props {
@@ -35,124 +30,6 @@ interface Props {
   profile: {
     id: any;
   } | null;
-}
-
-interface CircleTransaction {
-  id: string;
-  transactionType: string;
-  amount: string[];
-  status: string;
-  description?: string;
-  circle_contract_address?: string;
-}
-
-interface Props {
-  wallet: Wallet;
-  profile: {
-    id: any;
-  } | null;
-}
-
-const ITEMS_PER_PAGE = 5;
-
-async function syncTransactions(
-  supabase: SupabaseClient,
-  walletId: string,
-  profileId: string,
-  circleWalletId: string,
-) {
-  // 1. Fetch transactions from Circle API
-  const transactionsResponse = await fetch(
-    `${baseUrl}/api/wallet/transactions`,
-    {
-      method: 'POST',
-      body: JSON.stringify({
-        walletId: circleWalletId,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    },
-  );
-
-  const parsedTransactions: WalletTransactionsResponse =
-    await transactionsResponse.json();
-
-  if (parsedTransactions.error || !parsedTransactions.transactions) {
-    return [];
-  }
-
-  // 2. Get existing transactions from database
-  const { data: existingTransactions } = await supabase
-    .from('transactions')
-    .select('circle_transaction_id')
-    .eq('wallet_id', walletId);
-
-  const existingTransactionIds = new Set(
-    existingTransactions?.map((t: any) => t.circle_transaction_id) || [],
-  );
-
-  // 3. Filter out transactions that already exist
-  const newTransactions = parsedTransactions.transactions.filter(
-    (transaction: any) => !existingTransactionIds.has(transaction.id),
-  );
-
-  // 4. Insert new transactions into the database
-  if (newTransactions.length > 0) {
-    const transactionsToInsert = newTransactions.map(
-      (transaction: CircleTransaction) => {
-        if (
-          !transaction.id ||
-          !transaction.transactionType ||
-          !transaction.amount
-        ) {
-          throw new Error(
-            `Invalid transaction structure: ${JSON.stringify(transaction)}`,
-          );
-        }
-
-        return {
-          wallet_id: walletId,
-          profile_id: profileId,
-          circle_transaction_id: transaction.id,
-          transaction_type: transaction.transactionType,
-          amount: parseFloat(transaction.amount[0]?.replace(/[$,]/g, '')) || 0,
-          currency: 'USDC',
-          status: transaction.status,
-        };
-      },
-    );
-
-    const { error } = await supabase
-      .from('transactions')
-      .insert(transactionsToInsert);
-
-    if (error) {
-      console.error('Error inserting transactions:', error);
-    }
-  }
-
-  // 5. Return all transactions from database
-  const { data: allTransactions } = await supabase
-    .from('transactions')
-    .select('*')
-    .eq('wallet_id', walletId)
-    .order('created_at', { ascending: false });
-
-  // Filter out duplicates keeping only the latest transaction for each circle_transaction_id
-  const uniqueTransactions =
-    allTransactions?.reduce((acc, current) => {
-      const existingTransaction = acc.find(
-        (item: { circle_transaction_id: any }) =>
-          item.circle_transaction_id === current.circle_transaction_id,
-      );
-      if (!existingTransaction) {
-        acc.push(current);
-      }
-      return acc;
-    }, []) || [];
-
-  return uniqueTransactions;
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
@@ -217,23 +94,89 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     try {
       setLoading(true);
 
-      // Sync and get transactions
-      const transactions = await syncTransactions(
-        supabase,
-        props.wallet?.id,
-        props.profile?.id,
-        props.wallet?.circle_wallet_id,
+      console.log('Fetching wallet balance', props.wallet);
+      console.log('Fetching wallet balance', props.treasuryWallet);
+
+      const walletBalance = await (
+        await fetch('/api/wallet/balance', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ walletId: props.wallet?.circle_wallet_id }),
+        })
+      ).json();
+
+      const treasuryWalletBalance = await (
+        await fetch('/api/wallet/balance', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            walletId: props.treasuryWallet?.circle_wallet_id,
+          }),
+        })
+      ).json();
+
+      const { data: transactions } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('wallet_id', props.wallet?.id)
+        .order('created_at', { ascending: false });
+
+      const transactionsUpdated = await Promise.all(
+        (transactions ?? []).map(async (transaction: Transaction) => {
+          if (transaction.balance == null) {
+            const balance = walletBalance;
+            const parsedBalance = balance.tokenBalances?.find(
+              ({ token }: { token: { symbol: string } }) =>
+                token.symbol === 'USDC',
+            )?.amount;
+            transaction.balance = parsedBalance;
+            console.log(
+              'Updating transaction:',
+              parseFloat(transaction.balance),
+            );
+            await supabase
+              .from('transactions')
+              .update({ balance: parseFloat(transaction.balance) })
+              .eq('id', transaction.id)
+              .select('*')
+              .single();
+          }
+          return transaction;
+        }),
       );
 
-      const treasuryTransactions = await syncTransactions(
-        supabase,
-        props.treasuryWallet?.id,
-        props.treasuryWallet?.profile_id,
-        props.treasuryWallet?.circle_wallet_id,
+      const { data: treasuryTransactions } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('wallet_id', props.treasuryWallet?.id)
+        .order('created_at', { ascending: false });
+
+      const treasuryTransactionsUpdated = await Promise.all(
+        (treasuryTransactions ?? []).map(async (transaction: Transaction) => {
+          if (transaction.balance == null) {
+            const balance = treasuryWalletBalance;
+            const parsedBalance = balance.tokenBalances?.find(
+              ({ token }: { token: { symbol: string } }) =>
+                token.symbol === 'USDC',
+            )?.amount;
+            transaction.balance = parsedBalance;
+            await supabase
+              .from('transactions')
+              .update({ balance: parseFloat(transaction.balance) })
+              .eq('id', transaction.id)
+              .select('*')
+              .single();
+          }
+          return transaction;
+        }),
       );
 
-      setData(transactions);
-      setTreasuryData(treasuryTransactions);
+      setData(transactionsUpdated);
+      setTreasuryData(treasuryTransactionsUpdated);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {

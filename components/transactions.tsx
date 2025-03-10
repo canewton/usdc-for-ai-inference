@@ -31,6 +31,7 @@ interface Transaction {
   circle_transaction_id: string;
   transaction_type: string;
   amount: string;
+  balance: string;
   expanded: boolean;
 }
 
@@ -87,8 +88,8 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Amount</TableHead>
+              <TableHead>Total Amount</TableHead>
+              <TableHead>Balance</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -110,7 +111,6 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
                       {transaction.created_at}
                     </div>
                   </TableCell>
-                  <TableCell>{transaction.transaction_type}</TableCell>
                   {transaction.transaction_type === 'INBOUND' && (
                     <TableCell className="text-green-600" colSpan={1}>
                       +{transaction.amount}
@@ -121,6 +121,7 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
                       -{transaction.amount}
                     </TableCell>
                   )}
+                  <TableCell>{transaction.balance}</TableCell>
                   {transaction.status == 'CONFIRMED' && (
                     <TableCell colSpan={1}>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-green-100 text-green-800">
