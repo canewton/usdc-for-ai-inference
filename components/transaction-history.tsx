@@ -6,6 +6,7 @@ import { type FunctionComponent, useEffect, useMemo, useState } from 'react';
 import type { Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
+import { Billing, type BillingTransaction } from './billing';
 import { Transactions } from './transactions';
 import { WalletBalance } from './wallet-balance';
 
@@ -32,10 +33,6 @@ interface Props {
   } | null;
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-  ? process.env.NEXT_PUBLIC_VERCEL_URL
-  : 'http://localhost:3000';
-
 const supabase = createClient();
 
 type SortField = 'date' | 'amount';
@@ -55,12 +52,35 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     direction: 'desc',
   });
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<Transaction[]>([]);
+  const [transactionData, setTransactionData] = useState<Transaction[]>([]);
   const [treasuryData, setTreasuryData] = useState<Transaction[]>([]);
+  const [billingData, setBillingData] = useState<BillingTransaction[]>([]);
 
-  const formattedData = useMemo(
+  const formattedTransactionData = useMemo(
     () =>
-      data.map((transaction) => ({
+      transactionData.map((transaction) => ({
+        ...transaction,
+        created_at: new Date(transaction.created_at).toLocaleString(),
+        expanded: false,
+        amount: new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(Number(transaction.amount)),
+        balance: new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(Number(transaction.balance)),
+      })),
+    [transactionData],
+  );
+
+  const formattedBillingData = useMemo(
+    () =>
+      billingData.map((transaction) => ({
         ...transaction,
         created_at: new Date(transaction.created_at).toLocaleString(),
         expanded: false,
@@ -71,7 +91,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
           maximumFractionDigits: 2,
         }).format(Number(transaction.amount)),
       })),
-    [data],
+    [billingData],
   );
 
   const formattedTreasuryData = useMemo(
@@ -86,6 +106,12 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         }).format(Number(transaction.amount)),
+        balance: new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(Number(transaction.balance)),
       })),
     [treasuryData],
   );
@@ -123,6 +149,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         .from('transactions')
         .select('*')
         .eq('wallet_id', props.wallet?.id)
+        .eq('transaction_type', 'INBOUND')
         .order('created_at', { ascending: false });
 
       const transactionsUpdated = await Promise.all(
@@ -175,8 +202,9 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         }),
       );
 
-      setData(transactionsUpdated);
+      setTransactionData(transactionsUpdated);
       setTreasuryData(treasuryTransactionsUpdated);
+      updateBillingTransactions();
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {
@@ -184,7 +212,66 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     }
   };
 
+  const updateBillingTransactions = async () => {
+    try {
+      setLoading(true);
+
+      const { data: projects } = await supabase
+        .from('ai_projects')
+        .select('*')
+        .eq('circle_wallet_id', props.wallet?.circle_wallet_id)
+        .order('created_at', { ascending: false });
+
+      var hasNull = false;
+
+      const billingTransactions: BillingTransaction[] = await Promise.all(
+        (projects ?? []).map(async (project: any) => {
+          const { data: transaction } = await supabase
+            .from('transactions')
+            .select('*')
+            .eq('circle_transaction_id', project.circle_transaction_id)
+            .single();
+
+          if (!transaction) {
+            hasNull = true;
+          }
+
+          return {
+            id: project.id,
+            ai_model: project.ai_model,
+            project_name: project.project_name,
+            transaction_type: transaction?.transaction_type,
+            amount: transaction?.amount,
+            status: transaction?.status,
+            created_at: project.created_at,
+            expanded: false,
+          };
+        }),
+      );
+
+      if (!hasNull) {
+        setBillingData(billingTransactions);
+      }
+    } catch (error) {
+      console.error('Failed to fetch transactions:', error);
+    }
+  };
+
   useEffect(() => {
+    const billingSubscription = supabase
+      .channel('ai-projects')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'ai_projects',
+          filter: `circle_wallet_id=eq.${props.wallet?.circle_wallet_id}`,
+        },
+        () => updateBillingTransactions(),
+      )
+      .subscribe();
+
     const transactionSubscription = supabase
       .channel('transactions')
       .on(
@@ -214,14 +301,18 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       .subscribe();
 
     updateTransactions();
+    updateBillingTransactions();
 
     return () => {
       supabase.removeChannel(transactionSubscription);
       supabase.removeChannel(walletTransactionSubscription);
+      supabase.removeChannel(billingSubscription);
     };
   }, []);
 
-  const transactionTypes = [...new Set(data.map((t) => t.transaction_type))];
+  const transactionTypes = [
+    ...new Set(transactionData.map((t) => t.transaction_type)),
+  ];
 
   const toggleType = (type: string) => {
     setSelectedTypes((prev) =>
@@ -243,7 +334,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   };
 
   const filteredAndSortedTransactions = useMemo(() => {
-    let filtered = formattedData;
+    let filtered = formattedTransactionData;
 
     // Apply search filter
     if (searchQuery) {
@@ -277,7 +368,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
               parseFloat(a.amount.replace(/[$,]/g, ''));
       }
     });
-  }, [data, searchQuery, selectedTypes, sortConfig]);
+  }, [transactionData, searchQuery, selectedTypes, sortConfig]);
 
   return (
     <div className="min-h-screen">
@@ -304,6 +395,16 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
               onClick={() => setActiveTab('billing')}
             >
               Billing History
+            </button>
+            <button
+              className={`pb-4 px-1 ${
+                activeTab === 'usage'
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-500'
+              }`}
+              onClick={() => setActiveTab('billing')}
+            >
+              Usage
             </button>
             <button
               className={`pb-4 px-1 ${
@@ -458,11 +559,14 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         )}
 
         {/* Transaction Table */}
-        {activeTab !== 'treasury' && (
+        {activeTab == 'transactions' && (
           <Transactions
             data={filteredAndSortedTransactions}
             loading={loading}
           />
+        )}
+        {activeTab == 'billing' && (
+          <Billing data={formattedBillingData} loading={loading} />
         )}
         {activeTab == 'treasury' && (
           <>

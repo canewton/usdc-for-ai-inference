@@ -23,32 +23,32 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-interface Transaction {
+export interface BillingTransaction {
   id: string;
-  status: string;
-  created_at: string;
-  circle_transaction_id: string;
+  ai_model: string;
+  project_name: string;
   transaction_type: string;
   amount: string;
-  balance: string;
+  status: string;
+  created_at: string;
   expanded: boolean;
 }
 
 interface Props {
-  data: Transaction[];
+  data: BillingTransaction[];
   loading: boolean;
 }
 
 const ITEMS_PER_PAGE = 5;
 
-export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
+export const Billing: FunctionComponent<Props> = ({ data, loading }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Calculate pagination
   const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
 
-  const [paginatedData, setPaginatedData] = useState<Transaction[]>(
+  const [paginatedData, setPaginatedData] = useState<BillingTransaction[]>(
     data.slice(startIndex, startIndex + ITEMS_PER_PAGE),
   );
 
@@ -86,8 +86,9 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
+              <TableHead>Project Title</TableHead>
+              <TableHead>Model</TableHead>
               <TableHead>Total Amount</TableHead>
-              <TableHead>Balance</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -109,6 +110,8 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
                       {transaction.created_at}
                     </div>
                   </TableCell>
+                  <TableCell>{transaction.project_name}</TableCell>
+                  <TableCell>{transaction.ai_model}</TableCell>
                   {transaction.transaction_type === 'INBOUND' && (
                     <TableCell className="text-green-600" colSpan={1}>
                       +{transaction.amount}
@@ -119,7 +122,6 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
                       -{transaction.amount}
                     </TableCell>
                   )}
-                  <TableCell>{transaction.balance}</TableCell>
                   {transaction.status == 'CONFIRMED' && (
                     <TableCell colSpan={1}>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-green-100 text-green-800">
