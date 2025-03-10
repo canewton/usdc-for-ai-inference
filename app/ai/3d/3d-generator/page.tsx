@@ -1,5 +1,6 @@
 'use client';
 
+import { TrashIcon } from '@heroicons/react/24/outline';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
@@ -126,7 +127,40 @@ export default function Generate3DModelPage() {
     await submitPrompt(prompt);
   };
 
-  // function to determine date categorization
+  const handleDelete = async (modelId: string) => {
+    if (!session) return;
+
+    try {
+      const sessionToken = session.access_token;
+      const response = await fetch(
+        `http://localhost:3000/api/deletemodel?modelid=${modelId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        // remove the deleted model from the history state
+        setHistory(history.filter((item) => item.id !== modelId));
+
+        // clear model from canvas if it was being displayed
+        if (modelUrl === history.find((item) => item.id === modelId)?.url) {
+          setModelUrl(null);
+        }
+        console.log('Model deleted successfully:', data.message);
+      } else {
+        setError(data.error || 'Failed to delete model');
+      }
+    } catch (err) {
+      setError('An error occurred while deleting the model.');
+      console.error('Delete error:', err);
+    }
+  };
+
   const groupHistoryByDay = (history: ModelHistoryItem[]) => {
     const today = new Date();
     const yesterday = new Date(today);
@@ -201,12 +235,22 @@ export default function Generate3DModelPage() {
                 </h3>
                 <ul className="space-y-1">
                   {groupedHistory[day].map((item) => (
-                    <li key={item.id}>
+                    <li
+                      key={item.id}
+                      className="flex items-center justify-between group"
+                    >
                       <button
                         onClick={() => handleHistoryClick(item.url)}
-                        className="text-gray-700 hover:text-blue-500 text-sm text-left"
+                        className="text-gray-700 text-sm text-left py-1 px-2 rounded-full group-hover:bg-gray-200 transition-colors"
                       >
                         {item.prompt}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Delete model"
+                      >
+                        <TrashIcon className="w-4 h-4" />
                       </button>
                     </li>
                   ))}
