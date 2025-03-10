@@ -1,10 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
-
 import { createClient } from '@/utils/supabase/client';
-
 import { Spinner } from '../components/Spinner';
 import { SessionProvider } from '../contexts/SessionContext';
+import Navbar from '../components/Navbar';
+import Sidebar from '../components/Sidebar';
 
 export default function ImageLayout({
   children,
@@ -36,7 +36,15 @@ export default function ImageLayout({
 
   return (
     <SessionProvider access_token={session}>
-      <div className="image-layout">{children}</div>
+      <div className="flex flex-col h-screen">
+        <Navbar />
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar />
+          <div className="flex-1 overflow-auto">
+            {children}
+          </div>
+        </div>
+      </div>
     </SessionProvider>
   );
 }
