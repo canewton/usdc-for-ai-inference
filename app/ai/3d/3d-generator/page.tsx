@@ -89,14 +89,17 @@ export default function Generate3DModelPage() {
 
     try {
       const sessionToken = session.access_token;
-      const response = await fetch('http://localhost:3000/api/generate3d', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionToken}`,
+      const response = await fetch(
+        'http://localhost:3000/api/generate3d-image',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${sessionToken}`,
+          },
+          body: JSON.stringify({ mode, prompt }),
         },
-        body: JSON.stringify({ mode, prompt }),
-      });
+      );
 
       const data = await response.json();
       if (response.ok) {
