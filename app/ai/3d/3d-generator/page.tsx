@@ -420,6 +420,7 @@ export default function Generate3DModelPage() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               className="w-full"
+              disabled={!mode}
             />
           </div>
 
