@@ -7,8 +7,8 @@ import type { Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
 import { Billing, type BillingTransaction } from './billing';
+import { TransactionGraphs } from './transaction-graphs';
 import { Transactions } from './transactions';
-import { WalletBalance } from './wallet-balance';
 
 interface Transaction {
   id: string;
@@ -402,11 +402,11 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
                   ? 'border-b-2 border-blue-500 text-blue-600'
                   : 'text-gray-500'
               }`}
-              onClick={() => setActiveTab('billing')}
+              onClick={() => setActiveTab('usage')}
             >
               Usage
             </button>
-            <button
+            {/* <button
               className={`pb-4 px-1 ${
                 activeTab === 'treasury'
                   ? 'border-b-2 border-blue-500 text-blue-600'
@@ -415,117 +415,121 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
               onClick={() => setActiveTab('treasury')}
             >
               Treasury Wallet
-            </button>
+            </button> */}
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-4">
-            <div className="relative">
-              <button
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors ${showFilterMenu ? 'bg-gray-50' : ''}`}
-                onClick={() => {
-                  setShowFilterMenu(!showFilterMenu);
-                  setShowSortMenu(false);
-                }}
-              >
-                <SlidersHorizontal className="w-4 h-4" />
-                Filter By
-                {selectedTypes.length > 0 && (
-                  <span className="ml-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-600 rounded-full">
-                    {selectedTypes.length}
-                  </span>
+        {activeTab !== 'usage' && (
+          <div className="flex items-center justify-between mb-6">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search"
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-4">
+              <div className="relative">
+                <button
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors ${showFilterMenu ? 'bg-gray-50' : ''}`}
+                  onClick={() => {
+                    setShowFilterMenu(!showFilterMenu);
+                    setShowSortMenu(false);
+                  }}
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  Filter By
+                  {selectedTypes.length > 0 && (
+                    <span className="ml-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-600 rounded-full">
+                      {selectedTypes.length}
+                    </span>
+                  )}
+                </button>
+                {showFilterMenu && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-medium">Filter Transactions</h3>
+                        {selectedTypes.length > 0 && (
+                          <button
+                            onClick={clearFilters}
+                            className="text-sm text-blue-600 hover:text-blue-700"
+                          >
+                            Clear all
+                          </button>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        {transactionTypes.map((type) => (
+                          <label
+                            key={type}
+                            className="flex items-center space-x-2"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedTypes.includes(type)}
+                              onChange={() => toggleType(type)}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">
+                              {type}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </button>
-              {showFilterMenu && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-medium">Filter Transactions</h3>
-                      {selectedTypes.length > 0 && (
-                        <button
-                          onClick={clearFilters}
-                          className="text-sm text-blue-600 hover:text-blue-700"
-                        >
-                          Clear all
-                        </button>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      {transactionTypes.map((type) => (
-                        <label
-                          key={type}
-                          className="flex items-center space-x-2"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedTypes.includes(type)}
-                            onChange={() => toggleType(type)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-gray-700">{type}</span>
-                        </label>
-                      ))}
+              </div>
+              <div className="relative">
+                <button
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors ${showSortMenu ? 'bg-gray-50' : ''}`}
+                  onClick={() => {
+                    setShowSortMenu(!showSortMenu);
+                    setShowFilterMenu(false);
+                  }}
+                >
+                  <ArrowDownUp className="w-4 h-4" />
+                  Sort By
+                </button>
+                {showSortMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                    <div className="p-2">
+                      <button
+                        className={`w-full text-left px-4 py-2 text-sm rounded-md hover:bg-gray-50 ${
+                          sortConfig.field === 'date'
+                            ? 'text-blue-600 bg-blue-50'
+                            : 'text-gray-700'
+                        }`}
+                        onClick={() => handleSort('date')}
+                      >
+                        Date{' '}
+                        {sortConfig.field === 'date' &&
+                          (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                      </button>
+                      <button
+                        className={`w-full text-left px-4 py-2 text-sm rounded-md hover:bg-gray-50 ${
+                          sortConfig.field === 'amount'
+                            ? 'text-blue-600 bg-blue-50'
+                            : 'text-gray-700'
+                        }`}
+                        onClick={() => handleSort('amount')}
+                      >
+                        Amount{' '}
+                        {sortConfig.field === 'amount' &&
+                          (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                      </button>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-            <div className="relative">
-              <button
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors ${showSortMenu ? 'bg-gray-50' : ''}`}
-                onClick={() => {
-                  setShowSortMenu(!showSortMenu);
-                  setShowFilterMenu(false);
-                }}
-              >
-                <ArrowDownUp className="w-4 h-4" />
-                Sort By
-              </button>
-              {showSortMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                  <div className="p-2">
-                    <button
-                      className={`w-full text-left px-4 py-2 text-sm rounded-md hover:bg-gray-50 ${
-                        sortConfig.field === 'date'
-                          ? 'text-blue-600 bg-blue-50'
-                          : 'text-gray-700'
-                      }`}
-                      onClick={() => handleSort('date')}
-                    >
-                      Date{' '}
-                      {sortConfig.field === 'date' &&
-                        (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                    </button>
-                    <button
-                      className={`w-full text-left px-4 py-2 text-sm rounded-md hover:bg-gray-50 ${
-                        sortConfig.field === 'amount'
-                          ? 'text-blue-600 bg-blue-50'
-                          : 'text-gray-700'
-                      }`}
-                      onClick={() => handleSort('amount')}
-                    >
-                      Amount{' '}
-                      {sortConfig.field === 'amount' &&
-                        (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                    </button>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Active Filters */}
         {(selectedTypes.length > 0 || searchQuery) && (
@@ -568,7 +572,8 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         {activeTab == 'billing' && (
           <Billing data={formattedBillingData} loading={loading} />
         )}
-        {activeTab == 'treasury' && (
+        {activeTab == 'usage' && <TransactionGraphs data={billingData} />}
+        {/* {activeTab == 'treasury' && (
           <>
             <span>
               Treasury Wallet Balance:{' '}
@@ -581,7 +586,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
             </span>
             <Transactions data={formattedTreasuryData} loading={loading} />
           </>
-        )}
+        )} */}
       </div>
     </div>
   );

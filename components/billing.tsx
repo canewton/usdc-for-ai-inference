@@ -82,10 +82,10 @@ export const Billing: FunctionComponent<Props> = ({ data, loading }) => {
   return (
     <>
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-4">
-        <Table>
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
+              <TableHead colSpan={2}>Date</TableHead>
               <TableHead>Project Title</TableHead>
               <TableHead>Model</TableHead>
               <TableHead>Total Amount</TableHead>
@@ -100,7 +100,7 @@ export const Billing: FunctionComponent<Props> = ({ data, loading }) => {
                   className="border-b-0"
                   key={transaction.id}
                 >
-                  <TableCell className="p-4" colSpan={1}>
+                  <TableCell className="p-4" colSpan={2}>
                     <div className="flex items-center gap-2">
                       <div
                         className={`transition-transform duration-300 ${transaction.expanded ? 'rotate-90' : ''}`}
@@ -113,24 +113,24 @@ export const Billing: FunctionComponent<Props> = ({ data, loading }) => {
                   <TableCell>{transaction.project_name}</TableCell>
                   <TableCell>{transaction.ai_model}</TableCell>
                   {transaction.transaction_type === 'INBOUND' && (
-                    <TableCell className="text-green-600" colSpan={1}>
+                    <TableCell className="text-green-600">
                       +{transaction.amount}
                     </TableCell>
                   )}
                   {transaction.transaction_type === 'OUTBOUND' && (
-                    <TableCell className="text-red-600" colSpan={1}>
+                    <TableCell className="text-red-600">
                       -{transaction.amount}
                     </TableCell>
                   )}
                   {transaction.status == 'CONFIRMED' && (
-                    <TableCell colSpan={1}>
+                    <TableCell>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-green-100 text-green-800">
                         {transaction.status}
                       </span>
                     </TableCell>
                   )}
                   {transaction.status !== 'CONFIRMED' && (
-                    <TableCell colSpan={1}>
+                    <TableCell>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-red-100 text-red-800">
                         {transaction.status}
                       </span>
@@ -138,7 +138,7 @@ export const Billing: FunctionComponent<Props> = ({ data, loading }) => {
                   )}
                 </TableRow>
                 <TableRow>
-                  <TableCell className={`p-0`} colSpan={1}>
+                  <TableCell className={`p-0`} colSpan={2}>
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${
                         transaction.expanded
@@ -151,7 +151,7 @@ export const Billing: FunctionComponent<Props> = ({ data, loading }) => {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className={`p-0`} colSpan={1}>
+                  <TableCell className={`p-0`}>
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${
                         transaction.expanded

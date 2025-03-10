@@ -23,7 +23,7 @@ export const TransferUSDCButton: FunctionComponent<Props> = ({
         circleWalletId: walletId ?? '',
         amount: '0.1',
         projectName: 'Test',
-        aiModel: 'Test',
+        aiModel: 'text-to-text',
       };
 
       const response = await fetch('/api/wallet/transfer', {
