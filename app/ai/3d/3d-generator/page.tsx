@@ -19,7 +19,7 @@ interface ModelHistoryItem {
 
 export default function Generate3DModelPage() {
   const [prompt, setPrompt] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageDataUri, setImageDataUri] = useState('');
   const [mode, setMode] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [modelUrl, setModelUrl] = useState<string | null>(null);
@@ -81,8 +81,37 @@ export default function Generate3DModelPage() {
     fetchHistory();
   }, [session, modelUrl]);
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // validate file type and size
+      const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      const maxSize = 20 * 1024 * 1024;
+      if (!validTypes.includes(file.type)) {
+        setError('Please upload a PNG, JPG, or JPEG file.');
+        return;
+      }
+      if (file.size > maxSize) {
+        setError('File size exceeds 20MB.');
+        return;
+      }
+
+      // convert file to base64 URI
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUri = reader.result as string;
+        setImageDataUri(dataUri);
+        setError(null);
+      };
+      reader.onerror = () => {
+        setError('Error reading the image file.');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const submitPrompt = async (prompt: string) => {
-    if (!prompt.trim() || !session) return;
+    if (!session || !imageDataUri) return;
 
     setIsLoading(true);
     setError(null);
@@ -99,7 +128,7 @@ export default function Generate3DModelPage() {
             Authorization: `Bearer ${sessionToken}`,
           },
           body: JSON.stringify({
-            image_url: imageUrl,
+            image_url: imageDataUri,
             should_texture: mode,
             texture_prompt: prompt,
           }),
@@ -118,11 +147,6 @@ export default function Generate3DModelPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    submitPrompt(prompt);
   };
 
   const handleHistoryClick = (url: string) => {
@@ -152,10 +176,7 @@ export default function Generate3DModelPage() {
 
       const data = await response.json();
       if (response.ok) {
-        // remove the deleted model from the history state
         setHistory(history.filter((item) => item.id !== modelId));
-
-        // clear model from canvas if it was being displayed
         if (modelUrl === history.find((item) => item.id === modelId)?.url) {
           setModelUrl(null);
         }
@@ -302,22 +323,37 @@ export default function Generate3DModelPage() {
               </p>
               <div className="flex justify-center space-x-4">
                 <Button
-                  onClick={() => handlePromptSelect('Create a 3D wallet')}
+                  onClick={() =>
+                    imageDataUri
+                      ? handlePromptSelect('Glossy Metallic Shine')
+                      : setError('Please upload an image first')
+                  }
                   className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full flex items-center"
+                  disabled={!imageDataUri || !mode || isLoading}
                 >
-                  <span className="mr-2">📧</span> Create a 3D wallet
+                  <span className="mr-2">🪞</span> Glossy Metallic Shine
                 </Button>
                 <Button
-                  onClick={() => handlePromptSelect('Create a USDC coin')}
+                  onClick={() =>
+                    imageDataUri
+                      ? handlePromptSelect('Rough Stone Grain')
+                      : setError('Please upload an image first')
+                  }
                   className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full flex items-center"
+                  disabled={!imageDataUri || !mode || isLoading}
                 >
-                  <span className="mr-2">💰</span> Create a USDC coin
+                  <span className="mr-2">🪨</span> Rough Stone Grain
                 </Button>
                 <Button
-                  onClick={() => handlePromptSelect('Surprise me')}
+                  onClick={() =>
+                    imageDataUri
+                      ? handlePromptSelect('Soft Velvet Glow')
+                      : setError('Please upload an image first')
+                  }
                   className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full flex items-center"
+                  disabled={!imageDataUri || !mode || isLoading}
                 >
-                  <span className="mr-2">✨</span> Surprise me
+                  <span className="mr-2">✨</span> Soft Velvet Glow
                 </Button>
               </div>
             </div>
@@ -325,36 +361,87 @@ export default function Generate3DModelPage() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="w-1/4 p-4 bg-gray-50 h-full flex flex-col justify-between">
+        <div className="w-1/4 p-4 bg-gray-50 h-full flex flex-col space-y-4">
           <div>
-            <h2 className="text-2xl font-bold mb-4">AI 3D Model Generator</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                placeholder="Describe the 3D model you want to generate..."
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                className="w-full"
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Image
+            </label>
+            <div
+              className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400"
+              onClick={() => document.getElementById('image-upload')?.click()}
+            >
+              {imageDataUri ? (
+                <img
+                  src={imageDataUri}
+                  alt="Uploaded"
+                  className="max-h-40 mx-auto"
+                />
+              ) : (
+                <>
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                    />
+                  </svg>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Click or drag to upload image
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Supported files: .png, .jpg, .jpeg <br />
+                    Max size: 20MB
+                  </p>
+                </>
+              )}
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/png, image/jpeg, image/jpg"
+                onChange={handleImageUpload}
+                className="hidden"
               />
-              <select
-                value={mode}
-                onChange={(e) => setMode(e.target.value)}
-                className="w-full p-2 border rounded"
-              >
-                <option value="preview">Preview</option>
-                <option value="refine">Refine</option>
-              </select>
-            </form>
+            </div>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Prompt
+            </label>
+            <Input
+              placeholder="Describe the model texture..."
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Model Type
+            </label>
+            <select className="w-full p-2 border rounded text-gray-700">
+              <option>OpenAI</option>
+            </select>
+          </div>
+
           <div>
             <Button
-              type="submit"
-              onClick={handleSubmit}
-              className="w-full mt-4"
-              disabled={isLoading}
+              onClick={() => submitPrompt(prompt)}
+              className="w-full bg-gray-100 text-gray-700 py-2 rounded-full flex items-center justify-center"
+              disabled={isLoading || !imageDataUri}
             >
-              {isLoading ? 'Generating...' : 'Generate Model'}
+              <span className="mr-2">✨</span>
+              {isLoading ? 'Generating...' : 'Generate your asset'}
             </Button>
-            {error && <p className="text-red-500 mt-2">{error}</p>}
+            {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
           </div>
         </div>
       </div>
