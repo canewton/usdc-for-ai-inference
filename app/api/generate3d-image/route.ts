@@ -49,8 +49,13 @@ export async function POST(req: Request) {
      *  Prompt -> String: required
      *  Negative_prompt -> String, Art_style -> String, Should_remesh -> Bool: optional
      */
-    const { image_url, enable_pbr, should_remesh, should_texture } =
-      await req.json();
+    const {
+      image_url,
+      enable_pbr,
+      should_remesh,
+      should_texture,
+      texture_prompt,
+    } = await req.json();
 
     const generatePreviewResponse = await fetch(MESHY_API_URL, {
       method: 'POST',
@@ -60,6 +65,7 @@ export async function POST(req: Request) {
         enable_pbr,
         should_remesh,
         should_texture,
+        texture_prompt,
       }),
     });
 
@@ -104,6 +110,7 @@ export async function POST(req: Request) {
     const { error: dbError } = await supabase.from('3d_generations').insert([
       {
         image_url,
+        prompt: texture_prompt,
         user_id: user.id,
         url: storedModelUrl,
         provider: 'Meshy',

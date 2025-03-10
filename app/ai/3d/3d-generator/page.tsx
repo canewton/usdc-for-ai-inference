@@ -19,7 +19,8 @@ interface ModelHistoryItem {
 
 export default function Generate3DModelPage() {
   const [prompt, setPrompt] = useState('');
-  const [mode, setMode] = useState('preview');
+  const [imageUrl, setImageUrl] = useState('');
+  const [mode, setMode] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [modelUrl, setModelUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +98,11 @@ export default function Generate3DModelPage() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${sessionToken}`,
           },
-          body: JSON.stringify({ mode, prompt }),
+          body: JSON.stringify({
+            image_url: imageUrl,
+            should_texture: mode,
+            texture_prompt: prompt,
+          }),
         },
       );
 
@@ -210,17 +215,17 @@ export default function Generate3DModelPage() {
     <div className="w-full h-screen flex flex-col font-sf-pro">
       <div className="p-4 flex justify-start">
         <Button
-          onClick={() => setMode('preview')}
+          onClick={() => setMode(false)}
           className={`mr-2 ${
-            mode === 'preview' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+            !mode ? 'bg-blue-500 text-white' : 'bg-gray-200'
           } rounded-full px-4 py-2`}
         >
           Preview
         </Button>
         <Button
-          onClick={() => setMode('refine')}
+          onClick={() => setMode(true)}
           className={`mr-2 ${
-            mode === 'refine' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+            mode ? 'bg-blue-500 text-white' : 'bg-gray-200'
           } rounded-full px-4 py-2`}
         >
           Refine
