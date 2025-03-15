@@ -35,8 +35,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="min-h-screen flex flex-col">
-            <div className="flex-1 w-full flex flex-col gap-20">
+          <main className="h-screen flex flex-col overflow-hidden">
+            <div className="w-full flex flex-col h-full">
               <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
                 <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
                   <div className="flex gap-5 items-center font-semibold">
@@ -45,7 +45,9 @@ export default function RootLayout({
                   <HeaderAuth />
                 </div>
               </nav>
-              <div className="flex flex-col gap-20 p-5">{children}</div>
+              <div className="flex flex-col flex-1 overflow-hidden border-2 border-blue-600">
+                {children}
+              </div>
             </div>
           </main>
         </ThemeProvider>
