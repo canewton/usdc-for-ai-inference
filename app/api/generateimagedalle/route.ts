@@ -9,7 +9,6 @@ const supabase = createClient();
 
 export async function POST(req: Request) {
   try {
-    // Get authenticated user
     const token = req.headers.get('Authorization');
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

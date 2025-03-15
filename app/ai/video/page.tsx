@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef } from 'react';
-import axios from 'axios';
 
 export default function Home() {
   const [prompt, setPrompt] = useState('');
@@ -71,32 +70,21 @@ export default function Home() {
       reader.onloadend = async () => {
         const base64Image = reader.result?.toString().split(',')[1];
 
-        
-        const framesNum = Math.round(duration * 6);
-
-        const response = await axios.post(
-          'https://api.novita.ai/v3/async/img2video',
-          {
+        const response = await fetch('../api/generatevideo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${NOVITA_API_KEY}`,
+          },
+          body: JSON.stringify({
             model_name: modelType,
             image_file: base64Image,
-            frames_num: modelType === 'SVD-XT' ? 25 : 14,
-            frames_per_second: 6,
-            image_file_resize_mode: 'ORIGINAL_RESOLUTION',
-            steps: 20,
             seed: Math.floor(Math.random() * 10000),
-            motion_bucket_id: 1,
-            cond_aug: 1,
-            enable_frame_interpolation: true,
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${NOVITA_API_KEY}`,
-            },
-          }
-        );
+          }),
+        });
 
-        const { task_id } = response.data;
+        const responseData = await response.json();
+        const { task_id } = responseData;
         checkVideoStatus(task_id);
       };
     } catch (error) {
@@ -108,20 +96,22 @@ export default function Home() {
   const checkVideoStatus = async (taskId: string) => {
     try {
       const interval = setInterval(async () => {
-        const result = await axios.get(
-          `https://api.novita.ai/v3/async/task-result?task_id=${taskId}`,
+        const result = await fetch('../api/checkvideostatus', 
           {
+            method: 'POST',
             headers: {
               Authorization: `Bearer ${NOVITA_API_KEY}`,
             },
+            body: JSON.stringify({ task_id: taskId }),
           }
         );
 
-        console.log('Task result:', result.data);
+        const resultData = await result.json();
+        console.log('Task result:', resultData);
         
-        // Extract the nested status from the task object
-        const taskStatus = result.data.task?.status;
-        const videos = result.data.videos || [];
+        const taskStatus = resultData.task?.status;
+        const videos = resultData.videos || [];
+        console.log('Videos:', videos);
         
         if (taskStatus === 'TASK_STATUS_SUCCEED' && videos.length > 0) {
           setVideoUrl(videos[0].video_url);
@@ -164,6 +154,7 @@ export default function Home() {
     }
     
     if (videoUrl) {
+      console.log('Video URL:', videoUrl);
       return (
         <div className="w-full">
           <h2 className="text-xl font-semibold mb-4">Your Generated Video</h2>
