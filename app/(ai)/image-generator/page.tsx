@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 import PromptSuggestions from '../../components/PromptSuggestions';
-import SendIcon from '../../plane.svg';
+import SendIcon from '@/public/plane.svg';
 
 const allSuggestions = [
   'A sleek, futuristic USDC crypto debit card with neon blue accents and a cyber-inspired design',
