@@ -6,9 +6,9 @@ import React from 'react';
 import { useSession } from '@/app/contexts/SessionContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import SendIcon from '@/public/plane.svg';
 
 import PromptSuggestions from '../../components/PromptSuggestions';
-import SendIcon from '@/public/plane.svg';
 
 const allSuggestions = [
   'A sleek, futuristic USDC crypto debit card with neon blue accents and a cyber-inspired design',
