@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { Spinner } from '@/app/components/Spinner';
+import { Spinner } from '@/components/Spinner';
 import { useSession } from '@/app/contexts/SessionContext';
 
 export default function ImagePage() {
