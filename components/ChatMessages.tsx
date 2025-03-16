@@ -32,13 +32,13 @@ export function ChatMessages({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const tokensPerDollar = 0.000125;
-  
+
   useEffect(() => {
-      // Scroll to bottom of messages
-      if (!editingMessageId) {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, [messages]);
+    // Scroll to bottom of messages
+    if (!editingMessageId) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   return (
     <div className="space-y-4 overflow-auto flex-col mb-4 h-[calc(100vh-335px)] text-headline">

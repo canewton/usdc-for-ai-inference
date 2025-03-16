@@ -3,8 +3,8 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { Spinner } from '@/components/Spinner';
 import { useSession } from '@/app/contexts/SessionContext';
+import { Spinner } from '@/components/Spinner';
 
 export default function ImagePage() {
   const params = useParams();

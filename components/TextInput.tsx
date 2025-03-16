@@ -1,8 +1,8 @@
 import type { FormEvent } from 'react';
 import React from 'react';
 
+import DisabledSendIcon from '@/public/disabled-plane.svg';
 import SendIcon from '@/public/plane.svg';
-import DisabledSendIcon from '@/public/disabled-plane.svg'
 
 interface TextInputProps {
   input: string;
@@ -28,7 +28,9 @@ export function TextInput({
           type="text"
           value={editingMessage ? '' : input}
           onChange={handleInputChange}
-          placeholder={isLoading? "Circle AI is thinking..." : "Message Circle AI"}
+          placeholder={
+            isLoading ? 'Circle AI is thinking...' : 'Message Circle AI'
+          }
           className="flex-1 p-4 bg-white rounded-3xl placeholder-transparent outline-none text-body"
           style={{
             background: 'linear-gradient(to right, #b090F5, #5fbfff, #5fbfff)',
@@ -50,10 +52,13 @@ export function TextInput({
             className="px-4 py-2  rounded-3xl"
             disabled={!input.trim()}
           >
-            <img src={DisabledSendIcon.src} alt="Send icon" className="w-10 h-10" />
+            <img
+              src={DisabledSendIcon.src}
+              alt="Send icon"
+              className="w-10 h-10"
+            />
           </button>
-        ) :
-        (
+        ) : (
           <button
             type="submit"
             className="px-4 py-2  rounded-3xl"

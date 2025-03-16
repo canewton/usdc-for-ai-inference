@@ -1,17 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
 
+import AiTabs from '@/components/AiTabs';
 import { createClient } from '@/utils/supabase/client';
 
 import { Spinner } from '../../components/Spinner';
 import { SessionProvider } from '../contexts/SessionContext';
-import AiTabs from '@/components/AiTabs';
 
-export default function AILayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AILayout({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -38,12 +34,12 @@ export default function AILayout({
   return (
     <SessionProvider access_token={session}>
       <div className="ai-layout flex flex-col h-full pt-5">
-        <div className='flex flex-row h-full w-full'>
+        <div className="flex flex-row h-full w-full">
           {/* Left side bar with tabs and history */}
           <aside className="w-64 h-full flex flex-col pr-2">
             <AiTabs />
             {/* History section to be changed by tool */}
-            <div id="ai-history" className="overflow-hidden"/>
+            <div id="ai-history" className="overflow-hidden" />
           </aside>
 
           {/* Middle and right sections  */}

@@ -1,30 +1,29 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
+import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import { TextInput } from '@/components/TextInput';
+import { useSession } from '@/app/contexts/SessionContext';
+import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatMessages } from '@/components/ChatMessages';
 import { ChatSidebar } from '@/components/ChatSidebar';
-import { useSession } from '@/app/contexts/SessionContext';
+import MainAiSection from '@/components/MainAiSection';
+import PromptSuggestions from '@/components/PromptSuggestions';
+import RightAiSidebar from '@/components/RightAiSidebar';
+import { TextInput } from '@/components/TextInput';
 import { Slider } from '@/components/ui/slider';
 import Blurs from '@/public/blurs.svg';
+import WalletIcon from '@/public/digital-wallet.svg';
+import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
-
-import PromptSuggestions from '@/components/PromptSuggestions';
-import MainAiSection from '@/components/MainAiSection';
-import AiHistoryPortal from '@/components/AiHistoryPortal';
-import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
-import WalletIcon from '@/public/digital-wallet.svg'
-import UsdcIcon from '@/public/usdc.svg'
-import SparkIcon from '@/public/spark.svg'
-import RightAiSidebar from '@/components/RightAiSidebar';
+import UsdcIcon from '@/public/usdc.svg';
 
 const promptSuggestions = [
-  {title: 'Explain how to load my wallet', icon: WalletIcon},
-  {title: 'Tell me about USDC security', icon: UsdcIcon},
-  {title: 'Surprise me', icon: SparkIcon},
+  { title: 'Explain how to load my wallet', icon: WalletIcon },
+  { title: 'Tell me about USDC security', icon: UsdcIcon },
+  { title: 'Surprise me', icon: SparkIcon },
 ];
 
 interface ChatProps {
@@ -35,7 +34,9 @@ export function Chat({ currChat }: ChatProps) {
   const [model, setModel] = useState('gpt-4o-mini');
   const [maxTokens, setMaxTokens] = useState(200);
   const [chatId, setChatId] = useState(currChat || '');
-  const [chats, setChats] = useState<{ id: string; title: string, created_at: string }[]>([]);
+  const [chats, setChats] = useState<
+    { id: string; title: string; created_at: string }[]
+  >([]);
   const chatIdRef = useRef<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<string>('');
@@ -44,7 +45,7 @@ export function Chat({ currChat }: ChatProps) {
   const session = useSession();
   const router = useRouter();
 
-  const wordsPerToken = "Each word is around 10 tokens = $0.05";
+  const wordsPerToken = 'Each word is around 10 tokens = $0.05';
 
   const {
     messages,
@@ -183,12 +184,19 @@ export function Chat({ currChat }: ChatProps) {
     if (session) {
       deleteChat(id);
       setMessages([]);
-      router.push("/chat/");
+      router.push('/chat/');
     }
   };
 
   const onNewChat = () => {
-    setChats((prevChats) => [{ id: '', title: '', created_at: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx") }, ...prevChats]);
+    setChats((prevChats) => [
+      {
+        id: '',
+        title: '',
+        created_at: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
+      },
+      ...prevChats,
+    ]);
     setChatId('');
     setMessages([]);
   };
@@ -250,12 +258,20 @@ export function Chat({ currChat }: ChatProps) {
         // Update chats
         if (chats[0].id === '') {
           setChats((prevChats) => [
-            { id: chatData.id, title: chatData.title, created_at: chatData.created_at },
+            {
+              id: chatData.id,
+              title: chatData.title,
+              created_at: chatData.created_at,
+            },
             ...prevChats.slice(1),
           ]);
         } else {
           setChats((prevChats) => [
-            { id: chatData.id, title: chatData.title, created_at: chatData.created_at },
+            {
+              id: chatData.id,
+              title: chatData.title,
+              created_at: chatData.created_at,
+            },
             ...prevChats,
           ]);
         }
@@ -381,10 +397,8 @@ export function Chat({ currChat }: ChatProps) {
       </AiHistoryPortal>
 
       {/* Middle section */}
-      <MainAiSection >
-        <div
-          className="flex flex-row justify-between space-x-2 w-fit h-fit items-center"
-        >
+      <MainAiSection>
+        <div className="flex flex-row justify-between space-x-2 w-fit h-fit items-center">
           <img
             src={TrustIcon.src}
             alt="Star with checkmark"
@@ -422,9 +436,7 @@ export function Chat({ currChat }: ChatProps) {
               />
               <div className="inset-0 flex items-center justify-center absolute">
                 <div className="flex flex-col items-center justify-center w-1/3 text-center">
-                  <h1 className="text-5xl text-body mb-2">
-                    What do you need?
-                  </h1>
+                  <h1 className="text-5xl text-body mb-2">What do you need?</h1>
                   <p className="text-xl text-sub">
                     Ask our AI chatbot about anything
                   </p>
@@ -448,7 +460,7 @@ export function Chat({ currChat }: ChatProps) {
           </div>
         </div>
       </MainAiSection>
-      
+
       {/* Right section with balance and settings */}
       <RightAiSidebar isImageInput={false}>
         <div className="space-y-6">

@@ -1,21 +1,27 @@
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 
-import VideoIcon from '@/public/entertainment-bazooka.svg'
-import MultichainIcon from '@/public/multichain-apple.svg'
-import ImageIcon from '@/public/image-julius.svg' 
-import ChatIcon from '@/public/chat-jelly.svg'
-import { usePathname } from 'next/navigation';
+import ChatIcon from '@/public/chat-jelly.svg';
+import VideoIcon from '@/public/entertainment-bazooka.svg';
+import ImageIcon from '@/public/image-julius.svg';
+import MultichainIcon from '@/public/multichain-apple.svg';
 
 type SidebarItemProps = {
   title: string;
   active?: boolean;
-  icon: any,
-  alt: string,
-  url: string,
+  icon: any;
+  alt: string;
+  url: string;
 };
 
-const SidebarItem = ({ title, active = false, icon, alt, url }: SidebarItemProps) => {
+const SidebarItem = ({
+  title,
+  active = false,
+  icon,
+  alt,
+  url,
+}: SidebarItemProps) => {
   let hoverColor = '';
   let activeBackground = '';
   let activeFontColor = '';
@@ -42,15 +48,8 @@ const SidebarItem = ({ title, active = false, icon, alt, url }: SidebarItemProps
   const classes = `flex flex-row items-center py-2 px-4 text-sm transition rounded-lg ${hoverColor} ${active ? `${activeBackground} ${activeFontColor} font-bold` : ''}`;
 
   return (
-    <Link
-      href={url}
-      className={classes}
-    >
-      <img
-        src={icon.src}
-        alt={alt}
-        className="w-8 h-8 mr-2"
-      />
+    <Link href={url} className={classes}>
+      <img src={icon.src} alt={alt} className="w-8 h-8 mr-2" />
       {title}
     </Link>
   );
@@ -58,13 +57,37 @@ const SidebarItem = ({ title, active = false, icon, alt, url }: SidebarItemProps
 
 export default function AiTabs() {
   const pathname = usePathname();
-  const tool = pathname.split("/")[1];
+  const tool = pathname.split('/')[1];
   return (
     <div className="space-y-2 h-fit p-2 flex flex-col justify-center">
-      <SidebarItem title="Image to Video" active={tool === "video"} icon={VideoIcon} alt="Video icon" url="/video"/>
-      <SidebarItem title="Image to 3-d" active={tool === "3d"} icon={MultichainIcon} alt="Multichain block icon" url="/3d"/>
-      <SidebarItem title="Text to Image" active={tool === "image"} icon={ImageIcon} alt="Image icon" url="/image"/>
-      <SidebarItem title="Text to Text" active={tool === "chat"} icon={ChatIcon} alt="Text bubble icon" url="/chat"/>
+      <SidebarItem
+        title="Image to Video"
+        active={tool === 'video'}
+        icon={VideoIcon}
+        alt="Video icon"
+        url="/video"
+      />
+      <SidebarItem
+        title="Image to 3-d"
+        active={tool === '3d'}
+        icon={MultichainIcon}
+        alt="Multichain block icon"
+        url="/3d"
+      />
+      <SidebarItem
+        title="Text to Image"
+        active={tool === 'image'}
+        icon={ImageIcon}
+        alt="Image icon"
+        url="/image"
+      />
+      <SidebarItem
+        title="Text to Text"
+        active={tool === 'chat'}
+        icon={ChatIcon}
+        alt="Text bubble icon"
+        url="/chat"
+      />
     </div>
-  )
+  );
 }
