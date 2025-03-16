@@ -3,18 +3,28 @@
 import { useChat } from '@ai-sdk/react';
 import { useEffect, useRef, useState } from 'react';
 
-import { ChatInput } from '@/app/components/ChatInput';
-import { ChatMessages } from '@/app/components/ChatMessages';
-import { ChatSidebar } from '@/app/components/ChatSidebar';
+import { TextInput } from '@/components/TextInput';
+import { ChatMessages } from '@/components/ChatMessages';
+import { ChatSidebar } from '@/components/ChatSidebar';
 import { useSession } from '@/app/contexts/SessionContext';
 import { Slider } from '@/components/ui/slider';
+import Blurs from '@/public/blurs.svg';
+import TrustIcon from '@/public/trust.svg';
 
-import PromptSuggestions from './PromptSuggestions';
+import PromptSuggestions from '@/components/PromptSuggestions';
+import MainAiSection from '@/components/MainAiSection';
+import AiHistoryPortal from '@/components/AiHistoryPortal';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import WalletIcon from '@/public/digital-wallet.svg'
+import UsdcIcon from '@/public/usdc.svg'
+import SparkIcon from '@/public/spark.svg'
+import RightAiSidebar from '@/components/RightAiSidebar';
 
 const promptSuggestions = [
-  'Explain how to load my wallet',
-  'Tell me about USDC security',
-  'Surprise me',
+  {title: 'Explain how to load my wallet', icon: WalletIcon},
+  {title: 'Tell me about USDC security', icon: UsdcIcon},
+  {title: 'Surprise me', icon: SparkIcon},
 ];
 
 interface ChatProps {
@@ -25,13 +35,16 @@ export function Chat({ currChat }: ChatProps) {
   const [model, setModel] = useState('gpt-4o-mini');
   const [maxTokens, setMaxTokens] = useState(200);
   const [chatId, setChatId] = useState(currChat || '');
-  const [chats, setChats] = useState<{ id: string; title: string }[]>([]);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [chats, setChats] = useState<{ id: string; title: string, created_at: string }[]>([]);
   const chatIdRef = useRef<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<string>('');
+  const [trustHovered, setTrustHovered] = useState<boolean>(false);
 
   const session = useSession();
+  const router = useRouter();
+
+  const wordsPerToken = "Each word is around 10 tokens = $0.05";
 
   const {
     messages,
@@ -142,7 +155,7 @@ export function Chat({ currChat }: ChatProps) {
     await getChatMessages(id);
     setChatId(id);
     chatIdRef.current = id;
-    window.history.replaceState(null, '', `/ai/chat/${id}`);
+    window.history.replaceState(null, '', `/chat/${id}`);
   };
 
   const onDeleteChat = (id: string) => {
@@ -170,11 +183,12 @@ export function Chat({ currChat }: ChatProps) {
     if (session) {
       deleteChat(id);
       setMessages([]);
+      router.push("/chat/");
     }
   };
 
   const onNewChat = () => {
-    setChats((prevChats) => [{ id: '', title: '' }, ...prevChats]);
+    setChats((prevChats) => [{ id: '', title: '', created_at: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx") }, ...prevChats]);
     setChatId('');
     setMessages([]);
   };
@@ -232,16 +246,16 @@ export function Chat({ currChat }: ChatProps) {
       if (chatData.id) {
         setChatId(chatData.id);
         chatIdRef.current = chatData.id;
-        window.history.replaceState(null, '', `/ai/chat/${chatData.id}`);
+        window.history.replaceState(null, '', `/chat/${chatData.id}`);
         // Update chats
         if (chats[0].id === '') {
           setChats((prevChats) => [
-            { id: chatData.id, title: chatData.title },
+            { id: chatData.id, title: chatData.title, created_at: chatData.created_at },
             ...prevChats.slice(1),
           ]);
         } else {
           setChats((prevChats) => [
-            { id: chatData.id, title: chatData.title },
+            { id: chatData.id, title: chatData.title, created_at: chatData.created_at },
             ...prevChats,
           ]);
         }
@@ -263,8 +277,8 @@ export function Chat({ currChat }: ChatProps) {
     }
   };
 
-  const handlePromptSelect = (selectedPrompt: string) => {
-    setInput(selectedPrompt);
+  const handlePromptSelect = (selectedPrompt: any) => {
+    setInput(selectedPrompt.title);
   };
 
   const stopGeneration = () => {
@@ -349,33 +363,44 @@ export function Chat({ currChat }: ChatProps) {
   }, [session]);
 
   useEffect(() => {
-    // Scroll to bottom of messages
-    if (!editingMessageId) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
-
-  useEffect(() => {
     // Get messages if chat changes
     getChatMessages(chatId);
   }, [chatId]);
 
   return (
-    <div className="w-full mx-auto">
-      <h1 className="text-2xl font-bold">Chat Generator</h1>
-      <div className="flex w-full justify-between space-x-6">
-        <div className="flex w-64 h-96 flex flex-col border-r-2 border-gray">
-          <ChatSidebar
-            chats={chats}
-            currentChatId={chatId}
-            onNewChat={onNewChat}
-            onSelectChat={onSelectChat}
-            onDeleteChat={onDeleteChat}
+    <>
+      {/* Left history section */}
+      <AiHistoryPortal>
+        <ChatSidebar
+          chats={chats}
+          currentChatId={chatId}
+          onNewChat={onNewChat}
+          onSelectChat={onSelectChat}
+          onDeleteChat={onDeleteChat}
+        />
+      </AiHistoryPortal>
+
+      {/* Middle section */}
+      <MainAiSection >
+        <div
+          className="flex flex-row justify-between space-x-2 w-fit h-fit items-center"
+        >
+          <img
+            src={TrustIcon.src}
+            alt="Star with checkmark"
+            className="w-6 h-6"
+            onMouseEnter={() => setTrustHovered(true)}
+            onMouseLeave={() => setTrustHovered(false)}
           />
+          <div
+            className={`${trustHovered ? 'opacity-100' : 'opacity-0'} cursor-default flex w-fit border border-gray-200 rounded-3xl h-10 justify-center items-center p-4 shadow-md text-body transition-opacity duration-300`}
+          >
+            {wordsPerToken}
+          </div>
         </div>
-        <div className="flex w-full h-full">
-          <div className="flex flex-col h-[500px] w-full">
-            <div className="flex-1 overflow-y-auto p-4">
+        <div className="p-4 flex flex-col justify-between h-full">
+          {chatId ? (
+            <div className="h-full">
               <ChatMessages
                 messages={messages}
                 isLoading={isLoading}
@@ -387,45 +412,72 @@ export function Chat({ currChat }: ChatProps) {
                 onSubmitEdit={submitEditedMessage}
                 handleInputChange={handleInputChange}
               />
-              <div ref={messagesEndRef} />
             </div>
-            <div className="p-4 space-y-6">
-              <PromptSuggestions
-                onSelect={handlePromptSelect}
-                suggestions={promptSuggestions}
+          ) : (
+            <div className="relative w-full h-full">
+              <img
+                src={Blurs.src}
+                alt="blur background"
+                className="w-1/2 object-contain mx-auto"
               />
-              <ChatInput
-                input={input}
-                handleInputChange={handleInputChange}
-                handleSubmit={handleMessageSubmit}
-                isLoading={isLoading}
-                onStopGeneration={stopGeneration}
-                editingMessage={editingMessageId !== null}
-              />
-              <div className="flex items-center space-x-2">
-                <span className="font-medium">Model:</span>
-                <select
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="border rounded p-2"
-                >
-                  <option value={'gpt-4o-mini'}>gpt-4o-mini</option>
-                  <option value={'gpt-4o'}>gpt-4o</option>
-                </select>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="font-medium">Max Tokens: {maxTokens}</div>
-                <Slider
-                  defaultValue={[maxTokens]}
-                  max={1000}
-                  step={1}
-                  onValueChange={(val) => setMaxTokens(val[0])}
-                />
+              <div className="inset-0 flex items-center justify-center absolute">
+                <div className="flex flex-col items-center justify-center w-1/3 text-center">
+                  <h1 className="text-5xl text-body mb-2">
+                    What do you need?
+                  </h1>
+                  <p className="text-xl text-sub">
+                    Ask our AI chatbot about anything
+                  </p>
+                </div>
               </div>
             </div>
+          )}
+          <div>
+            <PromptSuggestions
+              onSelect={handlePromptSelect}
+              suggestions={promptSuggestions}
+            />
+            <TextInput
+              input={input}
+              handleInputChange={handleInputChange}
+              handleSubmit={handleMessageSubmit}
+              isLoading={isLoading}
+              onStopGeneration={stopGeneration}
+              editingMessage={editingMessageId !== null}
+            />
           </div>
         </div>
-      </div>
-    </div>
+      </MainAiSection>
+      
+      {/* Right section with balance and settings */}
+      <RightAiSidebar isImageInput={false}>
+        <div className="space-y-6">
+          <div className="flex flex-col space-x-2">
+            <div className="text-sub m-1">Max Tokens</div>
+            <div className="flex w-44 h-8 border border-gray-200 items-center justify-center rounded-3xl p-2">
+              <Slider
+                defaultValue={[maxTokens]}
+                max={1000}
+                step={1}
+                onValueChange={(val) => setMaxTokens(val[0])}
+              />
+            </div>
+            <div className="text-sub m-1 mr-auto text-end">2k ≡ $0.25</div>
+          </div>
+
+          <div className="flex flex-col space-x-2">
+            <div className="text-sub mb-1">Model Type</div>
+            <select
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
+            >
+              <option value={'gpt-4o-mini'}>gpt-4o-mini</option>
+              <option value={'gpt-4o'}>gpt-4o</option>
+            </select>
+          </div>
+        </div>
+      </RightAiSidebar>
+    </>
   );
 }
