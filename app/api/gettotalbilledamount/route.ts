@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     }
 
     const { data, error } = await supabase
-      .from('image_generations')
+      .from('3d_generations')
       .select('user_billed_amount')
       .eq('user_id', user.id);
 

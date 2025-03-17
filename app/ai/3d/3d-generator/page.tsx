@@ -176,6 +176,7 @@ export default function Generate3DModelPage() {
           isLoading={isLoading}
           setError={setError}
           handlePromptSelect={handlePromptSelect}
+          error={error}
         />
         <ControlPanel
           imageDataUri={imageDataUri}
@@ -188,6 +189,10 @@ export default function Generate3DModelPage() {
           setError={setError}
           submitPrompt={submitPrompt}
         />
+        <div className="flex items-center justify-between">
+          <span className="font-medium">Total Billed:</span>
+          <span className="ml-2">${totalBilledAmount.toFixed(4)}</span>
+        </div>
       </div>
     </div>
   );

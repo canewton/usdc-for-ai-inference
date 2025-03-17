@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { MODEL_ASSET_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
 
 const supabase = createClient();
@@ -115,6 +116,8 @@ export async function POST(req: Request) {
         url: storedModelUrl,
         provider: 'Meshy',
         mode: should_remesh ? 'Refine' : 'Preview',
+        replicate_billed_amount: MODEL_ASSET_PRICING.replicatePrice,
+        user_billed_amount: MODEL_ASSET_PRICING.userBilledPrice,
       },
     ]);
 
