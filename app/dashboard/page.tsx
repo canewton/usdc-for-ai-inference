@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { RequestUsdcButton } from '@/components/request-usdc-button';
+import { ScanButton } from '@/components/scan-button';
 import { TransactionHistory } from '@/components/transaction-history';
 import { TransferUSDCButton } from '@/components/transfer-usdc-button';
 import { USDCButton } from '@/components/usdc-button';
@@ -72,6 +73,7 @@ export default async function ProtectedPage() {
             mode="BUY"
             walletAddress={wallet?.wallet_address}
           />
+          <ScanButton />
           <WalletInformationDialog wallet={wallet} />
         </div>
       </div>

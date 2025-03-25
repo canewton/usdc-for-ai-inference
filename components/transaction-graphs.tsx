@@ -1,5 +1,11 @@
-import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useState } from 'react';
+
+import { Image3DIcon } from '@/app/icons/Image3DIcon';
+import { ImageIcon } from '@/app/icons/ImageIcon';
+import { TextIcon } from '@/app/icons/TextIcon';
+import { USDCIcon } from '@/app/icons/USDCIcon';
+import { VideoIcon } from '@/app/icons/VideoIcon';
 
 import { SpendingCard } from './spending-card';
 
@@ -184,15 +190,15 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
 
   return (
     <div>
-      <div className="bg-gray-100 rounded-xl shadow-sm p-6 mb-6">
-        <div className="flex justify-between items-center mb-6">
+      <div className="bg-[#FBFBFB] rounded-2xl shadow-sm mb-6 border border-[#EAEAEC]">
+        <div className="flex justify-between items-center p-8 pb-4">
           <div>
-            <h2 className="text-lg font-medium mb-1">Monthly Spend</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-semibold text-blue-500">
+            <h2>Monthly Spend</h2>
+            <div className="flex items-center gap-1">
+              <span className="text-3xl text-blue-500">
                 ${monthlyTotal.toFixed(2)}
               </span>
-              <Info size={20} className="text-gray-400" />
+              <USDCIcon className="text-blue-500" />
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -224,6 +230,8 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
             MODEL_COLORS['image-to-video'],
           ]}
           stacked={true}
+          showUSDCTotal={false}
+          className="pt-0"
         />
       </div>
 
@@ -234,6 +242,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           data={textToTextData}
           className="bg-purple-50"
           colors={[MODEL_COLORS['text-to-text']]}
+          icon={<TextIcon className="text-purple-600" />}
         />
         <SpendingCard
           title="Text to Image"
@@ -241,6 +250,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           data={textToImageData}
           className="bg-orange-50"
           colors={[MODEL_COLORS['text-to-image']]}
+          icon={<ImageIcon className="text-orange-600" />}
         />
         <SpendingCard
           title="2D to 3D Image"
@@ -248,6 +258,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           data={imageToImageData}
           className="bg-green-50"
           colors={[MODEL_COLORS['2d-to-3d']]}
+          icon={<Image3DIcon className="text-green-600" />}
         />
         <SpendingCard
           title="Image to Video"
@@ -255,6 +266,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           data={imageToVideoData}
           className="bg-blue-50"
           colors={[MODEL_COLORS['image-to-video']]}
+          icon={<VideoIcon className="text-blue-600" />}
         />
       </div>
     </div>
