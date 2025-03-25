@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { type FunctionComponent, useState } from 'react';
 
+import { USDCIcon } from '@/app/icons/USDCIcon';
 import {
   Pagination,
   PaginationContent,
@@ -111,25 +112,31 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
                   </TableCell>
                   {transaction.transaction_type === 'INBOUND' && (
                     <TableCell className="text-green-600">
-                      +{transaction.amount}
+                      <div className="flex items-center gap-1">
+                        +{transaction.amount}{' '}
+                        <USDCIcon className="text-green-600" />
+                      </div>
                     </TableCell>
                   )}
                   {transaction.transaction_type === 'OUTBOUND' && (
                     <TableCell className="text-red-600">
-                      -{transaction.amount}
+                      <div className="flex items-center gap-1">
+                        -{transaction.amount}{' '}
+                        <USDCIcon className="text-red-600" />
+                      </div>
                     </TableCell>
                   )}
                   <TableCell>{transaction.balance}</TableCell>
                   {transaction.status == 'CONFIRMED' && (
                     <TableCell>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center px-4 py-1.5 rounded-full font-medium bg-green-100 text-green-800">
                         {transaction.status}
                       </span>
                     </TableCell>
                   )}
                   {transaction.status !== 'CONFIRMED' && (
                     <TableCell colSpan={1}>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-sm font-medium bg-red-100 text-red-800">
+                      <span className="inline-flex items-center px-4 py-1.5 rounded-full font-medium bg-red-100 text-red-800">
                         {transaction.status}
                       </span>
                     </TableCell>

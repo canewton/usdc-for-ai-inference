@@ -55,7 +55,9 @@ export default async function ProtectedPage() {
               walletId={wallet?.id}
             />
           </h2>
-          <USDCIcon className="text-blue-500" />
+          <div className="bg-[#F1F8FF] rounded-full p-3 flex items-center justify-center">
+            <USDCIcon className="text-blue-500" />
+          </div>
         </div>
         <div className="flex gap-4">
           {process.env.NODE_ENV === 'development' && (
