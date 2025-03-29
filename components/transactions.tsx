@@ -94,7 +94,7 @@ export const Transactions: FunctionComponent<Props> = ({
 
   return (
     <>
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-4">
+      <div className="rounded-lg border border-gray-200 overflow-hidden mb-4">
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>
