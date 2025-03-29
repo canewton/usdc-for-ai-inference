@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { type FunctionComponent, useState } from 'react';
 
@@ -24,6 +24,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+import type { SortField } from './transaction-history';
+
 interface Transaction {
   id: string;
   status: string;
@@ -38,11 +40,21 @@ interface Transaction {
 interface Props {
   data: Transaction[];
   loading: boolean;
+  sortConfig: {
+    field: string;
+    direction: string;
+  };
+  onSort: (field: SortField) => void;
 }
 
 const ITEMS_PER_PAGE = 5;
 
-export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
+export const Transactions: FunctionComponent<Props> = ({
+  data,
+  loading,
+  sortConfig,
+  onSort,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Calculate pagination
@@ -86,10 +98,40 @@ export const Transactions: FunctionComponent<Props> = ({ data, loading }) => {
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead colSpan={2}>Date</TableHead>
-              <TableHead>Total Amount</TableHead>
-              <TableHead>Balance</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead colSpan={2} onClick={() => onSort('date')}>
+                <div className="flex items-center gap-1">
+                  {sortConfig.direction === 'asc' &&
+                  sortConfig.field == 'date' ? (
+                    <ChevronUp size={16} />
+                  ) : (
+                    <ChevronDown size={16} />
+                  )}
+                  Date
+                </div>
+              </TableHead>
+              <TableHead onClick={() => onSort('amount')}>
+                <div className="flex items-center gap-1">
+                  {sortConfig.direction === 'asc' &&
+                  sortConfig.field == 'amount' ? (
+                    <ChevronUp size={16} />
+                  ) : (
+                    <ChevronDown size={16} />
+                  )}
+                  Total Amount
+                </div>
+              </TableHead>
+              <TableHead onClick={() => onSort('balance')}>
+                <div className="flex items-center gap-1">
+                  {sortConfig.direction === 'asc' &&
+                  sortConfig.field == 'balance' ? (
+                    <ChevronUp size={16} />
+                  ) : (
+                    <ChevronDown size={16} />
+                  )}
+                  Balance
+                </div>
+              </TableHead>
+              <TableHead onClick={() => onSort('status')}>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
