@@ -7,6 +7,7 @@ interface ControlPanelProps {
   mode: boolean;
   isLoading: boolean;
   error: string | null;
+  totalBilledAmount: number | 0;
   setImageDataUri: (uri: string) => void;
   setPrompt: (prompt: string) => void;
   setError: (error: string | null) => void;
@@ -19,6 +20,7 @@ export default function ControlPanel({
   mode,
   isLoading,
   error,
+  totalBilledAmount,
   setImageDataUri,
   setPrompt,
   setError,
@@ -53,6 +55,10 @@ export default function ControlPanel({
 
   return (
     <div className="w-1/4 p-4 bg-gray-50 h-full flex flex-col space-y-4">
+      <div className="flex items-center justify-between">
+        <span className="font-medium">Total Billed:</span>
+        <span className="ml-2">${totalBilledAmount.toFixed(4)}</span>
+      </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Image
@@ -119,8 +125,21 @@ export default function ControlPanel({
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Model Type
         </label>
-        <select className="w-full p-2 border rounded text-gray-700">
+        <select
+          className="w-full p-2 border rounded text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+          style={{
+            borderColor: '#E5E7EB',
+            fontSize: '14px',
+            color: '#374151',
+            paddingRight: '2.5rem',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23374151' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+            backgroundPosition: 'right 0.5rem center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: '1.2rem',
+          }}
+        >
           <option>OpenAI</option>
+          <option>FLUX.1 (WIP)</option>
         </select>
       </div>
 
@@ -130,7 +149,11 @@ export default function ControlPanel({
           className="w-full bg-gray-100 text-gray-700 py-2 rounded-full flex items-center justify-center"
           disabled={isLoading || !imageDataUri}
         >
-          <span className="mr-2">✨</span>
+          <img
+            className="w-12 h-12"
+            alt="Generate"
+            src="/icons/spark-jelly.svg"
+          />
           {isLoading ? 'Generating...' : 'Generate your asset'}
         </Button>
         {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}

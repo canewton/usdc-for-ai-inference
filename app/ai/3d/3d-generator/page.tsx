@@ -188,11 +188,8 @@ export default function Generate3DModelPage() {
           setPrompt={setPrompt}
           setError={setError}
           submitPrompt={submitPrompt}
+          totalBilledAmount={totalBilledAmount}
         />
-        <div className="flex items-center justify-between">
-          <span className="font-medium">Total Billed:</span>
-          <span className="ml-2">${totalBilledAmount.toFixed(4)}</span>
-        </div>
       </div>
     </div>
   );
