@@ -101,16 +101,13 @@ export default function ControlPanel({
                 alt="Uploaded"
                 className="max-w-[80%] max-h-[120px] object-contain"
               />
-              <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm">
-                {imageDataUri.split('/').pop()}
-              </p>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-[30px] w-[217px]">
               <img
                 className="w-[18px] h-[18px]"
                 alt="Upload"
-                src="/vector-1.svg"
+                src="/icons/vector-1.svg"
               />
               <div className="text-center">
                 <p
@@ -151,6 +148,7 @@ export default function ControlPanel({
           onChange={(e) => setPrompt(e.target.value)}
           className="w-full"
           disabled={!mode}
+          required
         />
       </div>
 
@@ -180,7 +178,7 @@ export default function ControlPanel({
         <Button
           onClick={() => submitPrompt(prompt)}
           className="w-full bg-gray-100 text-gray-700 py-2 rounded-full flex items-center justify-center space-x-2"
-          disabled={isLoading || !imageDataUri}
+          disabled={isLoading || !imageDataUri || !prompt}
         >
           <img
             className="w-6 h-6"
