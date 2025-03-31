@@ -11,9 +11,11 @@ interface CanvasAreaProps {
   imageDataUri: string;
   mode: boolean;
   isLoading: boolean;
+  prompt: string;
   setError: (error: string | null) => void;
   handlePromptSelect: (prompt: string) => void;
   error?: string | null;
+  setPrompt: (prompt: string) => void;
 }
 
 export default function CanvasArea({
@@ -24,6 +26,8 @@ export default function CanvasArea({
   setError,
   handlePromptSelect,
   error,
+  prompt,
+  setPrompt
 }: CanvasAreaProps) {
   const { scene } = modelUrl ? useGLTF(modelUrl) : { scene: null };
 
@@ -109,7 +113,7 @@ export default function CanvasArea({
             <Button
               onClick={() =>
                 imageDataUri
-                  ? handlePromptSelect('Glossy Metallic Shine')
+                  ? setPrompt('Glossy Metallic Shine')
                   : setError('Please upload an image first')
               }
               className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full flex items-center"
@@ -120,7 +124,7 @@ export default function CanvasArea({
             <Button
               onClick={() =>
                 imageDataUri
-                  ? handlePromptSelect('Rough Stone Grain')
+                  ? setPrompt('Rough Stone Grain')
                   : setError('Please upload an image first')
               }
               className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full flex items-center"
@@ -131,7 +135,7 @@ export default function CanvasArea({
             <Button
               onClick={() =>
                 imageDataUri
-                  ? handlePromptSelect('Soft Velvet Glow')
+                  ? setPrompt('Soft Velvet Glow')
                   : setError('Please upload an image first')
               }
               className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full flex items-center"

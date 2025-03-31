@@ -174,9 +174,11 @@ export default function Generate3DModelPage() {
           imageDataUri={imageDataUri}
           mode={mode}
           isLoading={isLoading}
+          prompt={prompt}
           setError={setError}
           handlePromptSelect={handlePromptSelect}
           error={error}
+          setPrompt={setPrompt}
         />
         <ControlPanel
           imageDataUri={imageDataUri}
