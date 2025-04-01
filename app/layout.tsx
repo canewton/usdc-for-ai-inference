@@ -1,10 +1,9 @@
 import './globals.css';
 
 import { Geist } from 'next/font/google';
-import Link from 'next/link';
 import { ThemeProvider } from 'next-themes';
 
-import HeaderAuth from '@/components/header-auth';
+import Navbar from '@/components/Navbar';
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -31,22 +30,13 @@ export default function RootLayout({
       <body className="bg-background text-foreground">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
-          <main className="min-h-screen flex flex-col">
-            <div className="flex-1 w-full flex flex-col gap-20">
-              <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-                <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-                  <div className="flex gap-5 items-center font-semibold">
-                    <Link href={'/'}>Circle App Demo</Link>
-                  </div>
-                  <HeaderAuth />
-                </div>
-              </nav>
-              <div className="flex flex-col gap-20 p-5">{children}</div>
-            </div>
+          <main className="h-screen flex flex-col overflow-auto">
+            <Navbar />
+            <div className="flex flex-col flex-1">{children}</div>
           </main>
         </ThemeProvider>
       </body>
