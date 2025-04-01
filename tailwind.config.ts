@@ -18,7 +18,23 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: [
+          'SF Pro',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'Helvetica Neue',
+          'Arial',
+          'sans-serif',
+        ],
+      },
       colors: {
+        body: '#4D4861',
+        headline: '#29233B',
+        sub: '#89859A',
+        section: '#FDFDFD',
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
