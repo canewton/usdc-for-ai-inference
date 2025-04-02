@@ -125,7 +125,7 @@ export default function CanvasArea({
                 </p>
               </div>
             </div> 
-            <div className="relative z-20 mt-20">
+            <div className="relative z-20 mt-40">
               <PromptSuggestions
                 onSelect={handleLocalInputChange}
                 suggestions={promptSuggestions}

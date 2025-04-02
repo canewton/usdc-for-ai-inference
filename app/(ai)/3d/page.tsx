@@ -77,7 +77,7 @@ export default function Generate3DModelPage() {
            prompt: item.prompt || '',
            created_at: item.created_at ? new Date(item.created_at).toISOString() : new Date().toISOString(),
            ...item,
-         })).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+         })).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
          setHistory(formattedHistory);
          console.log("Fetched and formatted history:", formattedHistory);
