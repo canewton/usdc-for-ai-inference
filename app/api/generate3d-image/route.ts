@@ -41,7 +41,6 @@ export async function POST(req: Request) {
     if (error || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    console.log('Using API Key:', MESHY_API_KEY);
     /**
      * INPUTS
      * Two Modes (Defaults to 'preview') -> String:

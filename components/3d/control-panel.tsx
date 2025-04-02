@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { useEffect } from 'react';
+import USDC from '@/public/usdc-circle.svg';
 
 interface ControlPanelProps {
   imageDataUri: string;
@@ -54,40 +56,32 @@ export default function ControlPanel({
     }
   };
 
+  useEffect(() => {
+    if (!mode) {
+      setPrompt('');
+    }
+  }, [mode, setPrompt]);
+
   return (
-    <div
-      className="w-1/4 p-4 bg-gray-50 h-full flex flex-col space-y-4 border rounded-lg"
-      style={{
-        borderColor: '#E5E7EB',
-        borderWidth: '1px',
-      }}
-    >
+    <div className="flex flex-col gap-6">
       {/* Balance Card */}
       <Card className="w-full h-20 bg-white border-[#eaeaec]">
         <CardContent className="flex items-center p-5">
-          <div
-            className="w-12 h-12 bg-cover mr-5"
-            style={{ backgroundImage: "url(/icons/clip-path-group-3.png)" }}
-          />
+          <img src={USDC.src} className="w-12 h-12 mr-4" alt="USDC Icon" />
           <div>
-            <h3
-              className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-900 text-xl tracking-[-0.22px] leading-[30px]"
-            >
+            <h3 className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-900 text-xl tracking-[-0.22px] leading-[30px]">
               ${totalBilledAmount.toFixed(2)}
             </h3>
-            <p
-              className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px]"
-            >
+            <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px]">
               USDC Balance
             </p>
           </div>
         </CardContent>
       </Card>
 
+      {/* Image Upload Section */}
       <div className="flex flex-col gap-1">
-        <label
-          className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-base tracking-[-0.18px] leading-6"
-        >
+        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-base tracking-[-0.18px] leading-6">
           Image
         </label>
         <div
@@ -110,19 +104,13 @@ export default function ControlPanel({
                 src="/icons/vector-1.svg"
               />
               <div className="text-center">
-                <p
-                  className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-700 text-base tracking-[-0.18px] leading-6"
-                >
+                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-700 text-base tracking-[-0.18px] leading-6">
                   Click or drag to upload image
                 </p>
-                <p
-                  className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px]"
-                >
+                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px]">
                   Supported files: png, jpg, jpeg
                 </p>
-                <p
-                  className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px]"
-                >
+                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px]">
                   Max size: 20MB
                 </p>
               </div>
@@ -138,26 +126,28 @@ export default function ControlPanel({
         </div>
       </div>
 
+      {/* Prompt Section */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] mb-1 block">
           Prompt
         </label>
         <Input
           placeholder="Describe the model texture..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          className="w-full"
+          className="w-full border-[#E5E7EB] rounded-[8px] p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           disabled={!mode}
           required
         />
       </div>
 
+      {/* Model Type Section */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] mb-1 block">
           Model Type
         </label>
         <select
-          className="w-full p-2 border rounded text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full p-2 border rounded-[8px] text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
           style={{
             borderColor: '#E5E7EB',
             fontSize: '14px',
@@ -169,11 +159,11 @@ export default function ControlPanel({
             backgroundSize: '1.2rem',
           }}
         >
-          <option>FLUX.1</option>
           <option>OpenAI</option>
         </select>
       </div>
 
+      {/* Generate Button */}
       <div>
         <Button
           onClick={() => submitPrompt(prompt)}

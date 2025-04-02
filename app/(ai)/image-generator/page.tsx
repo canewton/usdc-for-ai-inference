@@ -65,7 +65,7 @@ export default function ImageGeneratorPage() {
     if (!session) return;
     const sessionToken = session.access_token;
     try {
-      const response = await fetch(`/api/gettotalbilledamount`, {
+      const response = await fetch(`/api/gettotalbilledamount?table=image_generations`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${sessionToken}`,

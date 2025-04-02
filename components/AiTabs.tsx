@@ -68,7 +68,7 @@ export default function AiTabs() {
         url="/video"
       />
       <SidebarItem
-        title="Image to 3-d"
+        title="Image to 3D"
         active={tool === '3d'}
         icon={MultichainIcon}
         alt="Multichain block icon"
@@ -79,7 +79,7 @@ export default function AiTabs() {
         active={tool === 'image'}
         icon={ImageIcon}
         alt="Image icon"
-        url="/image"
+        url="/image-generator"
       />
       <SidebarItem
         title="Text to Text"

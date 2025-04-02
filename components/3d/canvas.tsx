@@ -2,9 +2,20 @@
 
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
-import { Suspense } from 'react';
+import { Suspense} from 'react';
+import Blurs from '@/public/blurs.svg'
+import UsdcIcon from '@/public/usdc.svg';
+import WalletIcon from '@/public/digital-wallet.svg';
+import SparkIcon from '@/public/spark.svg';
 
-import { Button } from '@/components/ui/button';
+import PromptSuggestions from '../PromptSuggestions';
+import MainAiSection from '../MainAiSection';
+
+const promptSuggestions = [
+  { title: 'Worn leather with subtle creases', icon: WalletIcon },
+  { title: 'Aged metal with fine engravings', icon: UsdcIcon },
+  { title: 'Surprise me', icon: SparkIcon },
+];
 
 interface CanvasAreaProps {
   modelUrl: string | null;
@@ -12,10 +23,10 @@ interface CanvasAreaProps {
   mode: boolean;
   isLoading: boolean;
   prompt: string;
-  setError: (error: string | null) => void;
-  handlePromptSelect: (prompt: string) => void;
-  error?: string | null;
+  setMode: (mode: boolean) => void;
   setPrompt: (prompt: string) => void;
+  setError: (error: string | null) => void;
+  error?: string | null;
 }
 
 export default function CanvasArea({
@@ -23,14 +34,17 @@ export default function CanvasArea({
   imageDataUri,
   mode,
   isLoading,
-  setError,
-  handlePromptSelect,
-  error,
   prompt,
-  setPrompt
+  setMode,
+  setPrompt,
+  setError,
+  error,
 }: CanvasAreaProps) {
-  const { scene } = modelUrl ? useGLTF(modelUrl) : { scene: null };
 
+  // scene to render 3d model
+  const { scene } = modelUrl ? useGLTF(modelUrl) : { scene: null };
+  
+  // download model
   const handleDownload = async () => {
     if (!modelUrl || isLoading) return;
 
@@ -57,95 +71,77 @@ export default function CanvasArea({
     }
   };
 
+  const handleLocalInputChange = (suggestion: { title: string; icon: any }) => {
+    setPrompt(suggestion.title);
+  };
+
   return (
-    <div className="w-2/4 flex items-center justify-center bg-white p-4">
-      {modelUrl ? (
-        <div className="w-full h-full flex flex-col items-center relative">
-          <Suspense
-            fallback={<div className="text-center mt-10">Loading model...</div>}
-          >
-            <Canvas
-              camera={{ position: [0, 0, 5], fov: 50 }}
-              gl={{ antialias: false, preserveDrawingBuffer: true }}
-              className="w-full h-full"
+    <MainAiSection>
+      {/* Header component will be used to select preview/refine modes, not currently used. */}
+      {/* <Header mode={mode} setMode={setMode} /> */}
+      <div className="flex-grow flex flex-col items-center justify-center bg-white p-4 relative">
+        {/* Show canvas if model is selected, otherwise display initial screen. */}
+        {modelUrl ? (
+          <div className="w-full h-full flex flex-col items-center relative">
+            <Suspense
+              fallback={<div className="text-center mt-10">Loading model...</div>}
             >
-              <ambientLight intensity={0.5} />
-              <directionalLight position={[10, 10, 5]} intensity={1} />
-              {scene && <primitive object={scene} scale={1} />}
-              <OrbitControls enableDamping={false} />
-            </Canvas>
-            <button
-              onClick={handleDownload}
-              className="absolute top-2 right-2 p-2 bg-blue-500 rounded-full hover:bg-blue-600 disabled:bg-gray-400 transition-colors"
-              disabled={isLoading}
-              aria-label="Download 3D Model"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <Canvas
+                camera={{ position: [0, 0, 5], fov: 50 }}
+                gl={{ antialias: true, preserveDrawingBuffer: true }}
+                className="w-full h-[calc(100%-40px)]"
               >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-            </button>
-          </Suspense>
-          <div className="mt-2">
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+                <ambientLight intensity={1.0} /> 
+                <directionalLight position={[10, 10, 5]} intensity={1.5} /> 
+                {scene && <primitive object={scene} scale={1} />}
+                <OrbitControls enableDamping={true} dampingFactor={0.1}/>
+              </Canvas>
+              <button
+                onClick={handleDownload}
+                className="absolute top-2 right-2 z-10 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-400 transition-colors"
+                disabled={isLoading}
+                aria-label="Download 3D Model"
+              >
+                {/* Download SVG */}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              </button>
+            </Suspense>
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-full px-4 text-center">
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            What texture will you apply?
-          </h1>
-          <p className="text-gray-500 mb-6">
-            Apply textures to 3D assets using your images
-          </p>
-          <div className="flex justify-center space-x-4">
-            <Button
-              onClick={() =>
-                imageDataUri
-                  ? setPrompt('Glossy Metallic Shine')
-                  : setError('Please upload an image first')
-              }
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full flex items-center"
-              disabled={!imageDataUri || !mode || isLoading}
-            >
-              <span className="mr-2">🪞</span> Glossy Metallic Shine
-            </Button>
-            <Button
-              onClick={() =>
-                imageDataUri
-                  ? setPrompt('Rough Stone Grain')
-                  : setError('Please upload an image first')
-              }
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full flex items-center"
-              disabled={!imageDataUri || !mode || isLoading}
-            >
-              <span className="mr-2">🪨</span> Rough Stone Grain
-            </Button>
-            <Button
-              onClick={() =>
-                imageDataUri
-                  ? setPrompt('Soft Velvet Glow')
-                  : setError('Please upload an image first')
-              }
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full flex items-center"
-              disabled={!imageDataUri || !mode || isLoading}
-            >
-              <span className="mr-2">✨</span> Soft Velvet Glow
-            </Button>
+        ) : (
+          <div className="relative w-full h-full">
+            <img
+              src={Blurs.src}
+              alt="blur background"
+              className="w-1/2 object-contain mx-auto"
+            />
+            <div className="inset-0 flex items-center justify-center absolute">
+              <div className="flex flex-col items-center justify-center w-1/3 text-center">
+                <h1 className="text-5xl text-body mb-2">What will you create?</h1>
+                <p className="text-xl text-sub">
+                  Generate 3D assets from your own images
+                </p>
+              </div>
+            </div> 
+            <div className="relative z-20 mt-20">
+              <PromptSuggestions
+                onSelect={handleLocalInputChange}
+                suggestions={promptSuggestions}
+                disabled={!mode}
+              />
+            </div>
+            <div className="w-full mt-4">
+              {!imageDataUri && (
+                <p className="text-center text-sm text-gray-500">
+                  Please upload an image in the control panel first.
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </MainAiSection>
   );
 }
