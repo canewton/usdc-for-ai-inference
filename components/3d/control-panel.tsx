@@ -63,16 +63,16 @@ export default function ControlPanel({
   }, [mode, setPrompt]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 w-full min-w-0">
       {/* Balance Card */}
       <Card className="w-full h-20 bg-white border-[#eaeaec]">
         <CardContent className="flex items-center p-5">
           <img src={USDC.src} className="w-12 h-12 mr-4" alt="USDC Icon" />
-          <div>
-            <h3 className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-900 text-xl tracking-[-0.22px] leading-[30px]">
+          <div className="overflow-hidden">
+            <h3 className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-900 text-xl tracking-[-0.22px] leading-[30px] truncate">
               ${totalBilledAmount.toFixed(2)}
             </h3>
-            <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px]">
+            <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] truncate">
               USDC Balance
             </p>
           </div>
@@ -81,19 +81,19 @@ export default function ControlPanel({
 
       {/* Image Upload Section */}
       <div className="flex flex-col gap-1">
-        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-base tracking-[-0.18px] leading-6">
+        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-base tracking-[-0.18px] leading-6 truncate">
           Image
         </label>
         <div
-          className="w-full h-[150px] bg-white rounded-[10px] border border-dashed border-[#eaeaec] flex flex-col items-center justify-center cursor-pointer hover:border-gray-400"
+          className="w-full h-[150px] bg-white rounded-[10px] border border-dashed border-[#eaeaec] flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 overflow-hidden"
           onClick={() => document.getElementById('image-upload')?.click()}
         >
           {imageDataUri ? (
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center justify-center w-full h-full p-2">
               <img
                 src={imageDataUri}
                 alt="Uploaded"
-                className="max-w-[80%] max-h-[120px] object-contain"
+                className="w-full h-full max-w-full object-contain"
               />
             </div>
           ) : (
@@ -104,13 +104,13 @@ export default function ControlPanel({
                 src="/icons/vector-1.svg"
               />
               <div className="text-center">
-                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-700 text-base tracking-[-0.18px] leading-6">
+                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-700 text-base tracking-[-0.18px] leading-6 truncate">
                   Click or drag to upload image
                 </p>
-                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px]">
+                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] truncate">
                   Supported files: png, jpg, jpeg
                 </p>
-                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px]">
+                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] truncate">
                   Max size: 20MB
                 </p>
               </div>
@@ -128,14 +128,14 @@ export default function ControlPanel({
 
       {/* Prompt Section */}
       <div>
-        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] mb-1 block">
+        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] mb-1 block truncate">
           Prompt
         </label>
         <Input
           placeholder="Describe the model texture..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          className="w-full border-[#E5E7EB] rounded-[8px] p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full border-[#E5E7EB] rounded-[8px] p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 truncate"
           disabled={!mode}
           required
         />
@@ -143,11 +143,11 @@ export default function ControlPanel({
 
       {/* Model Type Section */}
       <div>
-        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] mb-1 block">
+        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] mb-1 block truncate">
           Model Type
         </label>
         <select
-          className="w-full p-2 border rounded-[8px] text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full p-2 border rounded-[8px] text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 truncate"
           style={{
             borderColor: '#E5E7EB',
             fontSize: '14px',
@@ -175,9 +175,9 @@ export default function ControlPanel({
             alt="Generate"
             src="/icons/spark-jelly.svg"
           />
-          <span>{isLoading ? 'Generating...' : 'Generate your asset'}</span>
+          <span className="truncate">{isLoading ? 'Generating...' : 'Generate your asset'}</span>
         </Button>
-        {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
+        {error && <p className="text-red-500 mt-2 text-sm truncate">{error}</p>}
       </div>
     </div>
   );
