@@ -3,6 +3,7 @@
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { type FunctionComponent, useEffect, useMemo, useState } from 'react';
 
+import { Image3DIcon } from '@/app/icons/Image3DIcon';
 import type { Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
@@ -449,7 +450,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
           <>
             <div className="flex items-center justify-between mb-6">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-600" />
                 <input
                   type="text"
                   placeholder="Search"
@@ -466,7 +467,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
                       setShowFilterMenu(!showFilterMenu);
                     }}
                   >
-                    <SlidersHorizontal className="w-4 h-4" />
+                    <SlidersHorizontal className="w-4 h-4 text-blue-600" />
                     Filter By
                     {selectedModels.length > 0 && (
                       <span className="ml-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-600 rounded-full">
@@ -478,22 +479,8 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
                     <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                       <div className="p-4">
                         <div className="flex items-center gap-2 mb-3">
-                          <svg
-                            width="20"
-                            height="22"
-                            viewBox="0 0 20 22"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M12.25 8.77778L10 9.88889M10 9.88889L7.75 8.77778M10 9.88889V12.6667M19 5.44444L16.75 6.55556M19 5.44444L16.75 4.33333M19 5.44444V8.22222M12.25 2.11111L10 1L7.75 2.11111M1 5.44444L3.25 4.33333M1 5.44444L3.25 6.55556M1 5.44444V8.22222M10 21L7.75 19.8889M10 21L12.25 19.8889M10 21V18.2222M3.25 17.6667L1 16.5556V13.7778M16.75 17.6667L19 16.5556V13.7778"
-                              stroke="#1ED67D"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                          <h3 className="font-semibold text-gray-900">MODEL</h3>
+                          <Image3DIcon className="text-blue-600" />
+                          <h3 className="text-gray-900">MODEL</h3>
                         </div>
                         <div className="space-y-2">
                           {modelTypes.map((model) => (
@@ -510,19 +497,19 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
                             </label>
                           ))}
                         </div>
-                        <div className="flex justify-between mt-4 pt-4 border-t">
+                        <div className="flex justify-between gap-2 mt-4">
                           <button
                             onClick={() => {
                               setShowFilterMenu(false);
                               clearFilters();
                             }}
-                            className="text-gray-600 hover:text-gray-900"
+                            className="flex-1 text-gray-600 px-4 py-1.5 rounded border border-gray-300 hover:bg-gray-50 hover:text-gray-900 transition-colors"
                           >
                             Clear All
                           </button>
                           <button
                             onClick={() => setShowFilterMenu(false)}
-                            className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
+                            className="flex-1 bg-blue-500 text-white px-4 py-1.5 rounded hover:bg-blue-600 transition-colors"
                           >
                             Apply
                           </button>

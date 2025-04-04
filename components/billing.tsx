@@ -67,7 +67,12 @@ export const Billing: FunctionComponent<Props> = ({
 
   useEffect(() => {
     setPaginatedData(data.slice(startIndex, startIndex + ITEMS_PER_PAGE));
-  }, [data, currentPage]);
+  }, [currentPage]);
+
+  useEffect(() => {
+    setPaginatedData(data.slice(startIndex, startIndex + ITEMS_PER_PAGE));
+    setCurrentPage(1);
+  }, [data]);
 
   if (data.length == 0 && loading) {
     return <Skeleton className="w-[206px] h-[28px] rounded-full" />;
