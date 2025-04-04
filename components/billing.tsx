@@ -1,9 +1,10 @@
 'use client';
 
-import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { type FunctionComponent, useState } from 'react';
 
+import { SortIcon } from '@/app/icons/SortIcon';
 import { USDCIcon } from '@/app/icons/USDCIcon';
 import {
   Pagination,
@@ -105,36 +106,21 @@ export const Billing: FunctionComponent<Props> = ({
             <TableRow>
               <TableHead colSpan={2} onClick={() => onSort('date')}>
                 <div className="flex items-center gap-1">
-                  {sortConfig.direction === 'asc' &&
-                  sortConfig.field == 'date' ? (
-                    <ChevronUp size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  )}
                   Date
+                  <SortIcon />
                 </div>
               </TableHead>
               <TableHead onClick={() => onSort('name')}>
                 <div className="flex items-center gap-1">
-                  {sortConfig.direction === 'asc' &&
-                  sortConfig.field == 'name' ? (
-                    <ChevronUp size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  )}
                   Project Title
+                  <SortIcon />
                 </div>
               </TableHead>
               <TableHead>Model</TableHead>
               <TableHead onClick={() => onSort('amount')}>
                 <div className="flex items-center gap-1">
-                  {sortConfig.direction === 'asc' &&
-                  sortConfig.field == 'amount' ? (
-                    <ChevronUp size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  )}
                   Total Amount
+                  <SortIcon />
                 </div>
               </TableHead>
               <TableHead>Status</TableHead>
