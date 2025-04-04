@@ -522,7 +522,11 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
             />
           </>
         )}
-        {activeTab == 'usage' && <TransactionGraphs data={billingData} />}
+        {activeTab == 'usage' && (
+          <div className="mb-20">
+            <TransactionGraphs data={billingData} />
+          </div>
+        )}
       </div>
     </div>
   );
