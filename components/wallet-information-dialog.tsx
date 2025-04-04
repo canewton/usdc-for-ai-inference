@@ -1,3 +1,4 @@
+import { WalletIcon } from 'lucide-react';
 import type { FunctionComponent } from 'react';
 
 import { CopyButton } from '@/components/copy-button';
@@ -28,37 +29,33 @@ export const WalletInformationDialog: FunctionComponent<Props> = (props) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="ml-auto">Wallet Information</Button>
+        <Button className="flex items-center gap-2 bg-white hover:bg-gray-50 text-blue-500 px-4 py-2 rounded-lg border border-gray-200 transition-colors">
+          <WalletIcon />
+        </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px] p-10">
         <DialogHeader>
           <DialogTitle>Wallet information</DialogTitle>
         </DialogHeader>
         <div className="grid py-4">
-          <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mb-2">
-            Balance
-          </h4>
+          <h4 className="scroll-m-20 text-xl tracking-tight mb-2">Balance</h4>
           <div className="text-xl text-muted-foreground cursor-pointer mb-4">
             <WalletBalance
               walletId={props.wallet.id}
               circleWalletId={props.wallet.circle_wallet_id}
             />
           </div>
-          <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mb-2">
-            ID
-          </h4>
+          <h4 className="scroll-m-20 text-xl tracking-tight mb-2">ID</h4>
           <div className="flex w-full items-center mb-4">
             <Input disabled value={props.wallet.circle_wallet_id} />
             <CopyButton text={props.wallet.circle_wallet_id} />
           </div>
-          <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mb-2">
-            Address
-          </h4>
+          <h4 className="scroll-m-20 text-xl tracking-tight mb-2">Address</h4>
           <div className="flex w-full items-center mb-4">
             <Input disabled value={props.wallet.wallet_address} />
             <CopyButton text={props.wallet.wallet_address} />
           </div>
-          <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mb-2">
+          <h4 className="scroll-m-20 text-xl tracking-tight mb-2">
             Blockchain
           </h4>
           <p className="text-xl text-muted-foreground cursor-pointer">
