@@ -4,6 +4,7 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 import { type FunctionComponent, useEffect, useMemo, useState } from 'react';
 
 import { Image3DIcon } from '@/app/icons/Image3DIcon';
+import { aiModel } from '@/types/ai.types';
 import type { Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
@@ -55,13 +56,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     field: 'date',
     direction: 'desc',
   });
-
-  const modelTypes = [
-    'Image to Video',
-    'Image to 3D',
-    'Text to Image',
-    'Text to Text',
-  ];
 
   const formattedTransactionData = useMemo(() => {
     const formatted = transactionData.map((transaction) => ({
@@ -483,7 +477,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
                           <h3 className="text-gray-900">MODEL</h3>
                         </div>
                         <div className="space-y-2">
-                          {modelTypes.map((model) => (
+                          {Object.values(aiModel).map((model) => (
                             <label key={model} className="flex items-center">
                               <input
                                 type="checkbox"
