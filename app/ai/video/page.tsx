@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef } from 'react';
+import { useSession } from '@/app/contexts/SessionContext';
+
 
 export default function Home() {
   const [prompt, setPrompt] = useState('');
@@ -13,9 +15,12 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const NOVITA_API_KEY = process.env.NEXT_PUBLIC_NOVITA_API_KEY;
+  const session = useSession();
   
   const modelOptions = ['SVD-XT', 'SVD'];
+
+  if (!session) return;
+  const sessionToken = session.access_token;
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,11 +75,11 @@ export default function Home() {
       reader.onloadend = async () => {
         const base64Image = reader.result?.toString().split(',')[1];
 
-        const response = await fetch('../api/generatevideo', {
+        const response = await fetch('../../api/generatevideo', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${NOVITA_API_KEY}`,
+            'Authorization': `Bearer ${sessionToken}`,
           },
           body: JSON.stringify({
             model_name: modelType,
@@ -96,11 +101,11 @@ export default function Home() {
   const checkVideoStatus = async (taskId: string) => {
     try {
       const interval = setInterval(async () => {
-        const result = await fetch('../api/checkvideostatus', 
+        const result = await fetch('../../api/checkvideostatus', 
           {
             method: 'POST',
             headers: {
-              Authorization: `Bearer ${NOVITA_API_KEY}`,
+              Authorization: `Bearer ${sessionToken}`,
             },
             body: JSON.stringify({ task_id: taskId }),
           }
@@ -110,10 +115,11 @@ export default function Home() {
         console.log('Task result:', resultData);
         
         const taskStatus = resultData.task?.status;
+        console.log('Task Status:', taskStatus);
         const videos = resultData.videos || [];
         console.log('Videos:', videos);
         
-        if (taskStatus === 'TASK_STATUS_SUCCEED' && videos.length > 0) {
+        if (videos.length > 0) {
           setVideoUrl(videos[0].video_url);
           setLoading(false);
           clearInterval(interval);
