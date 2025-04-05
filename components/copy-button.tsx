@@ -29,7 +29,7 @@ export const CopyButton: FunctionComponent<Props> = (props) => {
     <TooltipProvider>
       <Tooltip open={shouldShowTooltip}>
         <TooltipTrigger asChild>
-          <Button onClick={simulateTooltipOpening}>
+          <Button onClick={simulateTooltipOpening} className="bg-blue-500">
             <Copy
               className="h-4 w-4"
               onClick={() => navigator.clipboard.writeText(props.text)}

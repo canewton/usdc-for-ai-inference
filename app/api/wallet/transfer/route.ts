@@ -76,6 +76,7 @@ export async function POST(request: Request) {
       .insert({
         project_name: transferRequest.projectName,
         ai_model: transferRequest.aiModel,
+        circle_wallet_id: transferRequest.circleWalletId,
         circle_transaction_id: result.id,
       })
       .select();
