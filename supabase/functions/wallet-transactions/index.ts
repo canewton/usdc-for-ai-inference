@@ -24,10 +24,7 @@ serve(async (req: any) => {
   const res = await req.json();
   const data = res.notification;
 
-  if (
-    res.notificationType == 'transactions.outbound' &&
-    data.state == 'CONFIRMED'
-  ) {
+  if (data.state == 'CONFIRMED') {
     try {
       try {
         const { data: existingWallet, error: fetchWalletError } = await supabase
