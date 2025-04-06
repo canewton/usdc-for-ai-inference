@@ -2,14 +2,15 @@
 
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
-import { Suspense} from 'react';
-import Blurs from '@/public/blurs.svg'
-import UsdcIcon from '@/public/usdc.svg';
+import { Suspense } from 'react';
+
+import Blurs from '@/public/blurs.svg';
 import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
+import UsdcIcon from '@/public/usdc.svg';
 
-import PromptSuggestions from '../PromptSuggestions';
 import MainAiSection from '../MainAiSection';
+import PromptSuggestions from '../PromptSuggestions';
 
 const promptSuggestions = [
   { title: 'Worn leather with subtle creases', icon: WalletIcon },
@@ -40,10 +41,10 @@ export default function CanvasArea({
   setError,
   error,
 }: CanvasAreaProps) {
-
   // scene to render 3d model
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { scene } = modelUrl ? useGLTF(modelUrl) : { scene: null };
-  
+
   // download model
   const handleDownload = async () => {
     if (!modelUrl || isLoading) return;
@@ -84,17 +85,19 @@ export default function CanvasArea({
         {modelUrl ? (
           <div className="w-full h-full flex flex-col items-center relative">
             <Suspense
-              fallback={<div className="text-center mt-10">Loading model...</div>}
+              fallback={
+                <div className="text-center mt-10">Loading model...</div>
+              }
             >
               <Canvas
                 camera={{ position: [0, 0, 5], fov: 50 }}
                 gl={{ antialias: true, preserveDrawingBuffer: true }}
                 className="w-full h-[calc(100%-40px)]"
               >
-                <ambientLight intensity={1.0} /> 
-                <directionalLight position={[10, 10, 5]} intensity={1.5} /> 
+                <ambientLight intensity={1.0} />
+                <directionalLight position={[10, 10, 5]} intensity={1.5} />
                 {scene && <primitive object={scene} scale={1} />}
-                <OrbitControls enableDamping={true} dampingFactor={0.1}/>
+                <OrbitControls enableDamping={true} dampingFactor={0.1} />
               </Canvas>
               <button
                 onClick={handleDownload}
@@ -103,7 +106,21 @@ export default function CanvasArea({
                 aria-label="Download 3D Model"
               >
                 {/* Download SVG */}
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
               </button>
             </Suspense>
             <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-full px-4 text-center">
@@ -119,12 +136,14 @@ export default function CanvasArea({
             />
             <div className="inset-0 flex items-center justify-center absolute">
               <div className="flex flex-col items-center justify-center w-1/3 text-center">
-                <h1 className="text-5xl text-body mb-2">What will you create?</h1>
+                <h1 className="text-5xl text-body mb-2">
+                  What will you create?
+                </h1>
                 <p className="text-xl text-sub">
                   Generate 3D assets from your own images
                 </p>
               </div>
-            </div> 
+            </div>
             <div className="relative z-20 mt-40">
               <PromptSuggestions
                 onSelect={handleLocalInputChange}

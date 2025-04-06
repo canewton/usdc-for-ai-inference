@@ -65,12 +65,15 @@ export default function ImageGeneratorPage() {
     if (!session) return;
     const sessionToken = session.access_token;
     try {
-      const response = await fetch(`/api/gettotalbilledamount?table=image_generations`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${sessionToken}`,
+      const response = await fetch(
+        `/api/gettotalbilledamount?table=image_generations`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
         },
-      });
+      );
       const data = await response.json();
       if (response.ok) {
         setTotalBilledAmount(data.totalBilledAmount);

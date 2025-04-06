@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+
 import { useSession } from '@/app/contexts/SessionContext';
 import CanvasArea from '@/components/3d/canvas';
 import ControlPanel from '@/components/3d/control-panel';
 import type { ModelHistoryItem } from '@/components/3d/types';
-import { ChatSidebar } from '@/components/ChatSidebar';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
+import { ChatSidebar } from '@/components/ChatSidebar';
 import RightAiSidebar from '@/components/RightAiSidebar';
 
 interface Chat {
@@ -36,12 +37,15 @@ export default function Generate3DModelPage() {
     if (!session) return;
     const sessionToken = session.access_token;
     try {
-      const response = await fetch(`/api/gettotalbilledamount?table=3d_generations`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${sessionToken}`,
+      const response = await fetch(
+        `/api/gettotalbilledamount?table=3d_generations`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
         },
-      });
+      );
       const data = await response.json();
       if (response.ok) {
         setTotalBilledAmount(data.totalBilledAmount);
@@ -54,47 +58,56 @@ export default function Generate3DModelPage() {
   };
 
   const fetchHistory = async () => {
-     if (!session) return;
-     console.log("Fetching history...");
-     setIsLoading(true);
-     const sessionToken = session.access_token;
-     try {
-       const response = await fetch(
-         'http://localhost:3000/api/getgeneratedmodels',
-         {
-           method: 'GET',
-           headers: {
-             Authorization: `Bearer ${sessionToken}`,
-           },
-         },
-       );
+    if (!session) return;
+    console.log('Fetching history...');
+    setIsLoading(true);
+    const sessionToken = session.access_token;
+    try {
+      const response = await fetch(
+        'http://localhost:3000/api/getgeneratedmodels',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        },
+      );
 
-       const data = await response.json();
-       if (response.ok) {
-         const formattedHistory: ModelHistoryItem[] = (data.models || []).map((item: any): ModelHistoryItem => ({
-           id: item.id || `missing-id-${Math.random()}`,
-           url: item.url || '',
-           prompt: item.prompt || '',
-           created_at: item.created_at ? new Date(item.created_at).toISOString() : new Date().toISOString(),
-           ...item,
-         })).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const data = await response.json();
+      if (response.ok) {
+        const formattedHistory: ModelHistoryItem[] = (data.models || [])
+          .map(
+            (item: any): ModelHistoryItem => ({
+              id: item.id || `missing-id-${Math.random()}`,
+              url: item.url || '',
+              prompt: item.prompt || '',
+              created_at: item.created_at
+                ? new Date(item.created_at).toISOString()
+                : new Date().toISOString(),
+              ...item,
+            }),
+          )
+          .sort(
+            (a: any, b: any) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime(),
+          );
 
-         setHistory(formattedHistory);
-         console.log("Fetched and formatted history:", formattedHistory);
-       } else {
-         console.error('Failed to fetch history:', data.error);
-         setError('Failed to load history.');
-         setHistory([]);
-       }
-     } catch (err) {
-       console.error('Error fetching history:', err);
-       setError('An error occurred while loading history.');
-       setHistory([]);
-     } finally {
-        setIsLoading(false);
-     }
-   };
-
+        setHistory(formattedHistory);
+        console.log('Fetched and formatted history:', formattedHistory);
+      } else {
+        console.error('Failed to fetch history:', data.error);
+        setError('Failed to load history.');
+        setHistory([]);
+      }
+    } catch (err) {
+      console.error('Error fetching history:', err);
+      setError('An error occurred while loading history.');
+      setHistory([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (session) {
@@ -105,8 +118,8 @@ export default function Generate3DModelPage() {
 
   const submitPrompt = async (selectedPrompt: string) => {
     if (!session || !imageDataUri) {
-        setError("Session or image data is missing.");
-        return;
+      setError('Session or image data is missing.');
+      return;
     }
 
     setIsLoading(true);
@@ -138,30 +151,32 @@ export default function Generate3DModelPage() {
         fetchTotalBilledAmount();
       } else {
         setError(data.error || 'Failed to generate model');
-        console.error("Generation failed:", data);
+        console.error('Generation failed:', data);
       }
     } catch (err: any) {
       setError(`An error occurred: ${err.message || 'Unknown error'}`);
-      console.error("Generation error:", err);
+      console.error('Generation error:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSelectHistoryItem = (id: string) => {
-    const selectedItem = history.find(item => item.id === id);
+    const selectedItem = history.find((item) => item.id === id);
     if (selectedItem?.url) {
-        console.log(`Selecting history item via ChatSidebar: ${id}, URL: ${selectedItem.url}`);
-        setModelUrl(selectedItem.url);
-        setError(null);
+      console.log(
+        `Selecting history item via ChatSidebar: ${id}, URL: ${selectedItem.url}`,
+      );
+      setModelUrl(selectedItem.url);
+      setError(null);
     } else {
-        console.warn(`History item with id ${id} not found or has no URL.`);
-        setError(`Could not load selected history item (ID: ${id}).`);
+      console.warn(`History item with id ${id} not found or has no URL.`);
+      setError(`Could not load selected history item (ID: ${id}).`);
     }
   };
 
   const handleNewChat = () => {
-    setModelUrl("");
+    setModelUrl('');
   };
 
   const handleDelete = async (modelId: string) => {
@@ -196,30 +211,36 @@ export default function Generate3DModelPage() {
         fetchTotalBilledAmount();
       } else {
         setError(data.error || 'Failed to delete model');
-        console.error("Deletion failed:", data);
+        console.error('Deletion failed:', data);
       }
     } catch (err: any) {
-      setError(`An error occurred while deleting: ${err.message || 'Unknown error'}`);
+      setError(
+        `An error occurred while deleting: ${err.message || 'Unknown error'}`,
+      );
       console.error('Delete error:', err);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
   const chatsDataForSidebar: Chat[] = useMemo(() => {
-    console.log("Transforming history for ChatSidebar:", history);
-    return history.map((item): Chat => ({
-      id: item.id,
-      title: item.prompt || `Model ${item.id.substring(0, 6)}`,
-      created_at: item.created_at,
-    }));
+    console.log('Transforming history for ChatSidebar:', history);
+    return history.map(
+      (item): Chat => ({
+        id: item.id,
+        title: item.prompt || `Model ${item.id.substring(0, 6)}`,
+        created_at: item.created_at,
+      }),
+    );
   }, [history]);
 
   const currentChatId = useMemo(() => {
-      if (!modelUrl) return null;
-      const currentItem = history.find(item => item.url === modelUrl);
-      console.log(`Derived currentChatId: ${currentItem?.id ?? 'null'} for modelUrl: ${modelUrl}`);
-      return currentItem ? currentItem.id : null;
+    if (!modelUrl) return null;
+    const currentItem = history.find((item) => item.url === modelUrl);
+    console.log(
+      `Derived currentChatId: ${currentItem?.id ?? 'null'} for modelUrl: ${modelUrl}`,
+    );
+    return currentItem ? currentItem.id : null;
   }, [modelUrl, history]);
 
   return (
@@ -227,28 +248,28 @@ export default function Generate3DModelPage() {
       {/* --- Sidebar Area --- */}
       <AiHistoryPortal>
         <ChatSidebar
-            chats={chatsDataForSidebar}
-            currentChatId={currentChatId}
-            onNewChat={handleNewChat}
-            onSelectChat={handleSelectHistoryItem}
-            onDeleteChat={handleDelete}
+          chats={chatsDataForSidebar}
+          currentChatId={currentChatId}
+          onNewChat={handleNewChat}
+          onSelectChat={handleSelectHistoryItem}
+          onDeleteChat={handleDelete}
         />
       </AiHistoryPortal>
 
-    {/* --- Main Content Area --- */}
+      {/* --- Main Content Area --- */}
       <CanvasArea
         modelUrl={modelUrl}
         imageDataUri={imageDataUri}
         mode={mode}
         isLoading={isLoading}
-        prompt={prompt} 
+        prompt={prompt}
         setMode={setMode}
-        setPrompt={setPrompt} 
+        setPrompt={setPrompt}
         setError={setError}
         error={error}
       />
 
-       {/* --- Right Sidebar, TODO --- */}
+      {/* --- Right Sidebar, TODO --- */}
       <RightAiSidebar isImageInput={true}>
         <ControlPanel
           imageDataUri={imageDataUri}

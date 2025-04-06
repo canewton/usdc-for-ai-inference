@@ -26,7 +26,9 @@ const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({
         <div
           key={index}
           className={`bg-white border border-blue-200 px-4 py-2 rounded-3xl shadow-md transition flex flex-row items-center ${
-            disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-50'
+            disabled
+              ? 'opacity-50 cursor-not-allowed'
+              : 'cursor-pointer hover:bg-blue-50'
           }`}
           onClick={() => !disabled && onSelect(suggestion)}
         >

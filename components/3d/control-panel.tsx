@@ -1,7 +1,8 @@
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { useEffect } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import USDC from '@/public/usdc-circle.svg';
 
 interface ControlPanelProps {
@@ -175,7 +176,9 @@ export default function ControlPanel({
             alt="Generate"
             src="/icons/spark-jelly.svg"
           />
-          <span className="truncate">{isLoading ? 'Generating...' : 'Generate your asset'}</span>
+          <span className="truncate">
+            {isLoading ? 'Generating...' : 'Generate your asset'}
+          </span>
         </Button>
         {error && <p className="text-red-500 mt-2 text-sm truncate">{error}</p>}
       </div>
