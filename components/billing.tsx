@@ -26,19 +26,19 @@ import {
 
 import type { SortField } from './transaction-history';
 
-interface Transaction {
+export interface BillingTransaction {
   id: string;
-  status: string;
-  created_at: string;
-  circle_transaction_id: string;
+  ai_model: string;
+  project_name: string;
   transaction_type: string;
   amount: string;
-  balance: string;
+  status: string;
+  created_at: string;
   expanded: boolean;
 }
 
 interface Props {
-  data: Transaction[];
+  data: BillingTransaction[];
   loading: boolean;
   sortConfig: {
     field: string;
@@ -49,7 +49,7 @@ interface Props {
 
 const ITEMS_PER_PAGE = 5;
 
-export const Transactions: FunctionComponent<Props> = ({
+export const Billing: FunctionComponent<Props> = ({
   data,
   loading,
   sortConfig,
@@ -61,7 +61,7 @@ export const Transactions: FunctionComponent<Props> = ({
   const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
 
-  const [paginatedData, setPaginatedData] = useState<Transaction[]>(
+  const [paginatedData, setPaginatedData] = useState<BillingTransaction[]>(
     data.slice(startIndex, startIndex + ITEMS_PER_PAGE),
   );
 
@@ -109,6 +109,18 @@ export const Transactions: FunctionComponent<Props> = ({
                   Date
                 </div>
               </TableHead>
+              <TableHead onClick={() => onSort('name')}>
+                <div className="flex items-center gap-1">
+                  {sortConfig.direction === 'asc' &&
+                  sortConfig.field == 'name' ? (
+                    <ChevronUp size={16} />
+                  ) : (
+                    <ChevronDown size={16} />
+                  )}
+                  Project Title
+                </div>
+              </TableHead>
+              <TableHead>Model</TableHead>
               <TableHead onClick={() => onSort('amount')}>
                 <div className="flex items-center gap-1">
                   {sortConfig.direction === 'asc' &&
@@ -120,18 +132,7 @@ export const Transactions: FunctionComponent<Props> = ({
                   Total Amount
                 </div>
               </TableHead>
-              <TableHead onClick={() => onSort('balance')}>
-                <div className="flex items-center gap-1">
-                  {sortConfig.direction === 'asc' &&
-                  sortConfig.field == 'balance' ? (
-                    <ChevronUp size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  )}
-                  Balance
-                </div>
-              </TableHead>
-              <TableHead onClick={() => onSort('status')}>Status</TableHead>
+              <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -152,6 +153,8 @@ export const Transactions: FunctionComponent<Props> = ({
                       {transaction.created_at}
                     </div>
                   </TableCell>
+                  <TableCell>{transaction.project_name}</TableCell>
+                  <TableCell>{transaction.ai_model}</TableCell>
                   {transaction.transaction_type === 'INBOUND' && (
                     <TableCell className="text-green-600">
                       <div className="flex items-center gap-1">
@@ -168,7 +171,6 @@ export const Transactions: FunctionComponent<Props> = ({
                       </div>
                     </TableCell>
                   )}
-                  <TableCell>{transaction.balance}</TableCell>
                   {transaction.status == 'CONFIRMED' && (
                     <TableCell>
                       <span className="inline-flex items-center px-4 py-1.5 rounded-full font-medium bg-green-100 text-green-800">
@@ -177,7 +179,7 @@ export const Transactions: FunctionComponent<Props> = ({
                     </TableCell>
                   )}
                   {transaction.status !== 'CONFIRMED' && (
-                    <TableCell colSpan={1}>
+                    <TableCell>
                       <span className="inline-flex items-center px-4 py-1.5 rounded-full font-medium bg-red-100 text-red-800">
                         {transaction.status}
                       </span>
