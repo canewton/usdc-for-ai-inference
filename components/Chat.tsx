@@ -456,6 +456,7 @@ export function Chat({ currChat }: ChatProps) {
               isLoading={isLoading}
               onStopGeneration={stopGeneration}
               editingMessage={editingMessageId !== null}
+              maxLength={1000}
             />
           </div>
         </div>
