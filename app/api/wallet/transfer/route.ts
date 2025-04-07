@@ -10,6 +10,7 @@ export async function POST(request: Request) {
       transferRequest.projectName,
       transferRequest.aiModel,
       transferRequest.circleWalletId,
+      transferRequest.amount,
     );
 
     return NextResponse.json(response, { status: 201 });

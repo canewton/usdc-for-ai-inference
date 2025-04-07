@@ -69,6 +69,7 @@ export async function circleWalletTransfer(
   projectName: string,
   aiModel: string,
   circleWalletId: string,
+  amount: string,
 ) {
   const supabase = await createClient();
   try {
@@ -76,7 +77,7 @@ export async function circleWalletTransfer(
       projectName,
       aiModel,
       circleWalletId,
-      amount: '0.1',
+      amount: amount,
     };
     const result = await createTransfer(transferRequest);
     const { data: response, error } = await supabase
