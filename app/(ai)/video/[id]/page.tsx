@@ -13,10 +13,10 @@ import VideoHistory from '@/components/VideoHistory';
 import Blurs from '@/public/blurs.svg';
 import { createClient } from '@/utils/supabase/client';
 
-export default function Home() {
+export default function VideoPage() {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [model, setModel] = useState('FLUX.1 (4s)');
+  const [model, setModel] = useState('SVD-XT');
   const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [seed, setSeed] = useState('-1');
