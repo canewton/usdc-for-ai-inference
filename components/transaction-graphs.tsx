@@ -6,6 +6,7 @@ import { ImageIcon } from '@/app/icons/ImageIcon';
 import { TextIcon } from '@/app/icons/TextIcon';
 import { USDCIcon } from '@/app/icons/USDCIcon';
 import { VideoIcon } from '@/app/icons/VideoIcon';
+import { aiModel } from '@/types/ai.types';
 
 import { SpendingCard } from './spending-card';
 
@@ -36,10 +37,10 @@ const months = [
 ];
 
 const MODEL_COLORS = {
-  'text-to-text': '#8B5CF6', // Purple
-  'text-to-image': '#F59E0B', // Amber
-  '2d-to-3d': '#10B981', // Emerald
-  'image-to-video': '#3B82F6', // Blue
+  [aiModel.TEXT_TO_TEXT]: '#8B5CF6', // Purple
+  [aiModel.TEXT_TO_IMAGE]: '#F59E0B', // Amber
+  [aiModel.IMAGE_TO_3D]: '#10B981', // Emerald
+  [aiModel.IMAGE_TO_VIDEO]: '#3B82F6', // Blue
 };
 
 function getDaysInMonth(year: number, month: number): number {
@@ -85,16 +86,16 @@ function processTransactionsForMonth(
     return {
       date,
       value1: dayTransactions
-        .filter((t) => t.ai_model === 'text-to-text')
+        .filter((t) => t.ai_model === aiModel.TEXT_TO_TEXT)
         .reduce((sum, t) => sum + parseFloat(t.amount), 0),
       value2: dayTransactions
-        .filter((t) => t.ai_model === 'text-to-image')
+        .filter((t) => t.ai_model === aiModel.TEXT_TO_IMAGE)
         .reduce((sum, t) => sum + parseFloat(t.amount), 0),
       value3: dayTransactions
-        .filter((t) => t.ai_model === '2d-to-3d')
+        .filter((t) => t.ai_model === aiModel.IMAGE_TO_3D)
         .reduce((sum, t) => sum + parseFloat(t.amount), 0),
       value4: dayTransactions
-        .filter((t) => t.ai_model === 'image-to-video')
+        .filter((t) => t.ai_model === aiModel.IMAGE_TO_VIDEO)
         .reduce((sum, t) => sum + parseFloat(t.amount), 0),
     };
   });
@@ -152,22 +153,22 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
   const textToTextData = processTransactionsByType(
     props.data,
     currentMonthIndex,
-    'text-to-text',
+    aiModel.TEXT_TO_TEXT,
   );
   const textToImageData = processTransactionsByType(
     props.data,
     currentMonthIndex,
-    'text-to-image',
+    aiModel.TEXT_TO_IMAGE,
   );
   const imageToImageData = processTransactionsByType(
     props.data,
     currentMonthIndex,
-    '2d-to-3d',
+    aiModel.IMAGE_TO_3D,
   );
   const imageToVideoData = processTransactionsByType(
     props.data,
     currentMonthIndex,
-    'image-to-video',
+    aiModel.IMAGE_TO_VIDEO,
   );
 
   const calculateTotal = (data: any[]) => {
@@ -224,10 +225,10 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           amount={monthlyTotal}
           data={monthlyData}
           colors={[
-            MODEL_COLORS['text-to-text'],
-            MODEL_COLORS['text-to-image'],
-            MODEL_COLORS['2d-to-3d'],
-            MODEL_COLORS['image-to-video'],
+            MODEL_COLORS[aiModel.TEXT_TO_TEXT],
+            MODEL_COLORS[aiModel.TEXT_TO_IMAGE],
+            MODEL_COLORS[aiModel.IMAGE_TO_3D],
+            MODEL_COLORS[aiModel.IMAGE_TO_VIDEO],
           ]}
           stacked={true}
           showUSDCTotal={false}
@@ -241,7 +242,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           amount={textToTextTotal}
           data={textToTextData}
           className="bg-purple-50"
-          colors={[MODEL_COLORS['text-to-text']]}
+          colors={[MODEL_COLORS[aiModel.TEXT_TO_TEXT]]}
           icon={<TextIcon className="text-purple-600" />}
         />
         <SpendingCard
@@ -249,7 +250,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           amount={textToImageTotal}
           data={textToImageData}
           className="bg-orange-50"
-          colors={[MODEL_COLORS['text-to-image']]}
+          colors={[MODEL_COLORS[aiModel.TEXT_TO_IMAGE]]}
           icon={<ImageIcon className="text-orange-600" />}
         />
         <SpendingCard
@@ -257,7 +258,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           amount={imageToImageTotal}
           data={imageToImageData}
           className="bg-green-50"
-          colors={[MODEL_COLORS['2d-to-3d']]}
+          colors={[MODEL_COLORS[aiModel.IMAGE_TO_3D]]}
           icon={<Image3DIcon className="text-green-600" />}
         />
         <SpendingCard
@@ -265,7 +266,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           amount={imageToVideoTotal}
           data={imageToVideoData}
           className="bg-blue-50"
-          colors={[MODEL_COLORS['image-to-video']]}
+          colors={[MODEL_COLORS[aiModel.IMAGE_TO_VIDEO]]}
           icon={<VideoIcon className="text-blue-600" />}
         />
       </div>

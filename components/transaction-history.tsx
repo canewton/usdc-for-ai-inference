@@ -1,7 +1,10 @@
 'use client';
 
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { type FunctionComponent, useEffect, useMemo, useState } from 'react';
 
+import { Image3DIcon } from '@/app/icons/Image3DIcon';
+import { aiModel } from '@/types/ai.types';
 import type { Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
@@ -43,6 +46,9 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   const [transactionData, setTransactionData] = useState<Transaction[]>([]);
   const [treasuryData, setTreasuryData] = useState<Transaction[]>([]);
   const [billingData, setBillingData] = useState<BillingTransaction[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [sortConfig, setSortConfig] = useState<{
     field: SortField;
     direction: SortDirection;
@@ -93,7 +99,25 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   }, [transactionData, sortConfig]);
 
   const formattedBillingData = useMemo(() => {
-    const formatted = billingData.map((transaction) => ({
+    // First filter by search query if it exists
+    const filteredBySearch = searchQuery
+      ? billingData.filter((transaction) =>
+          transaction.project_name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()),
+        )
+      : billingData;
+
+    // Then filter by selected models if any
+    const filteredByModels =
+      selectedModels.length > 0
+        ? filteredBySearch.filter((transaction) =>
+            selectedModels.includes(transaction.ai_model),
+          )
+        : filteredBySearch;
+
+    // Finally format the filtered data
+    const formatted = filteredByModels.map((transaction) => ({
       ...transaction,
       created_at: new Date(transaction.created_at).toLocaleString(),
       expanded: false,
@@ -123,7 +147,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       }
       return 0;
     });
-  }, [billingData, sortConfig]);
+  }, [billingData, sortConfig, searchQuery, selectedModels]);
 
   const formattedTreasuryData = useMemo(
     () =>
@@ -358,6 +382,16 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     };
   }, []);
 
+  const clearFilters = () => {
+    setSelectedModels([]);
+  };
+
+  const toggleModel = (model: string) => {
+    setSelectedModels((prev) =>
+      prev.includes(model) ? prev.filter((m) => m !== model) : [...prev, model],
+    );
+  };
+
   return (
     <div className="min-h-screen">
       <div className="mx-auto">
@@ -407,14 +441,92 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
           />
         )}
         {activeTab == 'billing' && (
-          <Billing
-            data={formattedBillingData}
-            loading={loading}
-            sortConfig={sortConfig}
-            onSort={handleSort}
-          />
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-600" />
+                <input
+                  type="text"
+                  placeholder="Search"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="relative">
+                  <button
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors ${showFilterMenu ? 'bg-gray-50' : ''}`}
+                    onClick={() => {
+                      setShowFilterMenu(!showFilterMenu);
+                    }}
+                  >
+                    <SlidersHorizontal className="w-4 h-4 text-blue-600" />
+                    Filter By
+                    {selectedModels.length > 0 && (
+                      <span className="ml-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-600 rounded-full">
+                        {selectedModels.length}
+                      </span>
+                    )}
+                  </button>
+                  {showFilterMenu && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Image3DIcon className="text-blue-600" />
+                          <h3 className="text-gray-900">MODEL</h3>
+                        </div>
+                        <div className="space-y-2">
+                          {Object.values(aiModel).map((model) => (
+                            <label key={model} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={selectedModels.includes(model)}
+                                onChange={() => toggleModel(model)}
+                                className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                              />
+                              <span className="ml-2 text-gray-700">
+                                {model}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className="flex justify-between gap-2 mt-4">
+                          <button
+                            onClick={() => {
+                              setShowFilterMenu(false);
+                              clearFilters();
+                            }}
+                            className="flex-1 text-gray-600 px-4 py-1.5 rounded border border-gray-300 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                          >
+                            Clear All
+                          </button>
+                          <button
+                            onClick={() => setShowFilterMenu(false)}
+                            className="flex-1 bg-blue-500 text-white px-4 py-1.5 rounded hover:bg-blue-600 transition-colors"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <Billing
+              data={formattedBillingData}
+              loading={loading}
+              sortConfig={sortConfig}
+              onSort={handleSort}
+            />
+          </>
         )}
-        {activeTab == 'usage' && <TransactionGraphs data={billingData} />}
+        {activeTab == 'usage' && (
+          <div className="mb-20">
+            <TransactionGraphs data={billingData} />
+          </div>
+        )}
       </div>
     </div>
   );

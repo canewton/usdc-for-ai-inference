@@ -43,7 +43,7 @@ export default async function ProtectedPage() {
     .single();
 
   return (
-    <div className="px-20">
+    <div className="px-20 pt-20">
       {/* Wallet Card */}
       <h1 className="text-xl font-light mb-4">Wallet Balance</h1>
 
