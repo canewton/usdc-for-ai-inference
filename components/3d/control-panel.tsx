@@ -102,7 +102,7 @@ export default function ControlPanel({
               <img
                 className="w-[18px] h-[18px]"
                 alt="Upload"
-                src="/icons/vector-1.svg"
+                src="/vector-1.svg"
               />
               <div className="text-center">
                 <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-700 text-base tracking-[-0.18px] leading-6 truncate">
@@ -171,11 +171,7 @@ export default function ControlPanel({
           className="w-full bg-gray-100 text-gray-700 py-2 rounded-full flex items-center justify-center space-x-2"
           disabled={isLoading || !imageDataUri || !prompt}
         >
-          <img
-            className="w-6 h-6"
-            alt="Generate"
-            src="/icons/spark-jelly.svg"
-          />
+          <img className="w-6 h-6" alt="Generate" src="/spark-jelly.svg" />
           <span className="truncate">
             {isLoading ? 'Generating...' : 'Generate your asset'}
           </span>
