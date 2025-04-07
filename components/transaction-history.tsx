@@ -5,7 +5,7 @@ import { type FunctionComponent, useEffect, useMemo, useState } from 'react';
 
 import { Image3DIcon } from '@/app/icons/Image3DIcon';
 import { aiModel } from '@/types/ai.types';
-import type { Wallet } from '@/types/database.types';
+import type { Profile, Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
 import { Billing, type BillingTransaction } from './billing';
@@ -56,9 +56,10 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     field: 'date',
     direction: 'desc',
   });
+  const [user, setUser] = useState<Profile | null>(null);
 
-  const formattedTransactionData = useMemo(() => {
-    const formatted = transactionData.map((transaction) => ({
+  const formatData = (data: Transaction[]) => {
+    const formatted = data.map((transaction) => ({
       ...transaction,
       created_at: new Date(transaction.created_at).toLocaleString(),
       expanded: false,
@@ -96,7 +97,15 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       }
       return 0;
     });
+  };
+
+  const formattedTransactionData = useMemo(() => {
+    return formatData(transactionData);
   }, [transactionData, sortConfig]);
+
+  const formattedTreasuryData = useMemo(() => {
+    return formatData(treasuryData);
+  }, [treasuryData, sortConfig]);
 
   const formattedBillingData = useMemo(() => {
     // First filter by search query if it exists
@@ -149,28 +158,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     });
   }, [billingData, sortConfig, searchQuery, selectedModels]);
 
-  const formattedTreasuryData = useMemo(
-    () =>
-      treasuryData.map((transaction) => ({
-        ...transaction,
-        created_at: new Date(transaction.created_at).toLocaleString(),
-        expanded: false,
-        amount: new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD',
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(Number(transaction.amount)),
-        balance: new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD',
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(Number(transaction.balance)),
-      })),
-    [treasuryData],
-  );
-
   const handleSort = (field: SortField) => {
     setSortConfig((prev) => ({
       field,
@@ -182,10 +169,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   const updateTransactions = async () => {
     try {
       setLoading(true);
-
-      console.log('Fetching wallet balance', props.wallet);
-      console.log('Fetching wallet balance', props.treasuryWallet);
-
       const walletBalance = await (
         await fetch('/api/wallet/balance', {
           method: 'POST',
@@ -224,10 +207,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
                 token.symbol === 'USDC',
             )?.amount;
             transaction.balance = parsedBalance;
-            console.log(
-              'Updating transaction:',
-              parseFloat(transaction.balance),
-            );
             await supabase
               .from('transactions')
               .update({ balance: parseFloat(transaction.balance) })
@@ -254,7 +233,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
                 token.symbol === 'USDC',
             )?.amount;
             transaction.balance = parsedBalance;
-            supabase
+            await supabase
               .from('transactions')
               .update({ balance: parseFloat(transaction.balance) })
               .eq('id', transaction.id)
@@ -268,6 +247,14 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       setTransactionData(transactionsUpdated);
       setTreasuryData(treasuryTransactionsUpdated);
       updateBillingTransactions();
+      const { data: userTemp } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', props.wallet.profile_id)
+        .single();
+
+      setUser(userTemp);
+      console.log(userTemp);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {
@@ -428,6 +415,18 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
             >
               Usage
             </button>
+            {user?.is_admin && (
+              <button
+                className={`pb-4 px-1 ${
+                  activeTab === 'treasury'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500'
+                }`}
+                onClick={() => setActiveTab('treasury')}
+              >
+                Treasury Wallet
+              </button>
+            )}
           </div>
         </div>
 
@@ -526,6 +525,14 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
           <div className="mb-20">
             <TransactionGraphs data={billingData} />
           </div>
+        )}
+        {activeTab == 'treasury' && (
+          <Transactions
+            data={formattedTreasuryData}
+            loading={loading}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
         )}
       </div>
     </div>
