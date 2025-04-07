@@ -1,10 +1,8 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/client";
+import { NextResponse } from 'next/server';
 
-export async function GET(
-  req: Request, 
-  context: { params: { id: string } }
-) {
+import { createClient } from '@/utils/supabase/client';
+
+export async function GET(req: Request, context: { params: { id: string } }) {
   const { params } = context;
   const videoId = params.id;
   const supabase = await createClient();
@@ -14,7 +12,7 @@ export async function GET(
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
+
     const {
       data: { user },
       error,
@@ -36,8 +34,8 @@ export async function GET(
     if (dbError) {
       console.error('Error fetching video generation:', dbError);
       return NextResponse.json(
-        { error: 'Video generation not found or access denied' }, 
-        { status: dbError.code === 'PGRST116' ? 404 : 500 }
+        { error: 'Video generation not found or access denied' },
+        { status: dbError.code === 'PGRST116' ? 404 : 500 },
       );
     }
 
@@ -45,7 +43,12 @@ export async function GET(
   } catch (error) {
     console.error('Error retrieving video details:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to retrieve video details' },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to retrieve video details',
+      },
       { status: 500 },
     );
   }

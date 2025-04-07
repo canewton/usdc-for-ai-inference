@@ -3,8 +3,6 @@ import './globals.css';
 import { Geist } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 
-import Navbar from '@/components/Navbar';
-
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : 'http://localhost:3000';
@@ -41,14 +39,14 @@ export default function RootLayout({
         </ThemeProvider>
       </body> */}
       <body className="bg-background text-foreground">
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-      <div className="flex flex-col">{children}</div>
-      </ThemeProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="flex flex-col">{children}</div>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 
 import AiTabs from '@/components/AiTabs';
-import { createClient } from '@/utils/supabase/client';
 import Navbar from '@/components/Navbar';
+import { createClient } from '@/utils/supabase/client';
 
 import { Spinner } from '../../components/Spinner';
 import { SessionProvider } from '../contexts/SessionContext';
@@ -35,7 +35,7 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider access_token={session}>
       <Navbar />
-      
+
       <div className="ai-layout flex flex-col pt-3">
         <div className="flex flex-row h-screen w-full">
           {/* Left side bar with tabs and history */}

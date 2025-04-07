@@ -1,33 +1,34 @@
-"use client";
+'use client';
 
-import React, { useState, useRef, createContext } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "@/app/contexts/SessionContext";
-import Blurs from "@/public/blurs.svg";
-import MainAiSection from "@/components/MainAiSection";
-import AiHistoryPortal from "@/components/AiHistoryPortal";
-import RightAiSidebar from "@/components/RightAiSidebar";
-import VideoHistory from "@/components/VideoHistory";
-import Image from "next/image";
-import { createClient } from "@/utils/supabase/client";
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import React, { createContext, useRef, useState } from 'react';
+
+import { useSession } from '@/app/contexts/SessionContext';
+import AiHistoryPortal from '@/components/AiHistoryPortal';
+import MainAiSection from '@/components/MainAiSection';
+import RightAiSidebar from '@/components/RightAiSidebar';
+import VideoHistory from '@/components/VideoHistory';
+import Blurs from '@/public/blurs.svg';
+import { createClient } from '@/utils/supabase/client';
 
 // Create a context for refreshing components
 export const RefreshContext = createContext({
   refreshTrigger: 0,
-  refreshComponents: () => {}
+  refreshComponents: () => {},
 });
 
 export default function Home() {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [model, setModel] = useState("SVD-XT");
+  const [model, setModel] = useState('SVD-XT');
   const [loading, setLoading] = useState(false);
-  const [prompt, setPrompt] = useState("");
-  const [seed, setSeed] = useState("-1");
+  const [prompt, setPrompt] = useState('');
+  const [seed, setSeed] = useState('-1');
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSeedInfo, setShowSeedInfo] = useState(false);
-  
+
   // Add refresh state
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -39,7 +40,7 @@ export default function Home() {
 
   // Create refresh function
   const refreshComponents = () => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,27 +84,29 @@ export default function Home() {
   const processPayment = async (modelName: string) => {
     try {
       // Determine payment amount based on model
-      const amount = modelName === "SVD-XT" ? "0.20" : "0.15";
-      
+      const amount = modelName === 'SVD-XT' ? '0.20' : '0.15';
+
       // Get user's wallet ID
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
-        throw new Error("User not authenticated");
+        throw new Error('User not authenticated');
       }
-      
+
       // Get profile
       const { data: profile } = await supabase
         .from('profiles')
         .select('id')
         .eq('auth_user_id', user.id)
         .single();
-      
+
       if (!profile) {
-        throw new Error("Profile not found");
+        throw new Error('Profile not found');
       }
-      
+
       // Get wallet
       const { data: wallet } = await supabase
         .schema('public')
@@ -111,41 +114,41 @@ export default function Home() {
         .select('circle_wallet_id')
         .eq('profile_id', profile.id)
         .single();
-      
+
       if (!wallet || !wallet.circle_wallet_id) {
-        throw new Error("Wallet not found");
+        throw new Error('Wallet not found');
       }
-      
+
       // Call payment API
-      const response = await fetch("/api/wallet/transfer", {
-        method: "POST",
+      const response = await fetch('/api/wallet/transfer', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${sessionToken}`,
         },
         body: JSON.stringify({
           circleWalletId: wallet.circle_wallet_id,
           amount,
-          projectName: "Video Generation",
-          aiModel: modelName
+          projectName: 'Video Generation',
+          aiModel: modelName,
         }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Payment failed");
+        throw new Error(errorData.error || 'Payment failed');
       }
-      
+
       return await response.json();
     } catch (error) {
-      console.error("Payment error:", error);
+      console.error('Payment error:', error);
       throw error;
     }
   };
 
   const handleGenerateVideo = async () => {
     if (!image) {
-      alert("Please upload an image.");
+      alert('Please upload an image.');
       return;
     }
 
@@ -155,24 +158,24 @@ export default function Home() {
     try {
       // Process payment first
       await processPayment(model);
-      
+
       // Then generate video
       const reader = new FileReader();
       reader.readAsDataURL(image);
       reader.onloadend = async () => {
-        const base64Image = reader.result?.toString().split(",")[1];
+        const base64Image = reader.result?.toString().split(',')[1];
 
-        const response = await fetch("./api/generatevideo", {
-          method: "POST",
+        const response = await fetch('./api/generatevideo', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${sessionToken}`,
           },
           body: JSON.stringify({
             model_name: model,
             image_file: base64Image,
             seed:
-              seed === "-1"
+              seed === '-1'
                 ? Math.floor(Math.random() * 10000)
                 : parseInt(seed),
             prompt: prompt,
@@ -181,7 +184,7 @@ export default function Home() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to generate video");
+          throw new Error(errorData.error || 'Failed to generate video');
         }
 
         const responseData = await response.json();
@@ -194,9 +197,12 @@ export default function Home() {
         router.push(`/video/${task_id}`);
       };
     } catch (error: any) {
-      console.error("Error:", error);
+      console.error('Error:', error);
       setLoading(false);
-      setError(error.message || "Failed to process payment or generate video. Please try again.");
+      setError(
+        error.message ||
+          'Failed to process payment or generate video. Please try again.',
+      );
     }
   };
 
@@ -218,9 +224,7 @@ export default function Home() {
           />
           <div className="inset-0 flex items-center justify-center absolute">
             <div className="flex flex-col items-center justify-center w-1/2 text-center">
-              <h1 className="text-5xl text-body mb-2">
-                What will you create?
-              </h1>
+              <h1 className="text-5xl text-body mb-2">What will you create?</h1>
               <p className="text-lg text-gray-600">
                 Generate videos from your own images
               </p>
@@ -334,10 +338,9 @@ export default function Home() {
                     />
                   </svg>
                   <p className="text-sm text-gray-600">
-                    A <span className="text-blue-500 font-medium">seed</span>{" "}
-                    is a number that makes AI-generated images
-                    repeatable—using the same seed and settings will always
-                    create the same image.
+                    A <span className="text-blue-500 font-medium">seed</span> is
+                    a number that makes AI-generated images repeatable—using the
+                    same seed and settings will always create the same image.
                   </p>
                 </div>
               </div>
@@ -385,8 +388,8 @@ export default function Home() {
             disabled={!image || loading}
             className={`w-full py-3 rounded-lg flex justify-center items-center space-x-2 ${
               !image || loading
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600 text-white"
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-blue-500 hover:bg-blue-600 text-white'
             }`}
           >
             {loading ? (
@@ -405,7 +408,7 @@ export default function Home() {
               </>
             )}
           </button>
-          
+
           {error && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
               {error}

@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useSession } from "@/app/contexts/SessionContext";
-import MainAiSection from "@/components/MainAiSection";
-import AiHistoryPortal from "@/components/AiHistoryPortal";
-import RightAiSidebar from "@/components/RightAiSidebar";
-import VideoHistory from "@/components/VideoHistory";
+import { useParams, useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+
+import { useSession } from '@/app/contexts/SessionContext';
+import AiHistoryPortal from '@/components/AiHistoryPortal';
+import MainAiSection from '@/components/MainAiSection';
+import RightAiSidebar from '@/components/RightAiSidebar';
+import VideoHistory from '@/components/VideoHistory';
 
 export default function VideoDetailPage() {
   const [loading, setLoading] = useState(true);
@@ -14,8 +15,7 @@ export default function VideoDetailPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [videoDetails, setVideoDetails] = useState<any>(null);
-  
-  // Parameters for the video generation
+
   const [prompt, setPrompt] = useState<string>('');
   const [modelName, setModelName] = useState<string>('');
   const [seed, setSeed] = useState<string>('');
@@ -24,8 +24,7 @@ export default function VideoDetailPage() {
   const params = useParams();
   const router = useRouter();
   const session = useSession();
-  
-  // Get the video ID from the URL params
+
   const videoId = typeof params?.id === 'string' ? params.id : '';
 
   if (!session) return null;
@@ -34,18 +33,18 @@ export default function VideoDetailPage() {
   useEffect(() => {
     const fetchVideoDetails = async () => {
       if (!videoId || !sessionToken) {
-        setError("Invalid video ID or missing authentication");
+        setError('Invalid video ID or missing authentication');
         setLoading(false);
         return;
       }
 
       try {
         console.log(`Fetching video details for ID: ${videoId}`);
-        
+
         const response = await fetch(`/api/videos/${videoId}`, {
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${sessionToken}`,
           },
           // Ensure we're not using cached data
@@ -54,30 +53,36 @@ export default function VideoDetailPage() {
 
         if (!response.ok) {
           console.error(`API error: ${response.status} ${response.statusText}`);
-          throw new Error(`Failed to fetch video details: ${response.statusText}`);
+          throw new Error(
+            `Failed to fetch video details: ${response.statusText}`,
+          );
         }
 
         const data = await response.json();
-        console.log("Video details received:", data);
-        
+        console.log('Video details received:', data);
+
         if (data.error) {
           throw new Error(data.error);
         }
-        
+
         // Set the video details
         setVideoDetails(data);
         setVideoUrl(data.video_url);
         setImagePreview(data.prompt_image_path);
-        
+
         // Set the parameters from the video details
         setPrompt(data.prompt || '');
         setModelName(data.model_name || '');
         setSeed(data.seed ? data.seed.toString() : '-1');
-        
+
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching video details:", error);
-        setError(error instanceof Error ? error.message : "Failed to load video details. Please try again.");
+        console.error('Error fetching video details:', error);
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Failed to load video details. Please try again.',
+        );
         setLoading(false);
       }
     };
@@ -86,7 +91,7 @@ export default function VideoDetailPage() {
   }, [videoId, sessionToken]);
 
   const handleCreateNewVideo = () => {
-    router.push("/video");
+    router.push('/video');
   };
 
   return (
@@ -107,7 +112,7 @@ export default function VideoDetailPage() {
               <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
                 <div
                   className="bg-blue-500 h-2 rounded-full animate-pulse"
-                  style={{ width: "50%" }}
+                  style={{ width: '50%' }}
                 ></div>
               </div>
               <p className="text-gray-600 text-sm">
@@ -117,9 +122,7 @@ export default function VideoDetailPage() {
           </div>
         ) : error ? (
           <div className="w-full h-full p-8 flex flex-col items-center justify-center">
-            <h2 className="text-2xl font-semibold mb-4 text-red-500">
-              Error
-            </h2>
+            <h2 className="text-2xl font-semibold mb-4 text-red-500">Error</h2>
             <p className="text-gray-700 mb-6">{error}</p>
             <button
               onClick={handleCreateNewVideo}
@@ -169,9 +172,9 @@ export default function VideoDetailPage() {
                   <div className="text-gray-600 mb-2">Source Image</div>
                   <div className="border border-gray-200 rounded-lg p-3 bg-white">
                     <div className="rounded-lg overflow-hidden border border-gray-100">
-                      <img 
-                        src={imagePreview} 
-                        alt="Source image" 
+                      <img
+                        src={imagePreview}
+                        alt="Source image"
                         className="w-full h-44 object-contain bg-gray-50"
                       />
                     </div>
@@ -220,7 +223,8 @@ export default function VideoDetailPage() {
                         />
                       </svg>
                       <p className="text-sm text-gray-600">
-                        A <span className="text-blue-500 font-medium">seed</span>{" "}
+                        A{' '}
+                        <span className="text-blue-500 font-medium">seed</span>{' '}
                         is a number that makes AI-generated images
                         repeatable—using the same seed and settings will always
                         create the same image.
@@ -268,7 +272,7 @@ export default function VideoDetailPage() {
               </div>
             </>
           )}
-          
+
           <button
             onClick={handleCreateNewVideo}
             className="w-full py-3 rounded-lg flex justify-center items-center bg-blue-500 text-white hover:bg-blue-600 transition"

@@ -1,12 +1,12 @@
-import { config } from 'dotenv';
-import { initiateDeveloperControlledWalletsClient } from '@circle-fin/developer-controlled-wallets';
-import fs from 'fs';
-import path from 'path';
+import { config } from "dotenv";
+import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
+import fs from "fs";
+import path from "path";
 
-config({ path: ['.env.local'] });
+config({ path: [".env.local"] });
 
 // Initialize Circle client
-const requiredEnvVars = ['CIRCLE_API_KEY', 'CIRCLE_ENTITY_SECRET'];
+const requiredEnvVars = ["CIRCLE_API_KEY", "CIRCLE_ENTITY_SECRET"];
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     console.error(`Missing required environment variable: ${envVar}`);
@@ -22,21 +22,21 @@ export const circleDeveloperSdk = initiateDeveloperControlledWalletsClient({
 // Makes the request to Circle's API to create the wallet
 try {
   const createdWalletSetResponse = await circleDeveloperSdk.createWalletSet({
-    name: 'Treasury Wallet',
+    name: "Treasury Wallet",
   });
 
   const walletSetId = createdWalletSetResponse.data.walletSet.id;
   console.log(`Created wallet set with ID: ${walletSetId}`);
 
   const createdWalletResponse = await circleDeveloperSdk.createWallets({
-    accountType: 'SCA',
-    blockchains: ['ARB-SEPOLIA'],
+    accountType: "SCA",
+    blockchains: ["ARB-SEPOLIA"],
     walletSetId,
   });
 
   const [createdWallet] = createdWalletResponse.data.wallets;
   if (!createdWallet) {
-    throw new Error('No wallet was created');
+    throw new Error("No wallet was created");
   }
 
   console.log(
@@ -44,8 +44,8 @@ try {
   );
 
   // Update environment variables in .env.local
-  const envPath = path.resolve('.env.local');
-  let envContent = fs.readFileSync(envPath, 'utf-8');
+  const envPath = path.resolve(".env.local");
+  let envContent = fs.readFileSync(envPath, "utf-8");
 
   // Update the environment variables
   envContent = envContent.replace(
@@ -59,8 +59,8 @@ try {
 
   // Write the updated content back to .env.local
   fs.writeFileSync(envPath, envContent);
-  console.log('Environment variables updated successfully in .env.local');
+  console.log("Environment variables updated successfully in .env.local");
 } catch (error) {
-  console.error('Failed to create treasury wallet:', error.message);
+  console.error("Failed to create treasury wallet:", error.message);
   process.exit(1);
 }

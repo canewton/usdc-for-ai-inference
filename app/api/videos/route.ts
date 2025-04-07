@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/client";
+import { NextResponse } from 'next/server';
+
+import { createClient } from '@/utils/supabase/client';
 
 export async function GET(req: Request) {
   const supabase = await createClient();
@@ -9,7 +10,7 @@ export async function GET(req: Request) {
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
+
     const {
       data: { user },
       error,
@@ -28,14 +29,20 @@ export async function GET(req: Request) {
 
     if (dbError) {
       console.error('Error fetching video generations:', dbError);
-      return NextResponse.json({ error: 'Failed to fetch video generations' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Failed to fetch video generations' },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ videoGenerations });
   } catch (error) {
     console.error('Error retrieving videos:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to retrieve videos' },
+      {
+        error:
+          error instanceof Error ? error.message : 'Failed to retrieve videos',
+      },
       { status: 500 },
     );
   }

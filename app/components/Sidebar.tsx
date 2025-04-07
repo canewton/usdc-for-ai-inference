@@ -1,5 +1,5 @@
-import React from 'react';
 import Link from 'next/link';
+import React from 'react';
 
 type SidebarItemProps = {
   title: string;
@@ -8,8 +8,8 @@ type SidebarItemProps = {
 
 const SidebarItem = ({ title, active = false }: SidebarItemProps) => {
   return (
-    <Link 
-      href="#" 
+    <Link
+      href="#"
       className={`block py-2 px-4 text-sm hover:bg-gray-100 rounded-md ${active ? 'bg-gray-100 text-blue-500 font-medium' : ''}`}
     >
       {title}
@@ -25,7 +25,9 @@ type SidebarSectionProps = {
 const SidebarSection = ({ title, children }: SidebarSectionProps) => {
   return (
     <div className="mb-6">
-      <h3 className="text-xs uppercase text-gray-500 font-medium mb-2 px-4">{title}</h3>
+      <h3 className="text-xs uppercase text-gray-500 font-medium mb-2 px-4">
+        {title}
+      </h3>
       <div className="space-y-1">{children}</div>
     </div>
   );
@@ -40,7 +42,7 @@ export default function Sidebar() {
         <SidebarItem title="Text to Image" />
         <SidebarItem title="Text to Text" />
       </div>
-      
+
       <div className="flex-1 overflow-auto pr-1 rounded-md bg-gray-50 p-3">
         <SidebarSection title="YESTERDAY">
           <SidebarItem title="New Chat" />
@@ -49,7 +51,7 @@ export default function Sidebar() {
           <SidebarItem title="Duck in Water Icon" />
           <SidebarItem title="Weather Icon" />
         </SidebarSection>
-        
+
         <SidebarSection title="PAST WEEK">
           <SidebarItem title="Bunny in orange outfit" />
           <SidebarItem title="Lorem ipsum dolor sit amet" />
