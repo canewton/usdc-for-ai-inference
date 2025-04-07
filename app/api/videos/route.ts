@@ -20,7 +20,6 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all video generations for the user with limited fields
     const { data: videoGenerations, error: dbError } = await supabase
       .from('video_generations')
       .select('id, prompt, task_id, processing_status, created_at')

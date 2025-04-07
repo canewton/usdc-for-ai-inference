@@ -47,7 +47,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-      <div className="flex flex-col gap-20">{children}</div>
+      <div className="flex flex-col">{children}</div>
       </ThemeProvider>
       </body>
     </html>

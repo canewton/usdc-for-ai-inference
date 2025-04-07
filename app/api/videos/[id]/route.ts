@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/client";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  req: Request, 
+  context: { params: { id: string } }
+) {
+  const { params } = context;
   const videoId = params.id;
   const supabase = await createClient();
 
@@ -25,7 +29,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const { data: videoGeneration, error: dbError } = await supabase
       .from('video_generations')
       .select('*')
-      .eq('id', videoId)
+      .eq('task_id', videoId)
       .eq('user_id', user.id)
       .single();
 
@@ -37,7 +41,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       );
     }
 
-    return NextResponse.json({ videoGeneration });
+    return NextResponse.json(videoGeneration);
   } catch (error) {
     console.error('Error retrieving video details:', error);
     return NextResponse.json(

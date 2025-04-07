@@ -1,26 +1,46 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
-import { useSession } from '@/app/contexts/SessionContext';
+import React, { useState, useRef, createContext } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "@/app/contexts/SessionContext";
+import Blurs from "@/public/blurs.svg";
+import MainAiSection from "@/components/MainAiSection";
+import AiHistoryPortal from "@/components/AiHistoryPortal";
+import RightAiSidebar from "@/components/RightAiSidebar";
+import VideoHistory from "@/components/VideoHistory";
+import Image from "next/image";
+import { createClient } from "@/utils/supabase/client";
 
+// Create a context for refreshing components
+export const RefreshContext = createContext({
+  refreshTrigger: 0,
+  refreshComponents: () => {}
+});
 
 export default function Home() {
-  const [prompt, setPrompt] = useState('');
-  const [duration, setDuration] = useState(2);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [modelType, setModelType] = useState('SVD-XT');
-  const [showModelDropdown, setShowModelDropdown] = useState(false);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [model, setModel] = useState("SVD-XT");
   const [loading, setLoading] = useState(false);
+  const [prompt, setPrompt] = useState("");
+  const [seed, setSeed] = useState("-1");
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const session = useSession();
+  const [showSeedInfo, setShowSeedInfo] = useState(false);
   
-  const modelOptions = ['SVD-XT', 'SVD'];
+  // Add refresh state
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  if (!session) return;
+  const router = useRouter();
+  const session = useSession();
+
+  if (!session) return null;
   const sessionToken = session.access_token;
+
+  // Create refresh function
+  const refreshComponents = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -60,249 +80,339 @@ export default function Home() {
     setImagePreview(null);
   };
 
+  const processPayment = async (modelName: string) => {
+    try {
+      // Determine payment amount based on model
+      const amount = modelName === "SVD-XT" ? "0.20" : "0.15";
+      
+      // Get user's wallet ID
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("User not authenticated");
+      }
+      
+      // Get profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+      
+      if (!profile) {
+        throw new Error("Profile not found");
+      }
+      
+      // Get wallet
+      const { data: wallet } = await supabase
+        .schema('public')
+        .from('wallets')
+        .select('circle_wallet_id')
+        .eq('profile_id', profile.id)
+        .single();
+      
+      if (!wallet || !wallet.circle_wallet_id) {
+        throw new Error("Wallet not found");
+      }
+      
+      // Call payment API
+      const response = await fetch("/api/wallet/transfer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionToken}`,
+        },
+        body: JSON.stringify({
+          circleWalletId: wallet.circle_wallet_id,
+          amount,
+          projectName: "Video Generation",
+          aiModel: modelName
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Payment failed");
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Payment error:", error);
+      throw error;
+    }
+  };
+
   const handleGenerateVideo = async () => {
     if (!image) {
-      alert('Please upload an image.');
+      alert("Please upload an image.");
       return;
     }
 
     setLoading(true);
-    setVideoUrl(null);
+    setError(null);
 
     try {
+      // Process payment first
+      await processPayment(model);
+      
+      // Then generate video
       const reader = new FileReader();
       reader.readAsDataURL(image);
       reader.onloadend = async () => {
-        const base64Image = reader.result?.toString().split(',')[1];
+        const base64Image = reader.result?.toString().split(",")[1];
 
-        const response = await fetch('../../api/generatevideo', {
-          method: 'POST',
+        const response = await fetch("./api/generatevideo", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionToken}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${sessionToken}`,
           },
           body: JSON.stringify({
-            model_name: modelType,
+            model_name: model,
             image_file: base64Image,
-            seed: Math.floor(Math.random() * 10000),
+            seed:
+              seed === "-1"
+                ? Math.floor(Math.random() * 10000)
+                : parseInt(seed),
+            prompt: prompt,
           }),
         });
 
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to generate video");
+        }
+
         const responseData = await response.json();
         const { task_id } = responseData;
-        checkVideoStatus(task_id);
+
+        // Refresh components before navigating
+        refreshComponents();
+
+        // Redirect to the new video details page
+        router.push(`/video/${task_id}`);
       };
-    } catch (error) {
-      console.error('Error generating video:', error);
+    } catch (error: any) {
+      console.error("Error:", error);
       setLoading(false);
+      setError(error.message || "Failed to process payment or generate video. Please try again.");
     }
-  };
-
-  const checkVideoStatus = async (taskId: string) => {
-    try {
-      const interval = setInterval(async () => {
-        const result = await fetch('../../api/checkvideostatus', 
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${sessionToken}`,
-            },
-            body: JSON.stringify({ task_id: taskId }),
-          }
-        );
-
-        const resultData = await result.json();
-        console.log('Task result:', resultData);
-        
-        const taskStatus = resultData.task?.status;
-        console.log('Task Status:', taskStatus);
-        const videos = resultData.videos || [];
-        console.log('Videos:', videos);
-        
-        if (videos.length > 0) {
-          setVideoUrl(videos[0].video_url);
-          setLoading(false);
-          clearInterval(interval);
-        } else if (taskStatus === 'TASK_STATUS_FAILED') {
-          console.error('Video generation failed.');
-          setLoading(false);
-          clearInterval(interval);
-        }
-      }, 5000);
-    } catch (error) {
-      console.error('Error checking video status:', error);
-      setLoading(false);
-    }
-  };
-
-  const renderMainContent = () => {
-    if (loading) {
-      return (
-        <div className="w-full flex flex-col items-center justify-center">
-          <h2 className="text-xl font-semibold mb-4">Generating Your Video</h2>
-          <div className="w-full max-w-sm mb-6">
-            {imagePreview && (
-              <div className="relative rounded-md overflow-hidden mb-4">
-                <img 
-                  src={imagePreview} 
-                  alt="Source" 
-                  className="w-full object-contain max-h-64" 
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                </div>
-              </div>
-            )}
-          </div>
-          <p className="text-gray-500">This may take a minute or two...</p>
-        </div>
-      );
-    }
-    
-    if (videoUrl) {
-      console.log('Video URL:', videoUrl);
-      return (
-        <div className="w-full">
-          <h2 className="text-xl font-semibold mb-4">Your Generated Video</h2>
-          <div className="mb-6">
-            <video controls autoPlay loop className="w-full rounded-md max-h-96 mx-auto">
-              <source src={videoUrl} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
-          <button 
-            onClick={() => setVideoUrl(null)} 
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 mb-6"
-          >
-            Create Another Video
-          </button>
-        </div>
-      );
-    }
-    
-    return (
-      <>
-        <h1 className="text-2xl font-medium mb-2">What will you create?</h1>
-        <p className="text-gray-500 mb-6">
-          Generate videos from your own images
-        </p>
-
-        <div className="w-full grid grid-cols-2 gap-4 mb-4">
-          <button className="p-4 border border-gray-200 rounded-md text-sm flex flex-col items-center hover:bg-gray-50">
-            Create a video of a wallet
-          </button>
-          <button className="p-4 border border-gray-200 rounded-md text-sm flex flex-col items-center hover:bg-gray-50">
-            Create a video explaining USDC
-          </button>
-        </div>
-
-        <button className="w-full p-4 border border-gray-200 rounded-md text-sm mb-12 hover:bg-gray-50">
-          Surprise me
-        </button>
-      </>
-    );
   };
 
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="flex-1 p-8 flex">
-        <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto">
-          {renderMainContent()}
-        </div>
+    <RefreshContext.Provider value={{ refreshTrigger, refreshComponents }}>
+      {/* Left history section */}
+      <AiHistoryPortal>
+        <VideoHistory key={`history-${refreshTrigger}`} />
+      </AiHistoryPortal>
 
-        <div className="w-64 border-l border-gray-200 p-4">
-          <input
-            type="file"
-            accept="image/jpeg,image/png"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
+      {/* Middle section */}
+      <MainAiSection>
+        {/* Home page content */}
+        <div className="relative w-full h-full">
+          <img
+            src={Blurs.src}
+            alt="blur background"
+            className="w-1/2 object-contain mx-auto"
           />
-          <div
-            className="border border-gray-200 rounded-md h-32 mb-4 flex items-center justify-center text-sm text-gray-400 cursor-pointer overflow-hidden relative"
-            onClick={handleImageClick}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          >
-            {imagePreview ? (
-              <>
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-                <button
-                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 text-xs"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveImage();
-                  }}
-                >
-                  ×
-                </button>
-              </>
-            ) : (
-              <span>Image</span>
-            )}
+          <div className="inset-0 flex items-center justify-center absolute">
+            <div className="flex flex-col items-center justify-center w-1/2 text-center">
+              <h1 className="text-5xl text-body mb-2">
+                What will you create?
+              </h1>
+              <p className="text-lg text-gray-600">
+                Generate videos from your own images
+              </p>
+            </div>
           </div>
-          <div className="text-center text-sm mb-6">
-            <p>Click or drag to upload image</p>
-            <p className="text-xs text-gray-400">Supported file types: jpg, png</p>
-          </div>
+        </div>
+      </MainAiSection>
 
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700">Model Type</label>
-            <div className="relative">
-              <button
-                className="w-full p-2 border border-gray-200 rounded-md text-left flex justify-between"
-                onClick={() => setShowModelDropdown(!showModelDropdown)}
-              >
-                {modelType}
-                <span className="ml-2">&#9660;</span>
-              </button>
-              {showModelDropdown && (
-                <ul className="absolute w-full bg-white border border-gray-200 mt-1 rounded-md shadow-md z-10">
-                  {modelOptions.map((option) => (
-                    <li
-                      key={option}
-                      className="p-2 hover:bg-gray-50 cursor-pointer"
-                      onClick={() => {
-                        setModelType(option);
-                        setShowModelDropdown(false);
-                      }}
+      {/* Right section with settings - passing refresh trigger */}
+      <RightAiSidebar isImageInput={true} refreshTrigger={refreshTrigger}>
+        <div className="space-y-6 w-full">
+          <div className="flex flex-col mb-6">
+            <div className="text-gray-600 mb-2">Image</div>
+            <div
+              onClick={handleImageClick}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center h-40 cursor-pointer hover:border-blue-500 transition-colors"
+            >
+              {imagePreview ? (
+                <div className="relative w-full h-full">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-full object-contain"
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveImage();
+                    }}
+                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs"
+                  >
+                    X
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
                     >
-                      {option}
-                    </li>
-                  ))}
-                </ul>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-500 text-center">
+                    Click or drag to upload image
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Supported files: png, jpg, jpeg
+                  </p>
+                  <p className="text-xs text-gray-400">Max size: 20MB</p>
+                </>
               )}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="hidden"
+              />
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 mb-2 block">
-              Duration: {duration} seconds
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="5"
-              step="0.5"
-              value={duration}
-              onChange={(e) => setDuration(parseFloat(e.target.value))}
-              className="w-full"
-            />
+          <div className="flex flex-col mb-4 relative">
+            <div
+              className="text-gray-600 mb-2 flex items-center"
+              onMouseEnter={() => setShowSeedInfo(true)}
+              onMouseLeave={() => setShowSeedInfo(false)}
+            >
+              <span>Seed (Optional)</span>
+              <div className="ml-1 text-gray-400 cursor-help">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {showSeedInfo && (
+              <div className="absolute top-0 left-0 transform -translate-x-[110%] -translate-y-1/4 bg-white rounded-lg shadow-lg p-3 border border-gray-200 z-10 w-64">
+                <div className="flex items-start">
+                  <svg
+                    className="w-5 h-5 text-blue-500 mr-2 mt-0.5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <p className="text-sm text-gray-600">
+                    A <span className="text-blue-500 font-medium">seed</span>{" "}
+                    is a number that makes AI-generated images
+                    repeatable—using the same seed and settings will always
+                    create the same image.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="relative">
+              <input
+                type="text"
+                value={seed}
+                onChange={(e) => setSeed(e.target.value)}
+                className="border border-gray-200 rounded-lg p-3 w-full pr-10"
+                placeholder="-1"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col mb-4">
+            <div className="text-gray-600 mb-2">Model Type</div>
+            <div className="relative">
+              <select
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                className="border border-gray-200 rounded-lg p-3 w-full"
+              >
+                <option value="SVD-XT">SVD-XT (4s) - $0.20</option>
+                <option value="SVD">SVD (2s) - $0.15</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-col mb-6">
+            <div className="text-gray-600 mb-2">Title</div>
+            <div className="relative">
+              <input
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                className="border border-gray-200 rounded-lg p-3 w-full resize-y]"
+                placeholder="Name your generation!"
+              />
+            </div>
           </div>
 
           <button
-            className="w-full p-4 bg-blue-500 text-white rounded-md mb-6 hover:bg-blue-600"
             onClick={handleGenerateVideo}
-            disabled={loading}
+            disabled={!image || loading}
+            className={`w-full py-3 rounded-lg flex justify-center items-center space-x-2 ${
+              !image || loading
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600 text-white"
+            }`}
           >
-            {loading ? 'Generating...' : 'Generate Video'}
+            {loading ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+            ) : (
+              <>
+                <div className="w-6 h-6 relative rounded-full flex items-center justify-center">
+                  <Image
+                    src="/spark.svg"
+                    alt="Circle USDC"
+                    width={30}
+                    height={30}
+                  />
+                </div>
+                <span>Generate your video</span>
+              </>
+            )}
           </button>
+          
+          {error && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+              {error}
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      </RightAiSidebar>
+    </RefreshContext.Provider>
   );
 }
