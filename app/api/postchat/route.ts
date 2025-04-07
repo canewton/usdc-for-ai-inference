@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
           title: title,
         },
       ])
-      .select('id');
+      .select('id, created_at');
 
     if (dbError) {
       throw new Error(`Error posting chat: ${dbError.message}`);
@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
       response: 'Chat posted successfully',
       id: data[0].id,
       title: title,
+      created_at: data[0].created_at,
     });
   } catch (error) {
     console.error('Unexpected error:', error);

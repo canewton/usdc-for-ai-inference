@@ -1,4 +1,3 @@
-import { DollarSign } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 import { RequestUsdcButton } from '@/components/request-usdc-button';
@@ -9,6 +8,8 @@ import { USDCButton } from '@/components/usdc-button';
 import { WalletBalance } from '@/components/wallet-balance';
 import { WalletInformationDialog } from '@/components/wallet-information-dialog';
 import { createClient } from '@/utils/supabase/server';
+
+import { USDCIcon } from '../icons/USDCIcon';
 
 export default async function ProtectedPage() {
   const supabase = await createClient();
@@ -42,7 +43,7 @@ export default async function ProtectedPage() {
     .single();
 
   return (
-    <div className="px-20">
+    <div className="px-20 pt-20">
       {/* Wallet Card */}
       <h1 className="text-xl font-light mb-4">Wallet Balance</h1>
 
@@ -55,12 +56,18 @@ export default async function ProtectedPage() {
               walletId={wallet?.id}
             />
           </h2>
-          <DollarSign className="w-6 h-6 text-blue-500" />
+          <div className="bg-[#F1F8FF] rounded-full p-3 flex items-center justify-center">
+            <USDCIcon className="text-blue-500" />
+          </div>
         </div>
         <div className="flex gap-4">
           {process.env.NODE_ENV === 'development' && (
             <RequestUsdcButton walletAddress={wallet?.wallet_address} />
           )}
+          <TransferUSDCButton
+            className="flex-1"
+            walletId={wallet?.circle_wallet_id}
+          />
           <USDCButton
             className="flex-1"
             mode="BUY"
