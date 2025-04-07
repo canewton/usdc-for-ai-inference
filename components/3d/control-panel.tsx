@@ -180,7 +180,11 @@ export default function ControlPanel({
             {isLoading ? 'Generating...' : 'Generate your asset'}
           </span>
         </Button>
-        {error && <p className="text-red-500 mt-2 text-sm truncate">{error}</p>}
+        {error && (
+          <p className="text-red-500 mt-2 text-xs text-center truncate">
+            {error}
+          </p>
+        )}
       </div>
     </div>
   );

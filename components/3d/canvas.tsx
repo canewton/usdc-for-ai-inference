@@ -92,7 +92,7 @@ export default function CanvasArea({
               <Canvas
                 camera={{ position: [0, 0, 5], fov: 50 }}
                 gl={{ antialias: true, preserveDrawingBuffer: true }}
-                className="w-full h-[calc(100%-40px)]"
+                className="w-full h-[calc(100% - 40px)]"
               >
                 <ambientLight intensity={1.0} />
                 <directionalLight position={[10, 10, 5]} intensity={1.5} />
@@ -149,11 +149,11 @@ export default function CanvasArea({
               />
             </div>
             <div className="w-full mt-4">
-              {!imageDataUri && (
-                <p className="text-center text-sm text-gray-500">
-                  Please upload an image in the control panel first.
-                </p>
-              )}
+              <p
+                className={`text-center text-sm text-gray-500 ${imageDataUri ? 'invisible' : 'visible'}`}
+              >
+                Please upload an image in the control panel first.
+              </p>
             </div>
           </div>
         )}
