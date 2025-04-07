@@ -27,6 +27,7 @@ interface SpendingCardProps {
   stacked?: boolean;
   showUSDCTotal?: boolean;
   icon?: React.ReactNode;
+  tickFormatter?: (value: number) => string;
 }
 
 const CustomTooltip = ({
@@ -76,6 +77,7 @@ export const SpendingCard: React.FC<SpendingCardProps> = ({
   stacked = false,
   showUSDCTotal = true,
   icon,
+  tickFormatter,
 }) => {
   return (
     <div
@@ -107,7 +109,8 @@ export const SpendingCard: React.FC<SpendingCardProps> = ({
               tickLine={false}
               axisLine={false}
               tick={{ fontSize: 12, fill: '#666' }}
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={tickFormatter}
+              allowDecimals={false}
             />
             <Tooltip
               content={<CustomTooltip />}
