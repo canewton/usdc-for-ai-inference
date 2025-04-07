@@ -57,7 +57,7 @@ export const USDCButton: FunctionComponent<Props> = ({
       ) : mode === 'BUY' ? (
         <>
           <USDCIcon />
-          <span> Wire Transfer</span>
+          <span>Add Funds</span>
         </>
       ) : (
         'Withdraw'

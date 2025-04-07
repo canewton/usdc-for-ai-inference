@@ -2,13 +2,15 @@
 import React, { useEffect, useState } from 'react';
 
 interface PromptSuggestionsProps {
-  onSelect: (prompt: any) => void;
+  onSelect: (suggestion: { title: string; icon: any }) => void;
   suggestions: { title: string; icon: any }[];
+  disabled?: boolean;
 }
 
 const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({
   onSelect,
   suggestions,
+  disabled = false,
 }) => {
   const [shuffledSuggestions, setShuffledSuggestions] = useState<
     { title: string; icon: any }[]
@@ -23,8 +25,12 @@ const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({
       {shuffledSuggestions.map((suggestion, index) => (
         <div
           key={index}
-          className="bg-white border border-blue-200 px-4 py-2 rounded-3xl shadow-md cursor-pointer hover:bg-blue-50 transition flex flex-row items-center"
-          onClick={() => onSelect(suggestion)}
+          className={`bg-white border border-blue-200 px-4 py-2 rounded-3xl shadow-md transition flex flex-row items-center ${
+            disabled
+              ? 'opacity-50 cursor-not-allowed'
+              : 'cursor-pointer hover:bg-blue-50'
+          }`}
+          onClick={() => !disabled && onSelect(suggestion)}
         >
           <img
             src={suggestion.icon.src}

@@ -19,8 +19,18 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const url = new URL(req.url);
+    const table = url.searchParams.get('table');
+
+    if (!table || !['3d_generations', 'image_generations'].includes(table)) {
+      return NextResponse.json(
+        { error: 'Invalid table name' },
+        { status: 400 },
+      );
+    }
+
     const { data, error } = await supabase
-      .from('image_generations')
+      .from(table)
       .select('user_billed_amount')
       .eq('user_id', user.id);
 
