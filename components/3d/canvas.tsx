@@ -123,9 +123,6 @@ export default function CanvasArea({
                 </svg>
               </button>
             </Suspense>
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-full px-4 text-center">
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-            </div>
           </div>
         ) : (
           <div className="relative w-full h-full">
