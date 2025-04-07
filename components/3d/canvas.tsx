@@ -2,10 +2,11 @@
 
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 
 import Blurs from '@/public/blurs.svg';
 import WalletIcon from '@/public/digital-wallet.svg';
+import ModelIcon from '@/public/Group.svg';
 import SparkIcon from '@/public/spark.svg';
 import UsdcIcon from '@/public/usdc.svg';
 
@@ -41,6 +42,9 @@ export default function CanvasArea({
   setError,
   error,
 }: CanvasAreaProps) {
+  const [trustHovered, setTrustHovered] = useState<boolean>(false);
+  const modelTooltip =
+    'Rotate the 3D model by clicking and dragging in the canvas.';
   // scene to render 3d model
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { scene } = modelUrl ? useGLTF(modelUrl) : { scene: null };
@@ -84,6 +88,20 @@ export default function CanvasArea({
         {/* Show canvas if model is selected, otherwise display initial screen. */}
         {modelUrl ? (
           <div className="w-full h-full flex flex-col items-center relative">
+            <div className="absolute top-0 left-0 flex items-center space-x-2 z-20 pointer-events-auto">
+              <img
+                src={ModelIcon.src}
+                alt="Orbit/rotate icon"
+                className="w-6 h-6"
+                onMouseEnter={() => setTrustHovered(true)}
+                onMouseLeave={() => setTrustHovered(false)}
+              />
+              <div
+                className={`${trustHovered ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 cursor-default flex w-fit border border-gray-200 rounded-3xl h-10 justify-center items-center p-4 shadow-md text-body text-xs`}
+              >
+                {modelTooltip}
+              </div>
+            </div>
             <Suspense
               fallback={
                 <div className="text-center mt-10">Loading model...</div>
@@ -101,25 +119,20 @@ export default function CanvasArea({
               </Canvas>
               <button
                 onClick={handleDownload}
-                className="absolute top-2 right-2 z-10 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-400 transition-colors"
+                className="absolute top-2 right-2 z-10 p-2 bg-transparent text-[#1AA3FF] rounded-full hover:bg-blue-100 disabled:text-gray-400 transition-colors"
                 disabled={isLoading}
                 aria-label="Download 3D Model"
               >
-                {/* Download SVG */}
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
+                  className="w-6 h-6"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
                 >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
               </button>
             </Suspense>
