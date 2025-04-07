@@ -27,8 +27,7 @@ export default function VideoDetailPage() {
 
   const videoId = typeof params?.id === 'string' ? params.id : '';
 
-  if (!session) return null;
-  const sessionToken = session.access_token;
+  const sessionToken = session?.access_token;
 
   useEffect(() => {
     const fetchVideoDetails = async () => {

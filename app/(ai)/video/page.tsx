@@ -35,10 +35,8 @@ export default function Home() {
   const router = useRouter();
   const session = useSession();
 
-  if (!session) return null;
-  const sessionToken = session.access_token;
+  const sessionToken = session?.access_token;
 
-  // Create refresh function
   const refreshComponents = () => {
     setRefreshTrigger((prev) => prev + 1);
   };
