@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useContext, useState } from 'react';
 
 type RefreshContextType = {
   refreshTrigger: number;
@@ -12,11 +12,15 @@ const RefreshContext = createContext<RefreshContextType>({
   refreshComponents: () => {},
 });
 
-export const RefreshProvider = ({ children }: { children: React.ReactNode }) => {
+export const RefreshProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const refreshComponents = () => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   return (
