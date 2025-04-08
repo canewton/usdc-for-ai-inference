@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
+import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatMessages } from '@/components/ChatMessages';
 import { ChatSidebar } from '@/components/ChatSidebar';
@@ -31,6 +32,7 @@ interface ChatProps {
 }
 
 export function Chat({ currChat }: ChatProps) {
+  const { remaining, loading: demoLimitLoading } = useDemoLimit();
   const [model, setModel] = useState('gpt-4o-mini');
   const [maxTokens, setMaxTokens] = useState(200);
   const [chatId, setChatId] = useState(currChat || '');
@@ -41,6 +43,7 @@ export function Chat({ currChat }: ChatProps) {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<string>('');
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
+  const [showLimitError, setShowLimitError] = useState(false);
 
   const session = useSession();
   const router = useRouter();
@@ -248,6 +251,12 @@ export function Chat({ currChat }: ChatProps) {
 
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!input.trim() || !session) return;
+    if (remaining === 0) {
+      setShowLimitError(true);
+      return;
+    }
+    setShowLimitError(false);
     if (!chatId) {
       // Post new chat
       const chatData = await createNewChat(input);
@@ -411,6 +420,13 @@ export function Chat({ currChat }: ChatProps) {
           >
             {wordsPerToken}
           </div>
+          {!demoLimitLoading && remaining !== null && (
+            <div className="text-sm text-gray-500">
+              {remaining === 0
+                ? 'Demo limit reached'
+                : `${remaining} generations remaining`}
+            </div>
+          )}
         </div>
         <div className="p-4 flex flex-col justify-between h-full">
           {chatId ? (
@@ -457,6 +473,11 @@ export function Chat({ currChat }: ChatProps) {
               onStopGeneration={stopGeneration}
               editingMessage={editingMessageId !== null}
             />
+            {showLimitError && (
+              <p className="text-red-500 text-sm mt-2 text-center">
+                Demo limit reached. Please upgrade to continue.
+              </p>
+            )}
           </div>
         </div>
       </MainAiSection>
