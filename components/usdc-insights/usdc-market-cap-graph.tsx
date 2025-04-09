@@ -13,7 +13,8 @@ import {
 
 import { USDCIcon } from '@/app/icons/USDCIcon';
 
-type TimePeriod = '1D' | '7D' | '1M' | '3M' | '1Y';
+import type { TimePeriod } from './time-period-options';
+import { TimePeriodOptions } from './time-period-options';
 
 interface MarketData {
   date: string;
@@ -141,21 +142,10 @@ export const USDCMarketCapGraph = () => {
           <USDCIcon className="w-6 h-6 text-blue-500" />
           <h2 className="text-xl font-semibold">USDC Market Cap</h2>
         </div>
-        <div className="flex gap-2">
-          {periods.map((period) => (
-            <button
-              key={period}
-              onClick={() => setSelectedPeriod(period)}
-              className={`px-3 py-1 rounded-md text-sm transition-colors ${
-                period === selectedPeriod
-                  ? 'bg-blue-100 text-blue-600'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              {period}
-            </button>
-          ))}
-        </div>
+        <TimePeriodOptions
+          selectedPeriod={selectedPeriod}
+          setSelectedPeriod={setSelectedPeriod}
+        />
       </div>
       <div className="h-[400px]">
         {loading ? (
