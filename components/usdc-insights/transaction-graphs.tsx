@@ -10,7 +10,9 @@ import { USDCIcon } from '@/app/icons/USDCIcon';
 import { VideoIcon } from '@/app/icons/VideoIcon';
 import { aiModel } from '@/types/ai.types';
 
+import { InsightBox } from './insight-box';
 import { SpendingCard } from './spending-card';
+import { StackedInsightsBarChart } from './stacked-insights-bar-chart';
 
 interface BillingTransaction {
   id: string;
@@ -215,8 +217,8 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
 
   return (
     <div>
-      <div className="bg-[#FBFBFB] rounded-2xl shadow-sm mb-6 border border-[#EAEAEC]">
-        <div className="flex justify-between items-center p-8 pb-4">
+      <InsightBox className="mb-6 pl-0">
+        <div className="flex justify-between items-center mb-4 pl-8">
           <div>
             <h2>Monthly Spend</h2>
             <div className="flex items-center gap-1">
@@ -244,9 +246,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
             </button>
           </div>
         </div>
-        <SpendingCard
-          title=""
-          amount={monthlyTotal}
+        <StackedInsightsBarChart
           data={monthlyData}
           colors={[
             MODEL_COLORS[aiModel.TEXT_TO_TEXT],
@@ -255,11 +255,9 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
             MODEL_COLORS[aiModel.IMAGE_TO_VIDEO],
           ]}
           stacked={true}
-          showUSDCTotal={false}
-          className="pt-0 border-0"
           tickFormatter={(value) => `$${value}`}
         />
-      </div>
+      </InsightBox>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <SpendingCard

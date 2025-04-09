@@ -8,7 +8,8 @@ import { aiModel } from '@/types/ai.types';
 import type { Profile, Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
-import { Billing, type BillingTransaction } from './billing';
+import type { BillingTransaction } from './billing';
+import { Billing } from './billing';
 import { TransactionGraphs } from './transaction-graphs';
 import { Transactions } from './transactions';
 import { WebInsights } from './web-insights';

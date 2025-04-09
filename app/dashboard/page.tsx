@@ -2,11 +2,11 @@ import { redirect } from 'next/navigation';
 
 import { RequestUsdcButton } from '@/components/request-usdc-button';
 import { ScanToPayDialog } from '@/components/scan-to-pay-dialog';
-import { TransactionHistory } from '@/components/transaction-history';
-import { TransferUSDCButton } from '@/components/transfer-usdc-button';
 import { USDCButton } from '@/components/usdc-button';
-import { WalletBalance } from '@/components/wallet-balance';
-import { WalletInformationDialog } from '@/components/wallet-information-dialog';
+import { TransactionHistory } from '@/components/usdc-insights/transaction-history';
+import { TransferUSDCButton } from '@/components/usdc-insights/transfer-usdc-button';
+import { WalletBalance } from '@/components/usdc-insights/wallet-balance';
+import { WalletInformationDialog } from '@/components/usdc-insights/wallet-information-dialog';
 import { createClient } from '@/utils/supabase/server';
 
 import { USDCIcon } from '../icons/USDCIcon';
@@ -72,10 +72,6 @@ export default async function ProtectedPage() {
             className="flex-1"
             mode="BUY"
             walletAddress={wallet?.wallet_address}
-          />
-          <TransferUSDCButton
-            className="flex-1"
-            walletId={wallet?.circle_wallet_id}
           />
           <ScanToPayDialog wallet={wallet} />
           <WalletInformationDialog wallet={wallet} />
