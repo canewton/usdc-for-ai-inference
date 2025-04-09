@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { RequestUsdcButton } from '@/components/request-usdc-button';
-import { ScanButton } from '@/components/scan-button';
+import { ScanToPayDialog } from '@/components/scan-to-pay-dialog';
 import { TransactionHistory } from '@/components/transaction-history';
 import { TransferUSDCButton } from '@/components/transfer-usdc-button';
 import { USDCButton } from '@/components/usdc-button';
@@ -73,7 +73,11 @@ export default async function ProtectedPage() {
             mode="BUY"
             walletAddress={wallet?.wallet_address}
           />
-          <ScanButton />
+          <TransferUSDCButton
+            className="flex-1"
+            walletId={wallet?.circle_wallet_id}
+          />
+          <ScanToPayDialog wallet={wallet} />
           <WalletInformationDialog wallet={wallet} />
         </div>
       </div>
