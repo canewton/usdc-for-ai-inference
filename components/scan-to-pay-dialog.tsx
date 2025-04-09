@@ -1,6 +1,6 @@
 import type { FunctionComponent } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { ScanIcon } from '@/app/icons/ScanIcon';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,8 @@ import {
 import { WalletQRCode } from '@/components/wallet-qr-code';
 import type { Wallet } from '@/types/database.types';
 
+import { Button } from './ui/button';
+
 interface Props {
   wallet: Wallet;
 }
@@ -19,7 +21,10 @@ export const ScanToPayDialog: FunctionComponent<Props> = (props) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="ml-auto">Scan to Pay</Button>
+        <Button className="flex items-center gap-2 bg-white hover:bg-gray-50 text-blue-500 rounded-lg transition-colors border border-gray-200">
+          <ScanIcon />
+          Scan to Fund
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
