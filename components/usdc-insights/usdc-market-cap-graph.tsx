@@ -13,6 +13,7 @@ import {
 
 import { USDCIcon } from '@/app/icons/USDCIcon';
 
+import { InsightBox } from './insight-box';
 import type { TimePeriod } from './time-period-options';
 import { TimePeriodOptions } from './time-period-options';
 
@@ -136,8 +137,8 @@ export const USDCMarketCapGraph = () => {
   };
 
   return (
-    <div className="shadow-sm mb-6 bg-[#FBFBFB] rounded-2xl p-8 border border-[#EAEAEC]">
-      <div className="flex justify-between items-center mb-6">
+    <InsightBox className="pl-2">
+      <div className="flex justify-between items-center mb-6 pl-8">
         <div className="flex items-center gap-3">
           <USDCIcon className="w-6 h-6 text-blue-500" />
           <h2 className="text-xl font-semibold">USDC Market Cap</h2>
@@ -196,6 +197,6 @@ export const USDCMarketCapGraph = () => {
           </ResponsiveContainer>
         )}
       </div>
-    </div>
+    </InsightBox>
   );
 };

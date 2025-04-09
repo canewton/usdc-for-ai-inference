@@ -3,7 +3,9 @@ import React, { useEffect, useState } from 'react';
 
 import { aiModel } from '@/types/ai.types';
 
+import { InsightBox } from './insight-box';
 import { SpendingCard } from './spending-card';
+import { StackedInsightsBarChart } from './stacked-insights-bar-chart';
 import { USDCMarketCapGraph } from './usdc-market-cap-graph';
 
 interface BillingTransaction {
@@ -168,8 +170,8 @@ export const WebInsights: React.FC<Props> = (props) => {
 
   return (
     <div>
-      <div className="bg-[#FBFBFB] rounded-2xl shadow-sm mb-6 border border-[#EAEAEC]">
-        <div className="flex justify-between items-center p-8 pb-4">
+      <InsightBox className="pl-0 mb-6">
+        <div className="flex justify-between items-center pl-8 mb-4">
           <h2>Total Requests</h2>
           <div className="flex items-center gap-2">
             <button
@@ -189,9 +191,7 @@ export const WebInsights: React.FC<Props> = (props) => {
             </button>
           </div>
         </div>
-        <SpendingCard
-          title=""
-          amount={monthlyTotal}
+        <StackedInsightsBarChart
           data={monthlyData}
           colors={[
             MODEL_COLORS[aiModel.TEXT_TO_TEXT],
@@ -200,15 +200,13 @@ export const WebInsights: React.FC<Props> = (props) => {
             MODEL_COLORS[aiModel.IMAGE_TO_VIDEO],
           ]}
           stacked={true}
-          showUSDCTotal={false}
-          className="pt-0 border-0"
         />
-      </div>
+      </InsightBox>
       <SpendingCard
         title="Total Sales"
         amount={monthlySalesTotal}
         data={monthlySalesData}
-        className="bg-[#FBFBFB] mb-6"
+        className="mb-6"
         colors={[MODEL_COLORS[aiModel.TEXT_TO_TEXT]]}
         tickFormatter={(value) => `$${value}`}
         stacked={true}
