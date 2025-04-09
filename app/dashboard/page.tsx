@@ -73,7 +73,11 @@ export default async function ProtectedPage() {
             mode="BUY"
             walletAddress={wallet?.wallet_address}
           />
-          <ScanButton />
+          <TransferUSDCButton
+            className="flex-1"
+            walletId={wallet?.circle_wallet_id}
+          />
+          <ScanToPayDialog wallet={wallet} />
           <WalletInformationDialog wallet={wallet} />
         </div>
       </div>
