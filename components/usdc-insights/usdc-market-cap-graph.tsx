@@ -141,7 +141,7 @@ export const USDCMarketCapGraph = () => {
       <div className="flex justify-between items-center mb-6 pl-8">
         <div className="flex items-center gap-3">
           <USDCIcon className="w-6 h-6 text-blue-500" />
-          <h2 className="text-xl font-semibold">USDC Market Cap</h2>
+          <h3>USDC Market Cap</h3>
         </div>
         <TimePeriodOptions
           selectedPeriod={selectedPeriod}

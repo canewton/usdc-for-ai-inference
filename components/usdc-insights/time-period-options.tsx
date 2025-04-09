@@ -15,7 +15,7 @@ export const TimePeriodOptions = ({
   setSelectedPeriod,
 }: Props) => {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 bg-white rounded-md p-2 border border-gray-200">
       {periods.map((period) => (
         <button
           key={period}

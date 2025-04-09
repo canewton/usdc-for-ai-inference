@@ -10,6 +10,8 @@ import {
   YAxis,
 } from 'recharts';
 
+import { aiModel } from '@/types/ai.types';
+
 export interface StackedInsightsBarChartData {
   date: string;
   value1?: number;
@@ -17,6 +19,13 @@ export interface StackedInsightsBarChartData {
   value3?: number;
   value4?: number;
 }
+
+const MODEL_COLORS = {
+  [aiModel.TEXT_TO_TEXT]: '#8B5CF6', // Purple
+  [aiModel.TEXT_TO_IMAGE]: '#F59E0B', // Amber
+  [aiModel.IMAGE_TO_3D]: '#10B981', // Emerald
+  [aiModel.IMAGE_TO_VIDEO]: '#3B82F6', // Blue
+};
 
 interface Props {
   data: Array<StackedInsightsBarChartData>;
@@ -65,7 +74,12 @@ const CustomTooltip = ({
 
 export const StackedInsightsBarChart = ({
   data,
-  colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300'],
+  colors = [
+    MODEL_COLORS[aiModel.TEXT_TO_TEXT],
+    MODEL_COLORS[aiModel.TEXT_TO_IMAGE],
+    MODEL_COLORS[aiModel.IMAGE_TO_3D],
+    MODEL_COLORS[aiModel.IMAGE_TO_VIDEO],
+  ],
   stacked,
   tickFormatter,
 }: Props) => {

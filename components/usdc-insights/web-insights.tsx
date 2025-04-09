@@ -1,11 +1,15 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+'use client';
+
 import React, { useEffect, useState } from 'react';
 
 import { aiModel } from '@/types/ai.types';
 
+import { ActiveUsers } from './active-users';
 import { InsightBox } from './insight-box';
-import { SpendingCard } from './spending-card';
+import type { StackedInsightsBarChartData } from './stacked-insights-bar-chart';
 import { StackedInsightsBarChart } from './stacked-insights-bar-chart';
+import type { TimePeriod } from './time-period-options';
+import { TimePeriodOptions } from './time-period-options';
 import { USDCMarketCapGraph } from './usdc-market-cap-graph';
 
 interface BillingTransaction {
@@ -34,27 +38,15 @@ const months = [
   'December',
 ];
 
-const MODEL_COLORS = {
-  [aiModel.TEXT_TO_TEXT]: '#8B5CF6', // Purple
-  [aiModel.TEXT_TO_IMAGE]: '#F59E0B', // Amber
-  [aiModel.IMAGE_TO_3D]: '#10B981', // Emerald
-  [aiModel.IMAGE_TO_VIDEO]: '#3B82F6', // Blue
-};
-
-function getDaysInMonth(year: number, month: number): number {
-  return new Date(year, month + 1, 0).getDate();
-}
-
-function generateDateRange(monthIndex: number): string[] {
+function generateDateRange(startDate: Date): string[] {
   const currentDate = new Date();
-  const year = currentDate.getFullYear();
-  const isCurrentMonth = currentDate.getMonth() === monthIndex;
-  const daysInMonth = getDaysInMonth(year, monthIndex);
-  const lastDay = isCurrentMonth ? currentDate.getDate() : daysInMonth;
 
   const dates: string[] = [];
-  for (let day = 1; day <= lastDay; day++) {
-    const date = new Date(year, monthIndex, day);
+  for (
+    let date = new Date(startDate);
+    date <= currentDate;
+    date.setDate(date.getDate() + 1)
+  ) {
     dates.push(
       `${String(date.getDate()).padStart(2, '0')} ${months[date.getMonth()].substring(0, 3)}`,
     );
@@ -62,155 +54,145 @@ function generateDateRange(monthIndex: number): string[] {
   return dates;
 }
 
-function processTransactionsForMonth(
-  transactions: BillingTransaction[],
-  monthIndex: number,
-  mode: 'count' | 'sales' = 'count',
-) {
-  const dateRange = generateDateRange(monthIndex);
-  const filteredTransactions = transactions.filter((t) => {
-    const transactionDate = new Date(t.created_at);
-    return transactionDate.getMonth() === monthIndex;
-  });
-
-  return dateRange.map((date) => {
-    const dayTransactions = filteredTransactions.filter((t) => {
-      const tDate = new Date(t.created_at);
-      return (
-        `${String(tDate.getDate()).padStart(2, '0')} ${months[tDate.getMonth()].substring(0, 3)}` ===
-        date
-      );
-    });
-
-    return {
-      date,
-      value1: dayTransactions
-        .filter((t) => t.ai_model === aiModel.TEXT_TO_TEXT)
-        .reduce(
-          (sum, t) => (mode === 'count' ? sum + 1 : sum + parseFloat(t.amount)),
-          0,
-        ),
-      value2: dayTransactions
-        .filter((t) => t.ai_model === aiModel.TEXT_TO_IMAGE)
-        .reduce(
-          (sum, t) => (mode === 'count' ? sum + 1 : sum + parseFloat(t.amount)),
-          0,
-        ),
-      value3: dayTransactions
-        .filter((t) => t.ai_model === aiModel.IMAGE_TO_3D)
-        .reduce(
-          (sum, t) => (mode === 'count' ? sum + 1 : sum + parseFloat(t.amount)),
-          0,
-        ),
-      value4: dayTransactions
-        .filter((t) => t.ai_model === aiModel.IMAGE_TO_VIDEO)
-        .reduce(
-          (sum, t) => (mode === 'count' ? sum + 1 : sum + parseFloat(t.amount)),
-          0,
-        ),
-    };
-  });
-}
-
 interface Props {
   data: BillingTransaction[];
 }
 
 export const WebInsights: React.FC<Props> = (props) => {
-  const currentDate = new Date();
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(
-    currentDate.getMonth(),
-  );
+  const [selectedPeriodCount, setSelectedPeriodCount] =
+    useState<TimePeriod>('1M');
+  const [selectedPeriodSales, setSelectedPeriodSales] =
+    useState<TimePeriod>('1M');
+  const [countData, setCountData] = useState<any[]>([]);
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [totalSales, setTotalSales] = useState<number>(0);
 
-  const [monthlyData, setMonthlyData] = useState<any[]>([]);
-  const [monthlyTotal, setMonthyTotal] = useState<number>(0);
+  function processTransactionsByRange(
+    transactions: BillingTransaction[],
+    range: TimePeriod,
+    mode: 'count' | 'sales' = 'count',
+  ) {
+    const now = new Date();
+    let startDate: Date;
 
-  const [monthlySalesData, setMonthlySalesData] = useState<any[]>([]);
-  const [monthlySalesTotal, setMonthySalesTotal] = useState<number>(0);
+    switch (range) {
+      case '1D':
+        startDate = new Date(now);
+        startDate.setDate(now.getDate());
+        break;
+      case '7D':
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - 6);
+        break;
+      case '1M':
+        startDate = new Date(now);
+        startDate.setMonth(now.getMonth() - 1);
+        break;
+      case '3M':
+        startDate = new Date(now);
+        startDate.setMonth(now.getMonth() - 3);
+        break;
+      case '1Y':
+        startDate = new Date(now);
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+    }
 
-  const calculateTotal = (data: any[]) => {
-    return data.reduce((total, item) => {
-      const values = [
-        item.value1,
-        item.value2,
-        item.value3,
-        item.value4,
-      ].filter(Boolean);
-      return total + values.reduce((sum, value) => sum + value, 0);
-    }, 0);
-  };
+    const filteredTransactions = transactions.filter((t) => {
+      const transactionDate = new Date(t.created_at);
+      return transactionDate >= startDate && transactionDate <= now;
+    });
 
-  const updateGraphs = (monthIndex: number) => {
-    const monthlyDataTemp = processTransactionsForMonth(props.data, monthIndex);
-    setMonthlyData(monthlyDataTemp);
-    setMonthyTotal(calculateTotal(monthlyDataTemp));
+    const dates = generateDateRange(startDate);
+    const returnData: StackedInsightsBarChartData[] = [];
+    var totalSalesTemp = 0;
 
-    const monthlySalesDataTemp = processTransactionsForMonth(
-      props.data,
-      monthIndex,
-      'sales',
-    );
-    setMonthlySalesData(monthlySalesDataTemp);
-    setMonthySalesTotal(calculateTotal(monthlySalesDataTemp));
-  };
+    dates.forEach((date) => {
+      const dateTransactions = filteredTransactions.filter((t) => {
+        const tDate = new Date(t.created_at);
+        return (
+          `${String(tDate.getDate()).padStart(2, '0')} ${months[tDate.getMonth()].substring(0, 3)}` ===
+          date
+        );
+      });
 
-  const handlePrevMonth = () => {
-    updateGraphs(currentMonthIndex === 0 ? 11 : currentMonthIndex - 1);
-    setCurrentMonthIndex((prev) => (prev === 0 ? 11 : prev - 1));
-  };
+      const value: StackedInsightsBarChartData = {
+        value1: 0,
+        value2: 0,
+        value3: 0,
+        value4: 0,
+        date,
+      };
 
-  const handleNextMonth = () => {
-    updateGraphs(currentMonthIndex === 11 ? 0 : currentMonthIndex + 1);
-    setCurrentMonthIndex((prev) => (prev === 11 ? 0 : prev + 1));
-  };
+      dateTransactions.forEach((t) => {
+        if (t.ai_model === aiModel.TEXT_TO_TEXT)
+          value.value1! += mode === 'count' ? 1 : parseFloat(t.amount);
+        if (t.ai_model === aiModel.TEXT_TO_IMAGE)
+          value.value2! += mode === 'count' ? 1 : parseFloat(t.amount);
+        if (t.ai_model === aiModel.IMAGE_TO_3D)
+          value.value3! += mode === 'count' ? 1 : parseFloat(t.amount);
+        if (t.ai_model === aiModel.IMAGE_TO_VIDEO)
+          value.value4! += mode === 'count' ? 1 : parseFloat(t.amount);
+
+        if (
+          t.ai_model === aiModel.TEXT_TO_TEXT ||
+          t.ai_model === aiModel.TEXT_TO_IMAGE ||
+          t.ai_model === aiModel.IMAGE_TO_3D ||
+          t.ai_model === aiModel.IMAGE_TO_VIDEO
+        )
+          totalSalesTemp += parseFloat(t.amount);
+      });
+
+      returnData.push(value);
+    });
+
+    if (mode === 'sales') {
+      setTotalSales(totalSalesTemp);
+    }
+
+    return returnData;
+  }
 
   useEffect(() => {
-    updateGraphs(currentDate.getMonth());
-  }, []);
+    setCountData(
+      processTransactionsByRange(props.data, selectedPeriodCount, 'count'),
+    );
+  }, [selectedPeriodCount]);
+
+  useEffect(() => {
+    setSalesData(
+      processTransactionsByRange(props.data, selectedPeriodSales, 'sales'),
+    );
+  }, [selectedPeriodSales]);
 
   return (
     <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <ActiveUsers />
+        <InsightBox className="pl-0">
+          <div className="flex justify-between items-center pl-8 mb-4">
+            <div>
+              <p className="text-sm">Total Sales</p>
+              <p className="text-blue-500 text-xl">${totalSales.toFixed(2)}</p>
+            </div>
+            <TimePeriodOptions
+              selectedPeriod={selectedPeriodSales}
+              setSelectedPeriod={setSelectedPeriodSales}
+            />
+          </div>
+          <StackedInsightsBarChart data={salesData} stacked={true} />
+        </InsightBox>
+      </div>
       <InsightBox className="pl-0 mb-6">
         <div className="flex justify-between items-center pl-8 mb-4">
           <h2>Total Requests</h2>
-          <div className="flex items-center gap-2">
-            <button
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              onClick={handlePrevMonth}
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <span className="text-gray-600 min-w-[80px] text-center">
-              {months[currentMonthIndex]}
-            </span>
-            <button
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              onClick={handleNextMonth}
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
+          <TimePeriodOptions
+            selectedPeriod={selectedPeriodCount}
+            setSelectedPeriod={setSelectedPeriodCount}
+          />
         </div>
-        <StackedInsightsBarChart
-          data={monthlyData}
-          colors={[
-            MODEL_COLORS[aiModel.TEXT_TO_TEXT],
-            MODEL_COLORS[aiModel.TEXT_TO_IMAGE],
-            MODEL_COLORS[aiModel.IMAGE_TO_3D],
-            MODEL_COLORS[aiModel.IMAGE_TO_VIDEO],
-          ]}
-          stacked={true}
-        />
+        <StackedInsightsBarChart data={countData} stacked={true} />
       </InsightBox>
-      <SpendingCard
-        title="Total Sales"
-        amount={monthlySalesTotal}
-        data={monthlySalesData}
-        className="mb-6"
-        colors={[MODEL_COLORS[aiModel.TEXT_TO_TEXT]]}
-        tickFormatter={(value) => `$${value}`}
-        stacked={true}
-      />
       <USDCMarketCapGraph />
     </div>
   );
