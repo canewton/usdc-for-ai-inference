@@ -171,7 +171,7 @@ export default function Page() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (prompt.trim()) {
+    if (prompt.trim() && prompt.length <= 300) {
       await generateImage(prompt);
       setPrompt('');
     }
@@ -342,6 +342,7 @@ export default function Page() {
               isLoading={isLoading}
               onStopGeneration={stopGeneration}
               editingMessage={false}
+              maxLength={300}
             />
             {showLimitError && (
               <p className="text-red-500 text-sm mt-2 text-center">

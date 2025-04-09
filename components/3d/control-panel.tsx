@@ -143,6 +143,7 @@ export default function ControlPanel({
           className="w-full border-[#E5E7EB] rounded-[8px] p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 truncate"
           disabled={!mode}
           required
+          maxLength={300}
         />
       </div>
 

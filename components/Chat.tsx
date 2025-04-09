@@ -472,6 +472,7 @@ export function Chat({ currChat }: ChatProps) {
               isLoading={isLoading}
               onStopGeneration={stopGeneration}
               editingMessage={editingMessageId !== null}
+              maxLength={1000}
             />
             {showLimitError && (
               <p className="text-red-500 text-sm mt-2 text-center">
