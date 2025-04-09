@@ -11,7 +11,9 @@ interface ControlPanelProps {
   mode: boolean;
   isLoading: boolean;
   error: string | null;
-  totalBilledAmount: number | 0;
+  totalBilledAmount: number;
+  remaining: number | null;
+  demoLimitLoading: boolean;
   setImageDataUri: (uri: string) => void;
   setPrompt: (prompt: string) => void;
   setError: (error: string | null) => void;
@@ -25,6 +27,8 @@ export default function ControlPanel({
   isLoading,
   error,
   totalBilledAmount,
+  remaining,
+  demoLimitLoading,
   setImageDataUri,
   setPrompt,
   setError,
@@ -182,6 +186,14 @@ export default function ControlPanel({
         </Button>
         {error && <p className="text-red-500 mt-2 text-sm truncate">{error}</p>}
       </div>
+
+      {!demoLimitLoading && remaining !== null && (
+        <div className="text-sm text-gray-500">
+          {remaining === 0
+            ? 'Demo limit reached'
+            : `${remaining} generations remaining`}
+        </div>
+      )}
     </div>
   );
 }
