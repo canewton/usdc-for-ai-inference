@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-import type { SortField } from './usdc-insights/transaction-history';
+import type { SortField } from './transaction-history';
 
 export interface BillingTransaction {
   id: string;
