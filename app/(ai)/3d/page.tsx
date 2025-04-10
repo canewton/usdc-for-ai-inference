@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { useSession } from '@/app/contexts/SessionContext';
+import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import CanvasArea from '@/components/3d/canvas';
 import ControlPanel from '@/components/3d/control-panel';
 import type { ModelHistoryItem } from '@/components/3d/types';
@@ -17,6 +19,7 @@ interface Chat {
 }
 
 export default function Generate3DModelPage() {
+  const { remaining, loading: demoLimitLoading } = useDemoLimit();
   const [prompt, setPrompt] = useState('');
   const [imageDataUri, setImageDataUri] = useState('');
   const [mode, setMode] = useState(true); // not currently used -> always on refine mode (true)
@@ -121,7 +124,10 @@ export default function Generate3DModelPage() {
       setError('Session or image data is missing.');
       return;
     }
-
+    if (remaining === 0) {
+      toast.error('Demo limit reached. Please upgrade to continue.');
+      return;
+    }
     setIsLoading(true);
     setError(null);
 
@@ -143,8 +149,18 @@ export default function Generate3DModelPage() {
         },
       );
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 429) {
+          toast.error('Demo limit reached. Please upgrade to continue.');
+        } else {
+          toast.error(errorData.error || 'Failed to generate model');
+        }
+        throw new Error(errorData.error || 'Failed to generate model');
+      }
+
       const data = await response.json();
-      if (response.ok && data.modelUrl) {
+      if (data.modelUrl) {
         setModelUrl(data.modelUrl);
         console.log('Generated model URL:', data.modelUrl);
         fetchHistory();
@@ -274,6 +290,8 @@ export default function Generate3DModelPage() {
         setPrompt={setPrompt}
         setError={setError}
         error={error}
+        remaining={remaining}
+        demoLimitLoading={demoLimitLoading}
       />
 
       {/* --- Right Sidebar --- */}
@@ -290,6 +308,8 @@ export default function Generate3DModelPage() {
           submitPrompt={submitPrompt}
           totalBilledAmount={totalBilledAmount}
           modelUrl={modelUrl}
+          remaining={remaining}
+          demoLimitLoading={demoLimitLoading}
         />
       </RightAiSidebar>
     </>

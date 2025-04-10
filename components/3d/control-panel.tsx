@@ -13,6 +13,8 @@ interface ControlPanelProps {
   error: string | null;
   totalBilledAmount: number;
   modelUrl: string | null;
+  remaining: number | null;
+  demoLimitLoading: boolean;
   setImageDataUri: (uri: string) => void;
   setPrompt: (prompt: string) => void;
   setError: (error: string | null) => void;
@@ -27,6 +29,8 @@ export default function ControlPanel({
   error,
   totalBilledAmount,
   modelUrl,
+  remaining,
+  demoLimitLoading,
   setImageDataUri,
   setPrompt,
   setError,
@@ -156,6 +160,7 @@ export default function ControlPanel({
           className="w-full border-[#E5E7EB] rounded-md p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           disabled={!mode || isDisabled}
           required
+          maxLength={300}
         />
       </div>
 
@@ -196,6 +201,14 @@ export default function ControlPanel({
           <p className="text-red-500 mt-2 text-xs text-center">{error}</p>
         )}
       </div>
+
+      {!demoLimitLoading && remaining !== null && (
+        <div className="text-sm text-gray-500">
+          {remaining === 0
+            ? 'Demo limit reached'
+            : `${remaining} generations remaining`}
+        </div>
+      )}
     </div>
   );
 }

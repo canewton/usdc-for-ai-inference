@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { checkDemoLimit } from '@/app/utils/demoLimit';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
 
@@ -69,6 +70,14 @@ export async function POST(req: Request) {
       should_texture,
       texture_prompt,
     } = await req.json();
+
+    const { canGenerate, remaining } = await checkDemoLimit(user.id);
+    if (!canGenerate) {
+      return NextResponse.json(
+        { error: 'Demo limit reached. Please upgrade to continue.' },
+        { status: 429 },
+      );
+    }
 
     const generatePreviewResponse = await fetch(MESHY_API_URL, {
       method: 'POST',

@@ -1,12 +1,12 @@
 import { redirect } from 'next/navigation';
 
 import { RequestUsdcButton } from '@/components/request-usdc-button';
-import { ScanButton } from '@/components/scan-button';
-import { TransactionHistory } from '@/components/transaction-history';
-import { TransferUSDCButton } from '@/components/transfer-usdc-button';
+import { ScanToPayDialog } from '@/components/scan-to-pay-dialog';
 import { USDCButton } from '@/components/usdc-button';
-import { WalletBalance } from '@/components/wallet-balance';
-import { WalletInformationDialog } from '@/components/wallet-information-dialog';
+import { TransactionHistory } from '@/components/usdc-insights/transaction-history';
+import { TransferUSDCButton } from '@/components/usdc-insights/transfer-usdc-button';
+import { WalletBalance } from '@/components/usdc-insights/wallet-balance';
+import { WalletInformationDialog } from '@/components/usdc-insights/wallet-information-dialog';
 import { createClient } from '@/utils/supabase/server';
 
 import { USDCIcon } from '../icons/USDCIcon';
@@ -43,7 +43,7 @@ export default async function ProtectedPage() {
     .single();
 
   return (
-    <div className="px-20">
+    <div className="px-20 pt-20">
       {/* Wallet Card */}
       <h1 className="text-xl font-light mb-4">Wallet Balance</h1>
 
@@ -73,7 +73,7 @@ export default async function ProtectedPage() {
             mode="BUY"
             walletAddress={wallet?.wallet_address}
           />
-          <ScanButton />
+          <ScanToPayDialog wallet={wallet} />
           <WalletInformationDialog wallet={wallet} />
         </div>
       </div>

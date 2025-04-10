@@ -28,7 +28,9 @@ interface CanvasAreaProps {
   setMode: (mode: boolean) => void;
   setPrompt: (prompt: string) => void;
   setError: (error: string | null) => void;
-  error?: string | null;
+  error: string | null;
+  remaining: number | null;
+  demoLimitLoading: boolean;
 }
 
 export default function CanvasArea({
@@ -41,6 +43,8 @@ export default function CanvasArea({
   setPrompt,
   setError,
   error,
+  remaining,
+  demoLimitLoading,
 }: CanvasAreaProps) {
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const modelTooltip =
@@ -95,6 +99,13 @@ export default function CanvasArea({
       {/* Header component will be used to select preview/refine modes, not currently used. */}
       {/* <Header mode={mode} setMode={setMode} /> */}
       <div className="flex-grow flex flex-col items-center justify-center bg-white p-4 relative">
+        {!demoLimitLoading && remaining !== null && (
+          <div className="text-sm text-gray-500 mb-4">
+            {remaining === 0
+              ? 'Demo limit reached'
+              : `${remaining} generations remaining`}
+          </div>
+        )}
         {/* Show canvas if model is selected, otherwise display initial screen. */}
         {modelUrl ? (
           <div className="w-full h-full flex flex-col items-center relative">

@@ -3,8 +3,9 @@
 import { Loader2 } from 'lucide-react';
 import { type FunctionComponent, type HTMLProps, useState } from 'react';
 
-import type { WalletTransferRequest } from '@/app/api/wallet/transfer/route';
+import type { WalletTransferRequest } from '@/app/(ai)/server/circleWalletTransfer';
 import { Button } from '@/components/ui/button';
+import { aiModel } from '@/types/ai.types';
 
 interface Props extends HTMLProps<HTMLElement> {
   walletId?: string;
@@ -22,8 +23,8 @@ export const TransferUSDCButton: FunctionComponent<Props> = ({
       const transfer: WalletTransferRequest = {
         circleWalletId: walletId ?? '',
         amount: '0.1',
-        projectName: 'Test',
-        aiModel: 'text-to-text',
+        projectName: 'Hi',
+        aiModel: aiModel.TEXT_TO_TEXT,
       };
 
       const response = await fetch('/api/wallet/transfer', {

@@ -2,7 +2,7 @@
 
 import { useWalletBalance } from '@/app/hooks/useWalletBalance';
 
-import { Skeleton } from './ui/skeleton';
+import { Skeleton } from '../ui/skeleton';
 
 interface WalletBalanceProps {
   circleWalletId: string;

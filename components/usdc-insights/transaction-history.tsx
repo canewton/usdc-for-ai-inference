@@ -1,13 +1,18 @@
 'use client';
 
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { type FunctionComponent, useEffect, useMemo, useState } from 'react';
 
-import type { Wallet } from '@/types/database.types';
+import { Image3DIcon } from '@/app/icons/Image3DIcon';
+import { aiModel } from '@/types/ai.types';
+import type { Profile, Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
-import { Billing, type BillingTransaction } from './billing';
+import type { BillingTransaction } from './billing';
+import { Billing } from './billing';
 import { TransactionGraphs } from './transaction-graphs';
 import { Transactions } from './transactions';
+import { WebInsights } from './web-insights';
 
 interface Transaction {
   id: string;
@@ -42,7 +47,15 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   const [loading, setLoading] = useState(false);
   const [transactionData, setTransactionData] = useState<Transaction[]>([]);
   const [treasuryData, setTreasuryData] = useState<Transaction[]>([]);
-  const [billingData, setBillingData] = useState<BillingTransaction[]>([]);
+  const [userBillingData, setUserBillingData] = useState<BillingTransaction[]>(
+    [],
+  );
+  const [allBillingData, setAllBillingData] = useState<BillingTransaction[]>(
+    [],
+  );
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [sortConfig, setSortConfig] = useState<{
     field: SortField;
     direction: SortDirection;
@@ -50,9 +63,10 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     field: 'date',
     direction: 'desc',
   });
+  const [user, setUser] = useState<Profile | null>(null);
 
-  const formattedTransactionData = useMemo(() => {
-    const formatted = transactionData.map((transaction) => ({
+  const formatData = (data: Transaction[]) => {
+    const formatted = data.map((transaction) => ({
       ...transaction,
       created_at: new Date(transaction.created_at).toLocaleString(),
       expanded: false,
@@ -90,10 +104,36 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       }
       return 0;
     });
+  };
+
+  const formattedTransactionData = useMemo(() => {
+    return formatData(transactionData);
   }, [transactionData, sortConfig]);
 
+  const formattedTreasuryData = useMemo(() => {
+    return formatData(treasuryData);
+  }, [treasuryData, sortConfig]);
+
   const formattedBillingData = useMemo(() => {
-    const formatted = billingData.map((transaction) => ({
+    // First filter by search query if it exists
+    const filteredBySearch = searchQuery
+      ? userBillingData.filter((transaction) =>
+          transaction.project_name
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()),
+        )
+      : userBillingData;
+
+    // Then filter by selected models if any
+    const filteredByModels =
+      selectedModels.length > 0
+        ? filteredBySearch.filter((transaction) =>
+            selectedModels.includes(transaction.ai_model),
+          )
+        : filteredBySearch;
+
+    // Finally format the filtered data
+    const formatted = filteredByModels.map((transaction) => ({
       ...transaction,
       created_at: new Date(transaction.created_at).toLocaleString(),
       expanded: false,
@@ -123,29 +163,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       }
       return 0;
     });
-  }, [billingData, sortConfig]);
-
-  const formattedTreasuryData = useMemo(
-    () =>
-      treasuryData.map((transaction) => ({
-        ...transaction,
-        created_at: new Date(transaction.created_at).toLocaleString(),
-        expanded: false,
-        amount: new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD',
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(Number(transaction.amount)),
-        balance: new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD',
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(Number(transaction.balance)),
-      })),
-    [treasuryData],
-  );
+  }, [userBillingData, sortConfig, searchQuery, selectedModels]);
 
   const handleSort = (field: SortField) => {
     setSortConfig((prev) => ({
@@ -158,10 +176,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   const updateTransactions = async () => {
     try {
       setLoading(true);
-
-      console.log('Fetching wallet balance', props.wallet);
-      console.log('Fetching wallet balance', props.treasuryWallet);
-
       const walletBalance = await (
         await fetch('/api/wallet/balance', {
           method: 'POST',
@@ -200,10 +214,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
                 token.symbol === 'USDC',
             )?.amount;
             transaction.balance = parsedBalance;
-            console.log(
-              'Updating transaction:',
-              parseFloat(transaction.balance),
-            );
             await supabase
               .from('transactions')
               .update({ balance: parseFloat(transaction.balance) })
@@ -230,7 +240,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
                 token.symbol === 'USDC',
             )?.amount;
             transaction.balance = parsedBalance;
-            supabase
+            await supabase
               .from('transactions')
               .update({ balance: parseFloat(transaction.balance) })
               .eq('id', transaction.id)
@@ -244,10 +254,53 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       setTransactionData(transactionsUpdated);
       setTreasuryData(treasuryTransactionsUpdated);
       updateBillingTransactions();
+      const { data: userTemp } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', props.wallet.profile_id)
+        .single();
+
+      setUser(userTemp);
+      console.log(userTemp);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createBillingData = (transactions: any[], projects: any[]) => {
+    var hasNull = false;
+
+    const transactionMap = new Map(
+      (transactions ?? []).map((tx) => [tx.circle_transaction_id, tx]),
+    );
+
+    const billingTransactions: BillingTransaction[] = (projects ?? []).map(
+      (project) => {
+        const transaction = transactionMap.get(project.circle_transaction_id);
+
+        if (!transaction) {
+          hasNull = true;
+        }
+
+        return {
+          id: project.id,
+          ai_model: project.ai_model,
+          project_name: project.project_name,
+          transaction_type: transaction?.transaction_type,
+          amount: transaction?.amount,
+          status: transaction?.status,
+          created_at: project.created_at,
+          expanded: false,
+        };
+      },
+    );
+
+    if (hasNull) {
+      return null;
+    } else {
+      return billingTransactions;
     }
   };
 
@@ -261,8 +314,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         .eq('circle_wallet_id', props.wallet?.circle_wallet_id)
         .order('created_at', { ascending: false });
 
-      var hasNull = false;
-
       const circleTransactionIds = (projects ?? []).map(
         (p) => p.circle_transaction_id,
       );
@@ -272,33 +323,27 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         .select('*')
         .in('circle_transaction_id', circleTransactionIds);
 
-      const transactionMap = new Map(
-        (transactions ?? []).map((tx) => [tx.circle_transaction_id, tx]),
-      );
+      const billingTransactions: BillingTransaction[] | null =
+        createBillingData(transactions ?? [], projects ?? []);
 
-      const billingTransactions: BillingTransaction[] = (projects ?? []).map(
-        (project) => {
-          const transaction = transactionMap.get(project.circle_transaction_id);
+      if (billingTransactions !== null) {
+        setUserBillingData(billingTransactions);
+      }
 
-          if (!transaction) {
-            hasNull = true;
-          }
+      const { data: allProjects } = await supabase
+        .from('ai_projects')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-          return {
-            id: project.id,
-            ai_model: project.ai_model,
-            project_name: project.project_name,
-            transaction_type: transaction?.transaction_type,
-            amount: transaction?.amount,
-            status: transaction?.status,
-            created_at: project.created_at,
-            expanded: false,
-          };
-        },
-      );
+      const { data: allTransactions } = await supabase
+        .from('transactions')
+        .select('*');
 
-      if (!hasNull) {
-        setBillingData(billingTransactions);
+      const allBillingTransactions: BillingTransaction[] | null =
+        createBillingData(allTransactions ?? [], allProjects ?? []);
+
+      if (allBillingTransactions !== null) {
+        setAllBillingData(allBillingTransactions);
       }
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
@@ -358,6 +403,16 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     };
   }, []);
 
+  const clearFilters = () => {
+    setSelectedModels([]);
+  };
+
+  const toggleModel = (model: string) => {
+    setSelectedModels((prev) =>
+      prev.includes(model) ? prev.filter((m) => m !== model) : [...prev, model],
+    );
+  };
+
   return (
     <div className="min-h-screen">
       <div className="mx-auto">
@@ -394,6 +449,30 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
             >
               Usage
             </button>
+            {user?.is_admin && (
+              <button
+                className={`pb-4 px-1 ${
+                  activeTab === 'treasury'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500'
+                }`}
+                onClick={() => setActiveTab('treasury')}
+              >
+                Treasury Wallet
+              </button>
+            )}
+            {user?.is_admin && (
+              <button
+                className={`pb-4 px-1 ${
+                  activeTab === 'insights'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500'
+                }`}
+                onClick={() => setActiveTab('insights')}
+              >
+                Website Insights
+              </button>
+            )}
           </div>
         </div>
 
@@ -407,14 +486,105 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
           />
         )}
         {activeTab == 'billing' && (
-          <Billing
-            data={formattedBillingData}
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-600" />
+                <input
+                  type="text"
+                  placeholder="Search"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="relative">
+                  <button
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors ${showFilterMenu ? 'bg-gray-50' : ''}`}
+                    onClick={() => {
+                      setShowFilterMenu(!showFilterMenu);
+                    }}
+                  >
+                    <SlidersHorizontal className="w-4 h-4 text-blue-600" />
+                    Filter By
+                    {selectedModels.length > 0 && (
+                      <span className="ml-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-600 rounded-full">
+                        {selectedModels.length}
+                      </span>
+                    )}
+                  </button>
+                  {showFilterMenu && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Image3DIcon className="text-blue-600" />
+                          <h3 className="text-gray-900">MODEL</h3>
+                        </div>
+                        <div className="space-y-2">
+                          {Object.values(aiModel).map((model) => (
+                            <label key={model} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={selectedModels.includes(model)}
+                                onChange={() => toggleModel(model)}
+                                className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                              />
+                              <span className="ml-2 text-gray-700">
+                                {model}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className="flex justify-between gap-2 mt-4">
+                          <button
+                            onClick={() => {
+                              setShowFilterMenu(false);
+                              clearFilters();
+                            }}
+                            className="flex-1 text-gray-600 px-4 py-1.5 rounded border border-gray-300 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                          >
+                            Clear All
+                          </button>
+                          <button
+                            onClick={() => setShowFilterMenu(false)}
+                            className="flex-1 bg-blue-500 text-white px-4 py-1.5 rounded hover:bg-blue-600 transition-colors"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <Billing
+              data={formattedBillingData}
+              loading={loading}
+              sortConfig={sortConfig}
+              onSort={handleSort}
+            />
+          </>
+        )}
+        {activeTab == 'usage' && (
+          <div className="mb-20">
+            <TransactionGraphs data={userBillingData} />
+          </div>
+        )}
+        {activeTab == 'treasury' && (
+          <Transactions
+            data={formattedTreasuryData}
             loading={loading}
             sortConfig={sortConfig}
             onSort={handleSort}
           />
         )}
-        {activeTab == 'usage' && <TransactionGraphs data={billingData} />}
+        {activeTab == 'insights' && (
+          <div className="mb-20">
+            <WebInsights data={allBillingData} />
+          </div>
+        )}
       </div>
     </div>
   );

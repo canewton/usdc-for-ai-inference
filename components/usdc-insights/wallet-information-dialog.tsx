@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { WalletBalance } from '@/components/wallet-balance';
+import { WalletBalance } from '@/components/usdc-insights/wallet-balance';
 import type { Wallet } from '@/types/database.types';
 
 interface Props {

@@ -1,13 +1,18 @@
+'use client';
+
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Image3DIcon } from '@/app/icons/Image3DIcon';
 import { ImageIcon } from '@/app/icons/ImageIcon';
 import { TextIcon } from '@/app/icons/TextIcon';
 import { USDCIcon } from '@/app/icons/USDCIcon';
 import { VideoIcon } from '@/app/icons/VideoIcon';
+import { aiModel } from '@/types/ai.types';
 
+import { InsightBox } from './insight-box';
 import { SpendingCard } from './spending-card';
+import { StackedInsightsBarChart } from './stacked-insights-bar-chart';
 
 interface BillingTransaction {
   id: string;
@@ -36,10 +41,10 @@ const months = [
 ];
 
 const MODEL_COLORS = {
-  'text-to-text': '#8B5CF6', // Purple
-  'text-to-image': '#F59E0B', // Amber
-  '2d-to-3d': '#10B981', // Emerald
-  'image-to-video': '#3B82F6', // Blue
+  [aiModel.TEXT_TO_TEXT]: '#8B5CF6', // Purple
+  [aiModel.TEXT_TO_IMAGE]: '#F59E0B', // Amber
+  [aiModel.IMAGE_TO_3D]: '#10B981', // Emerald
+  [aiModel.IMAGE_TO_VIDEO]: '#3B82F6', // Blue
 };
 
 function getDaysInMonth(year: number, month: number): number {
@@ -85,16 +90,16 @@ function processTransactionsForMonth(
     return {
       date,
       value1: dayTransactions
-        .filter((t) => t.ai_model === 'text-to-text')
+        .filter((t) => t.ai_model === aiModel.TEXT_TO_TEXT)
         .reduce((sum, t) => sum + parseFloat(t.amount), 0),
       value2: dayTransactions
-        .filter((t) => t.ai_model === 'text-to-image')
+        .filter((t) => t.ai_model === aiModel.TEXT_TO_IMAGE)
         .reduce((sum, t) => sum + parseFloat(t.amount), 0),
       value3: dayTransactions
-        .filter((t) => t.ai_model === '2d-to-3d')
+        .filter((t) => t.ai_model === aiModel.IMAGE_TO_3D)
         .reduce((sum, t) => sum + parseFloat(t.amount), 0),
       value4: dayTransactions
-        .filter((t) => t.ai_model === 'image-to-video')
+        .filter((t) => t.ai_model === aiModel.IMAGE_TO_VIDEO)
         .reduce((sum, t) => sum + parseFloat(t.amount), 0),
     };
   });
@@ -137,38 +142,17 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
     currentDate.getMonth(),
   );
 
-  const handlePrevMonth = () => {
-    setCurrentMonthIndex((prev) => (prev === 0 ? 11 : prev - 1));
-  };
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
+  const [textToTextData, setTextToTextData] = useState<any[]>([]);
+  const [textToImageData, setTextToImageData] = useState<any[]>([]);
+  const [imageToImageData, setImageToImageData] = useState<any[]>([]);
+  const [imageToVideoData, setImageToVideoData] = useState<any[]>([]);
 
-  const handleNextMonth = () => {
-    setCurrentMonthIndex((prev) => (prev === 11 ? 0 : prev + 1));
-  };
-
-  const monthlyData = processTransactionsForMonth(
-    props.data,
-    currentMonthIndex,
-  );
-  const textToTextData = processTransactionsByType(
-    props.data,
-    currentMonthIndex,
-    'text-to-text',
-  );
-  const textToImageData = processTransactionsByType(
-    props.data,
-    currentMonthIndex,
-    'text-to-image',
-  );
-  const imageToImageData = processTransactionsByType(
-    props.data,
-    currentMonthIndex,
-    '2d-to-3d',
-  );
-  const imageToVideoData = processTransactionsByType(
-    props.data,
-    currentMonthIndex,
-    'image-to-video',
-  );
+  const [monthlyTotal, setMonthyTotal] = useState<number>(0);
+  const [textToTextTotal, setTextToTextTotal] = useState<number>(0);
+  const [textToImageTotal, setTextToImageTotal] = useState<number>(0);
+  const [imageToImageTotal, setImageToImageTotal] = useState<number>(0);
+  const [imageToVideoTotal, setImageToVideoTotal] = useState<number>(0);
 
   const calculateTotal = (data: any[]) => {
     return data.reduce((total, item) => {
@@ -182,16 +166,59 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
     }, 0);
   };
 
-  const monthlyTotal = calculateTotal(monthlyData);
-  const textToTextTotal = calculateTotal(textToTextData);
-  const textToImageTotal = calculateTotal(textToImageData);
-  const imageToImageTotal = calculateTotal(imageToImageData);
-  const imageToVideoTotal = calculateTotal(imageToVideoData);
+  const updateGraphs = (monthIndex: number) => {
+    const monthlyDataTemp = processTransactionsForMonth(props.data, monthIndex);
+    const textToTextDataTemp = processTransactionsByType(
+      props.data,
+      monthIndex,
+      aiModel.TEXT_TO_TEXT,
+    );
+    const textToImageDataTemp = processTransactionsByType(
+      props.data,
+      monthIndex,
+      aiModel.TEXT_TO_IMAGE,
+    );
+    const imageToImageDataTemp = processTransactionsByType(
+      props.data,
+      monthIndex,
+      aiModel.IMAGE_TO_3D,
+    );
+    const imageToVideoDataTemp = processTransactionsByType(
+      props.data,
+      monthIndex,
+      aiModel.IMAGE_TO_VIDEO,
+    );
+    setMonthlyData(monthlyDataTemp);
+    setTextToTextData(textToTextDataTemp);
+    setTextToImageData(textToImageDataTemp);
+    setImageToImageData(imageToImageDataTemp);
+    setImageToVideoData(imageToVideoDataTemp);
+
+    setMonthyTotal(calculateTotal(monthlyDataTemp));
+    setTextToTextTotal(calculateTotal(textToImageDataTemp));
+    setTextToImageTotal(calculateTotal(textToImageDataTemp));
+    setImageToImageTotal(calculateTotal(imageToImageDataTemp));
+    setImageToVideoTotal(calculateTotal(imageToVideoDataTemp));
+  };
+
+  const handlePrevMonth = () => {
+    updateGraphs(currentMonthIndex === 0 ? 11 : currentMonthIndex - 1);
+    setCurrentMonthIndex((prev) => (prev === 0 ? 11 : prev - 1));
+  };
+
+  const handleNextMonth = () => {
+    updateGraphs(currentMonthIndex === 11 ? 0 : currentMonthIndex + 1);
+    setCurrentMonthIndex((prev) => (prev === 11 ? 0 : prev + 1));
+  };
+
+  useEffect(() => {
+    updateGraphs(currentDate.getMonth());
+  }, []);
 
   return (
     <div>
-      <div className="bg-[#FBFBFB] rounded-2xl shadow-sm mb-6 border border-[#EAEAEC]">
-        <div className="flex justify-between items-center p-8 pb-4">
+      <InsightBox className="mb-6 pl-0">
+        <div className="flex justify-between items-center mb-4 pl-8">
           <div>
             <h2>Monthly Spend</h2>
             <div className="flex items-center gap-1">
@@ -219,21 +246,18 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
             </button>
           </div>
         </div>
-        <SpendingCard
-          title=""
-          amount={monthlyTotal}
+        <StackedInsightsBarChart
           data={monthlyData}
           colors={[
-            MODEL_COLORS['text-to-text'],
-            MODEL_COLORS['text-to-image'],
-            MODEL_COLORS['2d-to-3d'],
-            MODEL_COLORS['image-to-video'],
+            MODEL_COLORS[aiModel.TEXT_TO_TEXT],
+            MODEL_COLORS[aiModel.TEXT_TO_IMAGE],
+            MODEL_COLORS[aiModel.IMAGE_TO_3D],
+            MODEL_COLORS[aiModel.IMAGE_TO_VIDEO],
           ]}
           stacked={true}
-          showUSDCTotal={false}
-          className="pt-0"
+          tickFormatter={(value) => `$${value}`}
         />
-      </div>
+      </InsightBox>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <SpendingCard
@@ -241,32 +265,36 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           amount={textToTextTotal}
           data={textToTextData}
           className="bg-purple-50"
-          colors={[MODEL_COLORS['text-to-text']]}
+          colors={[MODEL_COLORS[aiModel.TEXT_TO_TEXT]]}
           icon={<TextIcon className="text-purple-600" />}
+          tickFormatter={(value) => `$${value}`}
         />
         <SpendingCard
           title="Text to Image"
           amount={textToImageTotal}
           data={textToImageData}
           className="bg-orange-50"
-          colors={[MODEL_COLORS['text-to-image']]}
+          colors={[MODEL_COLORS[aiModel.TEXT_TO_IMAGE]]}
           icon={<ImageIcon className="text-orange-600" />}
+          tickFormatter={(value) => `$${value}`}
         />
         <SpendingCard
           title="2D to 3D Image"
           amount={imageToImageTotal}
           data={imageToImageData}
           className="bg-green-50"
-          colors={[MODEL_COLORS['2d-to-3d']]}
+          colors={[MODEL_COLORS[aiModel.IMAGE_TO_3D]]}
           icon={<Image3DIcon className="text-green-600" />}
+          tickFormatter={(value) => `$${value}`}
         />
         <SpendingCard
           title="Image to Video"
           amount={imageToVideoTotal}
           data={imageToVideoData}
           className="bg-blue-50"
-          colors={[MODEL_COLORS['image-to-video']]}
+          colors={[MODEL_COLORS[aiModel.IMAGE_TO_VIDEO]]}
           icon={<VideoIcon className="text-blue-600" />}
+          tickFormatter={(value) => `$${value}`}
         />
       </div>
     </div>

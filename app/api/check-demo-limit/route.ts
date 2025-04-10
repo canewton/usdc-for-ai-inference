@@ -1,5 +1,3 @@
-import { openai } from '@ai-sdk/openai';
-import { streamText } from 'ai';
 import { NextResponse } from 'next/server';
 
 import { checkDemoLimit } from '@/app/utils/demoLimit';
@@ -7,10 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 
 const supabase = createClient();
 
-// Allow streaming responses up to 30 seconds
-export const maxDuration = 30;
-
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   try {
     // Get authenticated user
     const token = req.headers.get('Authorization');
@@ -26,29 +21,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    console.log('Checking demo limit for user:', user.id);
     const { canGenerate, remaining } = await checkDemoLimit(user.id);
-    if (!canGenerate) {
-      return NextResponse.json(
-        { error: 'Demo limit reached. Please upgrade to continue.' },
-        { status: 429 },
-      );
-    }
+    console.log('Demo limit check result:', { canGenerate, remaining });
 
-    // Parse req body
-    const { messages, model, maxTokens } = await req.json();
-
-    // Get result
-    const result = streamText({
-      model: openai(model),
-      messages,
-      maxTokens,
-    });
-
-    // Return result
-    return result.toDataStreamResponse();
+    return NextResponse.json({ canGenerate, remaining });
   } catch (error) {
+    console.error('Error checking demo limit:', error);
     return NextResponse.json(
-      { error: 'Failed to generate text' },
+      { error: 'Failed to check demo limit' },
       { status: 500 },
     );
   }

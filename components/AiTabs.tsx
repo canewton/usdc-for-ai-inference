@@ -34,7 +34,7 @@ const SidebarItem = ({
     hoverColor = 'hover:bg-[#EEFFFA80]';
     activeBackground = 'bg-[#EEFFFA80]';
     activeFontColor = 'text-[#1ED67D]';
-  } else if (url === '/image') {
+  } else if (url === '/image-generator') {
     hoverColor = 'hover:bg-[#FFF7EA80]';
     activeBackground = 'bg-[#FFF7EA80]';
     activeFontColor = 'text-[#FFA876]';
@@ -76,7 +76,7 @@ export default function AiTabs() {
       />
       <SidebarItem
         title="Text to Image"
-        active={tool === 'image'}
+        active={tool === 'image-generator'}
         icon={ImageIcon}
         alt="Image icon"
         url="/image-generator"
