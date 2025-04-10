@@ -19,6 +19,8 @@ import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
+import UsdcBalanceCard from './UsdcBalanceCard';
+import { TEXT_MODEL_PRICING } from '@/utils/constants';
 
 const promptSuggestions = [
   { title: 'Explain how to load my wallet', icon: WalletIcon },
@@ -45,7 +47,7 @@ export function Chat({ currChat }: ChatProps) {
   const session = useSession();
   const router = useRouter();
 
-  const wordsPerToken = 'Each word is around 10 tokens = $0.05';
+  const wordsPerToken = `Each word is around 3 tokens ≡ $${(TEXT_MODEL_PRICING[model].userBilledInputPrice * 3).toFixed(5)}`;
 
   const {
     messages,
@@ -74,13 +76,17 @@ export function Chat({ currChat }: ChatProps) {
             id: generateChatData.id + 'user',
             role: 'user',
             content: input,
-            tokens: usage.promptTokens,
+            promptTokens: usage.promptTokens,
+            completionTokens: usage.completionTokens,
+            provider: model,
           },
           {
             id: generateChatData.id + 'ai',
             role: 'assistant',
             content: message.content,
-            tokens: usage.completionTokens,
+            promptTokens: usage.promptTokens,
+            completionTokens: usage.completionTokens,
+            provider: model,
           },
         ]);
       }
@@ -133,13 +139,17 @@ export function Chat({ currChat }: ChatProps) {
             id: obj.id + 'user',
             role: 'user',
             content: obj.user_text,
-            tokens: obj.prompt_tokens,
+            promptTokens: obj.prompt_tokens,
+            completionTokens: obj.completion_tokens,
+            provider: obj.provider,
           },
           {
             id: obj.id + 'ai',
             role: 'assistant',
             content: obj.ai_text,
-            tokens: obj.completion_tokens,
+            promptTokens: obj.prompt_tokens,
+            completionTokens: obj.completion_tokens,
+            provider: obj.provider,
           },
         ]);
         // Store the fetched messages
@@ -398,35 +408,39 @@ export function Chat({ currChat }: ChatProps) {
 
       {/* Middle section */}
       <MainAiSection>
-        <div className="flex flex-row justify-between space-x-2 w-fit h-fit items-center">
-          <img
-            src={TrustIcon.src}
-            alt="Star with checkmark"
-            className="w-6 h-6"
-            onMouseEnter={() => setTrustHovered(true)}
-            onMouseLeave={() => setTrustHovered(false)}
-          />
-          <div
-            className={`${trustHovered ? 'opacity-100' : 'opacity-0'} cursor-default flex w-fit border border-gray-200 rounded-3xl h-10 justify-center items-center p-4 shadow-md text-body transition-opacity duration-300`}
-          >
-            {wordsPerToken}
-          </div>
-        </div>
-        <div className="p-4 flex flex-col justify-between h-full">
+        <div className="flex flex-col justify-between h-full py-4 items-center">
           {chatId ? (
-            <div className="h-full">
-              <ChatMessages
-                messages={messages}
-                isLoading={isLoading}
-                editingMessageId={editingMessageId}
-                editedContent={editedContent}
-                setEditedContent={setEditedContent}
-                onEditMessage={handleEditMessage}
-                onCancelEdit={cancelEdit}
-                onSubmitEdit={submitEditedMessage}
-                handleInputChange={handleInputChange}
-              />
-            </div>
+            <>
+              <div className='flex flex-row w-[800px]'>
+                <div className="flex flex-row justify-between space-x-2 w-fit h-fit items-center">
+                  <img
+                    src={TrustIcon.src}
+                    alt="Star with checkmark"
+                    className="w-6 h-6"
+                    onMouseEnter={() => setTrustHovered(true)}
+                    onMouseLeave={() => setTrustHovered(false)}
+                  />
+                  <div
+                    className={`${trustHovered ? 'opacity-100' : 'opacity-0'} cursor-default flex w-fit border border-gray-200 rounded-3xl h-10 justify-center items-center p-4 shadow-md text-sub transition-opacity duration-300`}
+                  >
+                    {wordsPerToken}
+                  </div>
+                </div>
+              </div>
+              <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full mt-[30px]">
+                <ChatMessages
+                  messages={messages}
+                  isLoading={isLoading}
+                  editingMessageId={editingMessageId}
+                  editedContent={editedContent}
+                  setEditedContent={setEditedContent}
+                  onEditMessage={handleEditMessage}
+                  onCancelEdit={cancelEdit}
+                  onSubmitEdit={submitEditedMessage}
+                  handleInputChange={handleInputChange}
+                />
+              </div>
+            </>
           ) : (
             <div className="relative w-full h-full">
               <img
@@ -463,26 +477,27 @@ export function Chat({ currChat }: ChatProps) {
 
       {/* Right section with balance and settings */}
       <RightAiSidebar isImageInput={false}>
-        <div className="space-y-6">
-          <div className="flex flex-col space-x-2">
+        <div className="space-y-[20px] mt-4 w-full">
+          <UsdcBalanceCard direction='column'/>
+          <div className="flex flex-col space-y-[4px]">
             <div className="text-sub m-1">Max Tokens</div>
-            <div className="flex w-44 h-8 border border-gray-200 items-center justify-center rounded-3xl p-2">
+            <div className="flex w-full h-8 border border-gray-200 items-center justify-center rounded-3xl p-2">
               <Slider
                 defaultValue={[maxTokens]}
-                max={1000}
+                max={2000}
                 step={1}
                 onValueChange={(val) => setMaxTokens(val[0])}
               />
             </div>
-            <div className="text-sub m-1 mr-auto text-end">2k ≡ $0.25</div>
+            <div className="text-sub mr-auto w-full text-end">2k ≡ ${(2000 * TEXT_MODEL_PRICING[model].userBilledOutputPrice).toFixed(2)}</div>
           </div>
 
-          <div className="flex flex-col space-x-2">
+          <div className="flex flex-col">
             <div className="text-sub mb-1">Model Type</div>
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
+              className="border border-gray-200 rounded-lg p-3 bg-white text-body w-full"
             >
               <option value={'gpt-4o-mini'}>gpt-4o-mini</option>
               <option value={'gpt-4o'}>gpt-4o</option>
