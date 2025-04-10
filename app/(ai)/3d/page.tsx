@@ -13,7 +13,8 @@ import { ChatSidebar } from '@/components/ChatSidebar';
 import RightAiSidebar from '@/components/RightAiSidebar';
 import { aiModel } from '@/types/ai.types';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
-import { WalletTransferRequest } from '../server/circleWalletTransfer';
+
+import type { WalletTransferRequest } from '../server/circleWalletTransfer';
 
 interface Chat {
   id: string;
@@ -173,10 +174,10 @@ export default function Generate3DModelPage() {
         console.error('Generation failed:', data);
       }
 
-      // Transfer balance 
+      // Transfer balance
       const transfer: WalletTransferRequest = {
         circleWalletId: session.wallet_id ?? '',
-        amount: (MODEL_ASSET_PRICING.userBilledPrice).toString(),
+        amount: MODEL_ASSET_PRICING.userBilledPrice.toString(),
         projectName: 'Hi',
         aiModel: aiModel.IMAGE_TO_3D,
       };
@@ -294,7 +295,9 @@ export default function Generate3DModelPage() {
 
   return (
     <>
-      <div className={`${!session.api_key_status.meshy ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}>
+      <div
+        className={`${!session.api_key_status.meshy ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+      >
         This page is not available during the hosted demo.
       </div>
       {/* --- Sidebar Area --- */}

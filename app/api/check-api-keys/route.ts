@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from 'next/server';
 
 export async function GET() {
   const apiKeyStatus = {
@@ -6,7 +6,7 @@ export async function GET() {
     replicate: process.env.REPLICATE_API_TOKEN ? true : false,
     meshy: process.env.MESHY_API_URL ? true : false,
     video: process.env.VIDEO_API_KEY ? true : false,
-  }
+  };
 
-  return NextResponse.json({ apiKeyStatus })
+  return NextResponse.json({ apiKeyStatus });
 }

@@ -10,17 +10,16 @@ import MainAiSection from '@/components/MainAiSection';
 import PromptSuggestions from '@/components/PromptSuggestions';
 import RightAiSidebar from '@/components/RightAiSidebar';
 import { TextInput } from '@/components/TextInput';
-import { Card, CardContent } from '@/components/ui/card';
+import UsdcBalanceCard from '@/components/UsdcBalanceCard';
 import Blurs from '@/public/blurs.svg';
 import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
-import USDC from '@/public/usdc-circle.svg';
 import { aiModel } from '@/types/ai.types';
 import { IMAGE_MODEL_PRICING } from '@/utils/constants';
-import { WalletTransferRequest } from '../server/circleWalletTransfer';
-import UsdcBalanceCard from '@/components/UsdcBalanceCard';
+
+import type { WalletTransferRequest } from '../server/circleWalletTransfer';
 
 interface ConversationItem {
   type: 'prompt' | 'response';
@@ -167,10 +166,10 @@ export default function Page() {
 
       setShowTryAgain(true);
 
-      // Transfer balance 
+      // Transfer balance
       const transfer: WalletTransferRequest = {
         circleWalletId: session.wallet_id ?? '',
-        amount: (IMAGE_MODEL_PRICING.userBilledPrice).toString(),
+        amount: IMAGE_MODEL_PRICING.userBilledPrice.toString(),
         projectName: 'Hi',
         aiModel: aiModel.TEXT_TO_IMAGE,
       };
@@ -253,7 +252,9 @@ export default function Page() {
 
   return (
     <>
-      <div className={`${!session.api_key_status.replicate ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}>
+      <div
+        className={`${!session.api_key_status.replicate ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+      >
         This page is not available during the hosted demo.
       </div>
       {/* LEFT SIDEBAR (history) */}
@@ -393,7 +394,7 @@ export default function Page() {
 
       {/* RIGHT SIDEBAR */}
       <RightAiSidebar isImageInput={false}>
-        <UsdcBalanceCard  direction="column"/>
+        <UsdcBalanceCard direction="column" />
         <div className="flex flex-col space-x-2">
           <div className="text-sub mb-1">Aspect Ratio</div>
           <select
