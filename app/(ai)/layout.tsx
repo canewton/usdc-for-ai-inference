@@ -10,6 +10,7 @@ import { SessionProvider } from '../contexts/SessionContext';
 export default function AILayout({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState('');
   const [loading, setLoading] = useState(true);
+  const [apiKeyStatus, setApiKeyStatus] = useState({});
 
   useEffect(() => {
     const getSession = async () => {
@@ -27,16 +28,38 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
     getSession();
   }, []);
 
+  const fetchAPIStatus = async () => {
+    try {
+      const response = await fetch("/api/check-api-keys")
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch API status")
+      }
+
+      const data = await response.json()
+      setApiKeyStatus(data.apiKeyStatus)
+    } catch (err) {
+      console.error("Error fetching API status:", err)
+    } 
+  }
+
+  useEffect(() => {
+    fetchAPIStatus();
+    setLoading(false);
+  }, []);
+
+  
+
   if (loading) {
     return <Spinner />;
   }
 
   return (
-    <SessionProvider access_token={session}>
+    <SessionProvider access_token={session} api_key_status={apiKeyStatus}>
       <div className="ai-layout flex flex-col h-full pt-5">
         <div className="flex flex-row h-full w-full">
           {/* Left side bar with tabs and history */}
-          <aside className="w-[300px] h-full flex flex-col pr-2">
+          <aside className="w-[300px] h-full flex flex-col">
             <AiTabs />
             {/* History section to be changed by tool */}
             <div id="ai-history" className="overflow-hidden" />
