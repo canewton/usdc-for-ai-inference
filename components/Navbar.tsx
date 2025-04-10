@@ -6,9 +6,10 @@ import React, { useState } from 'react';
 interface Props {
   tabs: string[];
   routes: string[];
+  email: string;
 }
 
-export default function Navbar({ tabs, routes }: Props) {
+export default function Navbar({ tabs, routes, email }: Props) {
   const [selectedTab, setSelectedTab] = useState(tabs[0]);
   const router = useRouter();
 
@@ -40,7 +41,7 @@ export default function Navbar({ tabs, routes }: Props) {
         </div>
         <div className="flex items-center">
           <div className="bg-purple-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
-            <span>CL</span>
+            <span>{email.substring(0, 1).toLocaleUpperCase()}</span>
           </div>
         </div>
       </div>
