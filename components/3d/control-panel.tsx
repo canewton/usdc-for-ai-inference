@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +12,7 @@ interface ControlPanelProps {
   isLoading: boolean;
   error: string | null;
   totalBilledAmount: number;
+  modelUrl: string | null;
   remaining: number | null;
   demoLimitLoading: boolean;
   setImageDataUri: (uri: string) => void;
@@ -27,6 +28,7 @@ export default function ControlPanel({
   isLoading,
   error,
   totalBilledAmount,
+  modelUrl,
   remaining,
   demoLimitLoading,
   setImageDataUri,
@@ -34,7 +36,11 @@ export default function ControlPanel({
   setError,
   submitPrompt,
 }: ControlPanelProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isDisabled = !!modelUrl;
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isDisabled) return;
     const file = e.target.files?.[0];
     if (file) {
       const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
@@ -67,31 +73,51 @@ export default function ControlPanel({
     }
   }, [mode, setPrompt]);
 
+  const resetGenerationState = () => {
+    setPrompt('');
+    setImageDataUri('');
+    setError(null);
+  };
+
+  useEffect(() => {
+    if (isDisabled) {
+      resetGenerationState();
+    }
+  }, [isDisabled, modelUrl]);
+
+  useEffect(() => {
+    if (!imageDataUri && fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [imageDataUri]);
+
   return (
-    <div className="flex flex-col gap-6 w-full min-w-0">
+    <div className="flex flex-col space-y-4 w-full min-w-0 text-left">
       {/* Balance Card */}
-      <Card className="w-full h-20 bg-white border-[#eaeaec]">
-        <CardContent className="flex items-center p-5">
-          <img src={USDC.src} className="w-12 h-12 mr-4" alt="USDC Icon" />
-          <div className="overflow-hidden">
-            <h3 className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-900 text-xl tracking-[-0.22px] leading-[30px] truncate">
+      <Card className="w-full bg-white border border-[#eaeaec] h-16">
+        <CardContent className="flex items-center p-4">
+          <img src={USDC.src} className="w-10 h-10 mr-3" alt="USDC Icon" />
+          <div>
+            <h3 className="font-normal text-gray-900 text-lg leading-6">
               ${totalBilledAmount.toFixed(2)}
             </h3>
-            <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] truncate">
-              USDC Balance
-            </p>
+            <p className="text-gray-500 text-xs">USDC Balance</p>
           </div>
         </CardContent>
       </Card>
 
       {/* Image Upload Section */}
-      <div className="flex flex-col gap-1">
-        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-base tracking-[-0.18px] leading-6 truncate">
-          Image
-        </label>
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">Image</label>
         <div
-          className="w-full h-[150px] bg-white rounded-[10px] border border-dashed border-[#eaeaec] flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 overflow-hidden"
-          onClick={() => document.getElementById('image-upload')?.click()}
+          className={`w-full h-[120px] bg-white rounded-md border border-dashed border-[#eaeaec] flex flex-col items-center justify-center cursor-pointer ${
+            isDisabled
+              ? 'opacity-50 pointer-events-none'
+              : 'hover:border-gray-400'
+          } overflow-hidden`}
+          onClick={() =>
+            !isDisabled && document.getElementById('image-upload')?.click()
+          }
         >
           {imageDataUri ? (
             <div className="flex flex-col items-center justify-center w-full h-full p-2">
@@ -102,22 +128,14 @@ export default function ControlPanel({
               />
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-[30px] w-[217px]">
-              <img
-                className="w-[18px] h-[18px]"
-                alt="Upload"
-                src="/icons/vector-1.svg"
-              />
+            <div className="flex flex-col items-center gap-3 w-[200px]">
+              <img className="w-4 h-4" alt="Upload" src="/vector-1.svg" />
               <div className="text-center">
-                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-700 text-base tracking-[-0.18px] leading-6 truncate">
-                  Click or drag to upload image
+                <p className="text-gray-700 text-sm">Click or drag to upload</p>
+                <p className="text-gray-500 text-xs">
+                  Supported: png, jpg, jpeg
                 </p>
-                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] truncate">
-                  Supported files: png, jpg, jpeg
-                </p>
-                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] truncate">
-                  Max size: 20MB
-                </p>
+                <p className="text-gray-500 text-xs">Max: 20MB</p>
               </div>
             </div>
           )}
@@ -127,21 +145,20 @@ export default function ControlPanel({
             accept="image/png, image/jpeg, image/jpg"
             onChange={handleImageUpload}
             className="hidden"
+            ref={fileInputRef}
           />
         </div>
       </div>
 
       {/* Prompt Section */}
       <div>
-        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] mb-1 block truncate">
-          Prompt
-        </label>
+        <label className="block text-xs text-gray-500 mb-1">Prompt</label>
         <Input
           placeholder="Describe the model texture..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          className="w-full border-[#E5E7EB] rounded-[8px] p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 truncate"
-          disabled={!mode}
+          className="w-full border-[#E5E7EB] rounded-md p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          disabled={!mode || isDisabled}
           required
           maxLength={300}
         />
@@ -149,11 +166,9 @@ export default function ControlPanel({
 
       {/* Model Type Section */}
       <div>
-        <label className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] mb-1 block truncate">
-          Model Type
-        </label>
+        <label className="block text-xs text-gray-500 mb-1">Model Type</label>
         <select
-          className="w-full p-2 border rounded-[8px] text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 truncate"
+          className="w-full p-2 border rounded-md text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
           style={{
             borderColor: '#E5E7EB',
             fontSize: '14px',
@@ -164,6 +179,7 @@ export default function ControlPanel({
             backgroundRepeat: 'no-repeat',
             backgroundSize: '1.2rem',
           }}
+          disabled={isDisabled}
         >
           <option>OpenAI</option>
         </select>
@@ -174,18 +190,16 @@ export default function ControlPanel({
         <Button
           onClick={() => submitPrompt(prompt)}
           className="w-full bg-gray-100 text-gray-700 py-2 rounded-full flex items-center justify-center space-x-2"
-          disabled={isLoading || !imageDataUri || !prompt}
+          disabled={isDisabled || isLoading || !imageDataUri || !prompt}
         >
-          <img
-            className="w-6 h-6"
-            alt="Generate"
-            src="/icons/spark-jelly.svg"
-          />
-          <span className="truncate">
+          <img className="w-6 h-6" alt="Generate" src="/spark-jelly.svg" />
+          <span className="text-sm">
             {isLoading ? 'Generating...' : 'Generate your asset'}
           </span>
         </Button>
-        {error && <p className="text-red-500 mt-2 text-sm truncate">{error}</p>}
+        {error && (
+          <p className="text-red-500 mt-2 text-xs text-center">{error}</p>
+        )}
       </div>
 
       {!demoLimitLoading && remaining !== null && (
