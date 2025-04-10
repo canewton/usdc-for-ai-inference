@@ -6,7 +6,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 
 import Blurs from '@/public/blurs.svg';
 import WalletIcon from '@/public/digital-wallet.svg';
-import ModelIcon from '@/public/Group.svg';
+import ModelIcon from '@/public/group.svg';
 import SparkIcon from '@/public/spark.svg';
 import UsdcIcon from '@/public/usdc.svg';
 
