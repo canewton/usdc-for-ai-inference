@@ -1,7 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import React from 'react';
 
 interface Props {
   tabs: string[];
@@ -10,8 +10,17 @@ interface Props {
 }
 
 export default function Navbar({ tabs, routes, email }: Props) {
-  const [selectedTab, setSelectedTab] = useState(tabs[0]);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Get the current route's base path (first segment)
+  const currentRoute = pathname.split('/')[1] || '';
+
+  // Find the index of the current route in the routes array
+  const currentTabIndex = routes.indexOf(currentRoute);
+
+  // Determine the selected tab (fallback to first tab if not found)
+  const selectedTab = currentTabIndex >= 0 ? tabs[currentTabIndex] : tabs[0];
 
   return (
     <div className="mb-16">
@@ -23,15 +32,14 @@ export default function Navbar({ tabs, routes, email }: Props) {
             className="h-8"
           />
           <div className="ml-10 space-x-4">
-            {tabs.map((tab) => (
+            {tabs.map((tab, index) => (
               <button
                 key={tab}
                 className={`text-sm font-medium ${
                   selectedTab === tab ? 'text-blue-500' : ''
                 }`}
                 onClick={() => {
-                  setSelectedTab(tab);
-                  router.push(`/${routes[tabs.indexOf(tab)]}`);
+                  router.push(`/${routes[index]}`);
                 }}
               >
                 {tab}
@@ -41,7 +49,7 @@ export default function Navbar({ tabs, routes, email }: Props) {
         </div>
         <div className="flex items-center">
           <div className="bg-purple-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
-            <span>{email.substring(0, 1).toLocaleUpperCase()}</span>
+            <span>{email.substring(0, 1).toUpperCase()}</span>
           </div>
         </div>
       </div>

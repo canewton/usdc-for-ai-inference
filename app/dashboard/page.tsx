@@ -79,11 +79,7 @@ export default async function Dashboard() {
       </div>
 
       {/* Transactions Section */}
-      <TransactionHistory
-        wallet={wallet}
-        treasuryWallet={treasuryWallet}
-        profile={profile}
-      />
+      <TransactionHistory wallet={wallet} profile={profile} />
     </div>
   );
 }
