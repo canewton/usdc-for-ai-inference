@@ -1,20 +1,20 @@
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import UsdcIcon from '@/public/usdc-circle.svg';
-import EditIcon from '@/public/edit-icon.svg';
-import EditHoveredIcon from '@/public/edit-hovered.svg';
 import ChainIcon from '@/public/chain-icon.svg';
-
-import { TEXT_MODEL_PRICING } from '@/utils/constants';
-import { Message } from '@/utils/types';
-import { useState } from 'react';
 import CloseIcon from '@/public/close.svg';
+import EditHoveredIcon from '@/public/edit-hovered.svg';
+import EditIcon from '@/public/edit-icon.svg';
 import SendIcon from '@/public/plane.svg';
+import UsdcIcon from '@/public/usdc-circle.svg';
+import { TEXT_MODEL_PRICING } from '@/utils/constants';
+import type { Message } from '@/utils/types';
 
 interface MessageItemProps {
   message: Message;
@@ -43,14 +43,13 @@ export function MessageItem({
   hoveredMessageId,
   setHoveredMessageId,
 }: MessageItemProps) {
-
   const [editHovered, setEditHovered] = useState(false);
 
   const handleCopy = async (textToCopy: string) => {
     try {
       await navigator.clipboard.writeText(textToCopy);
     } catch (err) {
-      console.error("Failed to copy:", err);
+      console.error('Failed to copy:', err);
     }
   };
 
@@ -74,23 +73,17 @@ export function MessageItem({
                 }}
                 className="flex-1 py-8 px-6 bg-white rounded-xl placeholder-transparent outline-none text-body"
               />
-              <button
-                className=""
-                onClick={onCancelEdit}
-              >
+              <button className="" onClick={onCancelEdit}>
                 <img src={CloseIcon.src} alt="Send icon" className="w-6 h-6" />
               </button>
-              <button
-                type="submit"
-                className="pr-8"
-              >
+              <button type="submit" className="pr-8">
                 <img src={SendIcon.src} alt="Send icon" className="w-10 h-10" />
               </button>
             </form>
           </div>
         ) : (
-          <div 
-            className='flex flex-col'
+          <div
+            className="flex flex-col"
             onMouseEnter={() =>
               message.role === 'user' && setHoveredMessageId(message.id)
             }
@@ -102,16 +95,16 @@ export function MessageItem({
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
             {/* Edit Message */}
-            <div className={`${message.role === 'user' && 'h-6'} flex justify-end ${hoveredMessageId === message.id? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}>
+            <div
+              className={`${message.role === 'user' && 'h-6'} flex justify-end ${hoveredMessageId === message.id ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+            >
               {message.role === 'user' && hoveredMessageId === message.id && (
-                <div className='flex flex-row space-x-1'>
-                  <button
-                    onClick={() => handleCopy(message.content)}
-                  >
-                    <img 
+                <div className="flex flex-row space-x-1">
+                  <button onClick={() => handleCopy(message.content)}>
+                    <img
                       src={ChainIcon.src}
                       alt="Chain icon"
-                      className='w-6 h-6'
+                      className="w-6 h-6"
                     />
                   </button>
                   <button
@@ -119,10 +112,10 @@ export function MessageItem({
                     onMouseEnter={() => setEditHovered(true)}
                     onMouseLeave={() => setEditHovered(false)}
                   >
-                    <img 
+                    <img
                       src={editHovered ? EditHoveredIcon.src : EditIcon.src}
                       alt="Pencil and ruler icon"
-                      className='w-6 h-6'
+                      className="w-6 h-6"
                     />
                   </button>
                 </div>
@@ -142,13 +135,29 @@ export function MessageItem({
                     alt="USDC symbol"
                     className="h-6 w-6 mr-1"
                   />
-                  {isNaN(message.completionTokens) ? (<p className='text-sub'>Calculating...</p>) : `$ -${((message.promptTokens * TEXT_MODEL_PRICING[message.provider].userBilledInputPrice) + (message.completionTokens * TEXT_MODEL_PRICING[message.provider].userBilledOutputPrice)).toFixed(3)}`}
+                  {isNaN(message.completionTokens) ? (
+                    <p className="text-sub">Calculating...</p>
+                  ) : (
+                    `$ -${(message.promptTokens * TEXT_MODEL_PRICING[message.provider].userBilledInputPrice + message.completionTokens * TEXT_MODEL_PRICING[message.provider].userBilledOutputPrice).toFixed(3)}`
+                  )}
                 </div>
               </TooltipTrigger>
               {message.provider && (
-                <TooltipContent side="bottom" align='start'> 
-                  <p>{message.promptTokens} prompt tokens ≡ ${(message.promptTokens * TEXT_MODEL_PRICING[message.provider].userBilledInputPrice).toFixed(3)}</p>
-                  <p>{message.completionTokens} completion tokens ≡ ${(message.completionTokens * TEXT_MODEL_PRICING[message.provider].userBilledOutputPrice).toFixed(3)}</p>
+                <TooltipContent side="bottom" align="start">
+                  <p>
+                    {message.promptTokens} prompt tokens ≡ $
+                    {(
+                      message.promptTokens *
+                      TEXT_MODEL_PRICING[message.provider].userBilledInputPrice
+                    ).toFixed(3)}
+                  </p>
+                  <p>
+                    {message.completionTokens} completion tokens ≡ $
+                    {(
+                      message.completionTokens *
+                      TEXT_MODEL_PRICING[message.provider].userBilledOutputPrice
+                    ).toFixed(3)}
+                  </p>
                 </TooltipContent>
               )}
             </Tooltip>

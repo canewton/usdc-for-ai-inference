@@ -19,8 +19,9 @@ import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
-import UsdcBalanceCard from './UsdcBalanceCard';
 import { TEXT_MODEL_PRICING } from '@/utils/constants';
+
+import UsdcBalanceCard from './UsdcBalanceCard';
 
 const promptSuggestions = [
   { title: 'Explain how to load my wallet', icon: WalletIcon },
@@ -411,7 +412,7 @@ export function Chat({ currChat }: ChatProps) {
         <div className="flex flex-col justify-between h-full py-4 items-center">
           {chatId ? (
             <>
-              <div className='flex flex-row w-[800px]'>
+              <div className="flex flex-row w-[800px]">
                 <div className="flex flex-row justify-between space-x-2 w-fit h-fit items-center">
                   <img
                     src={TrustIcon.src}
@@ -478,7 +479,7 @@ export function Chat({ currChat }: ChatProps) {
       {/* Right section with balance and settings */}
       <RightAiSidebar isImageInput={false}>
         <div className="space-y-[20px] mt-4 w-full">
-          <UsdcBalanceCard direction='column'/>
+          <UsdcBalanceCard direction="column" />
           <div className="flex flex-col space-y-[4px]">
             <div className="text-sub m-1">Max Tokens</div>
             <div className="flex w-full h-8 border border-gray-200 items-center justify-center rounded-3xl p-2">
@@ -489,7 +490,12 @@ export function Chat({ currChat }: ChatProps) {
                 onValueChange={(val) => setMaxTokens(val[0])}
               />
             </div>
-            <div className="text-sub mr-auto w-full text-end">2k ≡ ${(2000 * TEXT_MODEL_PRICING[model].userBilledOutputPrice).toFixed(2)}</div>
+            <div className="text-sub mr-auto w-full text-end">
+              2k ≡ $
+              {(2000 * TEXT_MODEL_PRICING[model].userBilledOutputPrice).toFixed(
+                2,
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col">
