@@ -10,8 +10,8 @@ export default function RightAiSidebar({
   return (
     <aside
       className={`flex ${
-        isImageInput ? 'w-[300px] min-w-70' : 'w-[200px] min-w-60'
-      } flex-shrink-0 flex-col items-center p-6 border border-gray-200 rounded-l-3xl h-full bg-section space-y-[20px]`}
+        isImageInput ? 'w-[300px] min-w-[300px]' : 'w-[200px] min-w-[200px]'
+      } flex-shrink-0 flex-col items-center p-6 border border-gray-200 rounded-l-3xl bg-section space-y-[20px] h-[calc(100vh-85px)]`}
     >
       <div className="space-y-[20px] mt-4 w-full">
         {children}
