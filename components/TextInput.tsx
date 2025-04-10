@@ -12,6 +12,7 @@ interface TextInputProps {
   isLoading: boolean;
   onStopGeneration: () => void;
   editingMessage: boolean;
+  maxLength?: number;
 }
 
 export function TextInput({
@@ -21,24 +22,34 @@ export function TextInput({
   isLoading,
   onStopGeneration,
   editingMessage,
+  maxLength,
 }: TextInputProps) {
   return (
     <div className="border-gray-200 rounded-3xl shadow-md">
       <form onSubmit={handleSubmit} className="flex space-x-2">
-        <input
-          type="text"
-          value={editingMessage ? '' : input}
-          onChange={handleInputChange}
-          placeholder={
-            isLoading ? 'Circle AI is thinking...' : 'Message Circle AI'
-          }
-          className="flex-1 p-4 bg-white rounded-3xl placeholder-transparent outline-none text-body"
-          style={{
-            background: 'linear-gradient(to right, #b090F5, #5fbfff, #5fbfff)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-          }}
-        />
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            value={editingMessage ? '' : input}
+            onChange={handleInputChange}
+            placeholder={
+              isLoading ? 'Circle AI is thinking...' : 'Message Circle AI'
+            }
+            className="flex-1 p-4 bg-white rounded-3xl placeholder-transparent outline-none text-body w-full overflow-x-auto whitespace-nowrap"
+            style={{
+              background:
+                'linear-gradient(to right, #b090F5, #5fbfff, #5fbfff)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+            }}
+            maxLength={maxLength}
+          />
+          {maxLength && input.length >= maxLength && (
+            <div className="absolute right-2 bottom-1 text-xs text-red-500">
+              Input too large ({maxLength} characters max)
+            </div>
+          )}
+        </div>
         {isLoading ? (
           <button
             type="button"

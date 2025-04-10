@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
+import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatSidebar } from '@/components/ChatSidebar';
 import MainAiSection from '@/components/MainAiSection';
@@ -36,10 +37,12 @@ const promptSuggestions = [
 ];
 
 export default function Page() {
+  const { remaining, loading: demoLimitLoading } = useDemoLimit();
   const [prompt, setPrompt] = useState('');
   const [conversation, setConversation] = useState<ConversationItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showTryAgain, setShowTryAgain] = useState(false);
+  const [showLimitError, setShowLimitError] = useState(false);
 
   const [history, setHistory] = useState<ImageHistoryItem[]>([]);
   const [currentImageId, setCurrentImageId] = useState('');
@@ -111,6 +114,11 @@ export default function Page() {
 
   const generateImage = async (promptToSubmit: string) => {
     if (!promptToSubmit.trim() || !session) return;
+    if (remaining === 0) {
+      setShowLimitError(true);
+      return;
+    }
+    setShowLimitError(false);
     setIsLoading(true);
     setShowTryAgain(false);
 
@@ -132,8 +140,14 @@ export default function Page() {
           output_quality: quality,
         }),
       });
+
       if (!response.ok) {
-        throw new Error(await response.text());
+        const errorData = await response.json();
+        if (response.status === 429) {
+          setShowLimitError(true);
+        } else {
+          throw new Error(errorData.error || 'Failed to generate image');
+        }
       }
 
       const { imageUrl } = await response.json();
@@ -157,7 +171,7 @@ export default function Page() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (prompt.trim()) {
+    if (prompt.trim() && prompt.length <= 300) {
       await generateImage(prompt);
       setPrompt('');
     }
@@ -245,6 +259,13 @@ export default function Page() {
           >
             {wordsPerToken}
           </div>
+          {!demoLimitLoading && remaining !== null && (
+            <div className="text-sm text-gray-500">
+              {remaining === 0
+                ? 'Demo limit reached'
+                : `${remaining} generations remaining`}
+            </div>
+          )}
         </div>
 
         <div className="p-4 flex flex-col justify-between h-full">
@@ -321,8 +342,13 @@ export default function Page() {
               isLoading={isLoading}
               onStopGeneration={stopGeneration}
               editingMessage={false}
+              maxLength={300}
             />
-
+            {showLimitError && (
+              <p className="text-red-500 text-sm mt-2 text-center">
+                Demo limit reached. Please upgrade to continue.
+              </p>
+            )}
             {showTryAgain && (
               <div
                 onClick={handleTryAgain}
