@@ -150,16 +150,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   const updateTransactions = async () => {
     try {
       setLoading(true);
-      const walletBalance = await (
-        await fetch('/api/wallet/balance', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ walletId: props.wallet?.circle_wallet_id }),
-        })
-      ).json();
-
       const { data: transactions } = await supabase
         .from('transactions')
         .select('*')
@@ -167,27 +157,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         .eq('transaction_type', 'INBOUND')
         .order('created_at', { ascending: false });
 
-      const transactionsUpdated = await Promise.all(
-        (transactions ?? []).map(async (transaction: Transaction) => {
-          if (transaction.balance == null) {
-            const balance = walletBalance;
-            const parsedBalance = balance.tokenBalances?.find(
-              ({ token }: { token: { symbol: string } }) =>
-                token.symbol === 'USDC',
-            )?.amount;
-            transaction.balance = parsedBalance;
-            await supabase
-              .from('transactions')
-              .update({ balance: parseFloat(transaction.balance) })
-              .eq('id', transaction.id)
-              .select('*')
-              .single();
-          }
-          return transaction;
-        }),
-      );
-
-      setTransactionData(transactionsUpdated);
+      setTransactionData(transactions ?? []);
       updateBillingTransactions();
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
@@ -276,20 +246,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       )
       .subscribe();
 
-    const transactionSubscription = supabase
-      .channel('transactions')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'transactions',
-          filter: `profile_id=eq.${props.profile?.id}`,
-        },
-        () => updateTransactions(),
-      )
-      .subscribe();
-
     const walletTransactionSubscription = supabase
       .channel('wallet-history')
       .on(
@@ -308,7 +264,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     updateBillingTransactions();
 
     return () => {
-      supabase.removeChannel(transactionSubscription);
       supabase.removeChannel(walletTransactionSubscription);
       supabase.removeChannel(billingSubscription);
     };

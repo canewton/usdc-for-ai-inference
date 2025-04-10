@@ -1,22 +1,19 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
-
-// Setup type definitions for built-in Supabase Runtime APIs
+// @ts-nocheck
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 
-// @ts-ignore
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
-// @ts-ignore
+import { initiateDeveloperControlledWalletsClient } from 'https://esm.sh/@circle-fin/developer-controlled-wallets';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.0.0';
 
-// @ts-ignore
 import type { Database } from '@/types/database.types';
 
+const circleDeveloperSdk = initiateDeveloperControlledWalletsClient({
+  apiKey: Deno.env.get('CIRCLE_API_KEY'),
+  entitySecret: Deno.env.get('CIRCLE_ENTITY_SECRET'),
+});
+
 const supabase = createClient<Database>(
-  // @ts-ignore
   Deno.env.get('PUBLIC_SUPABASE_URL'),
-  // @ts-ignore
   Deno.env.get('PUBLIC_SUPABASE_ANON_KEY'),
 );
 
@@ -76,6 +73,17 @@ serve(async (req: any) => {
           });
         } else {
           // Create a new transaction
+          const balanceResponse =
+            await circleDeveloperSdk.getWalletTokenBalance({
+              id: existingWallet.circle_wallet_id,
+              includeAll: true,
+            });
+
+          const parsedBalance = balanceResponse.data?.tokenBalances?.find(
+            ({ token }: { token: { symbol?: string } }) =>
+              token.symbol === 'USDC',
+          )?.amount;
+
           const { data: newTransaction, error: insertError } = await supabase
             .from('transactions')
             .insert([
@@ -86,6 +94,7 @@ serve(async (req: any) => {
                 transaction_type: data.transactionType,
                 amount: parseFloat(data.amounts[0]?.replace(/[$,]/g, '')) || 0,
                 status: data.state,
+                balance: parsedBalance,
               },
             ])
             .select();

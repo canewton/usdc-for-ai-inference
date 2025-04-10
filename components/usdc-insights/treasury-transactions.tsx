@@ -121,7 +121,25 @@ export const TreasuryTransactions = ({ treasuryWallet }: Props) => {
   };
 
   useEffect(() => {
+    const transactionSubscription = supabase
+      .channel('transactions')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'transactions',
+          filter: `wallet_id=eq.${process.env.NEXT_PUBLIC_TREASURY_WALLET_ID}.and.transaction_type=eq.INBOUND`,
+        },
+        () => updateTransactions(),
+      )
+      .subscribe();
+
     updateTransactions();
+
+    return () => {
+      supabase.removeChannel(transactionSubscription);
+    };
   }, []);
 
   const handleSort = (field: SortField) => {
