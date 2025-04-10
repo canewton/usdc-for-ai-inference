@@ -4,7 +4,7 @@ export async function GET() {
   const apiKeyStatus = {
     openai: process.env.OPENAI_API_KEY ? true : false,
     replicate: process.env.REPLICATE_API_TOKEN ? true : false,
-    imageto3d: process.env.IMAGE_3D_API_KEY ? true : false,
+    meshy: process.env.MESHY_API_URL ? true : false,
     video: process.env.VIDEO_API_KEY ? true : false,
   }
 
