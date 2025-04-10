@@ -3,7 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { type FunctionComponent, type HTMLProps, useState } from 'react';
 
-import type { WalletTransferRequest } from '@/app/api/wallet/transfer/route';
+import type { WalletTransferRequest } from '@/app/(ai)/server/circleWalletTransfer';
 import { Button } from '@/components/ui/button';
 import { aiModel } from '@/types/ai.types';
 

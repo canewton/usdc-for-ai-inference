@@ -3,6 +3,8 @@ export interface Profile {
   auth_user_id: string;
   name: string;
   created_at: string;
+  email: string;
+  is_admin: boolean;
 }
 
 export interface Wallet {

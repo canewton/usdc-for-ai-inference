@@ -3,6 +3,9 @@ import './globals.css';
 import { Geist } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 
+import Navbar from '@/components/Navbar';
+import UserLastLoginProvider from '@/components/UserLastLoginProvider';
+
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : 'http://localhost:3000';
@@ -25,28 +28,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
-      {/* <body className="bg-background text-foreground">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <main className="h-screen flex flex-col overflow-auto">
-            <Navbar />
-            <div className="flex flex-col flex-1">{children}</div>
-          </main>
-        </ThemeProvider>
-      </body> */}
       <body className="bg-background text-foreground">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="flex flex-col">{children}</div>
-        </ThemeProvider>
+        <UserLastLoginProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <main className="h-screen flex flex-col overflow-auto">
+              <Navbar />
+              <div className="flex flex-col flex-1">{children}</div>
+            </main>
+          </ThemeProvider>
+        </UserLastLoginProvider>
       </body>
     </html>
   );

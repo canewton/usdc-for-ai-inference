@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Replicate from 'replicate';
 import { v4 as uuidv4 } from 'uuid';
 
+import { checkDemoLimit } from '@/app/utils/demoLimit';
 import { IMAGE_MODEL_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
 
@@ -20,6 +21,15 @@ export async function POST(req: Request) {
     if (error || !user) {
       console.error('Unauthorized', error);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { canGenerate, remaining } = await checkDemoLimit(user.id);
+
+    if (!canGenerate) {
+      return NextResponse.json(
+        { error: 'Demo limit reached. Please upgrade to continue.' },
+        { status: 429 },
+      );
     }
 
     const { prompt, aspect_ratio, output_quality } = await req.json();

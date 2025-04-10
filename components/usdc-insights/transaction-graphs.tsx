@@ -1,5 +1,7 @@
+'use client';
+
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Image3DIcon } from '@/app/icons/Image3DIcon';
 import { ImageIcon } from '@/app/icons/ImageIcon';
@@ -8,7 +10,9 @@ import { USDCIcon } from '@/app/icons/USDCIcon';
 import { VideoIcon } from '@/app/icons/VideoIcon';
 import { aiModel } from '@/types/ai.types';
 
+import { InsightBox } from './insight-box';
 import { SpendingCard } from './spending-card';
+import { StackedInsightsBarChart } from './stacked-insights-bar-chart';
 
 interface BillingTransaction {
   id: string;
@@ -138,38 +142,17 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
     currentDate.getMonth(),
   );
 
-  const handlePrevMonth = () => {
-    setCurrentMonthIndex((prev) => (prev === 0 ? 11 : prev - 1));
-  };
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
+  const [textToTextData, setTextToTextData] = useState<any[]>([]);
+  const [textToImageData, setTextToImageData] = useState<any[]>([]);
+  const [imageToImageData, setImageToImageData] = useState<any[]>([]);
+  const [imageToVideoData, setImageToVideoData] = useState<any[]>([]);
 
-  const handleNextMonth = () => {
-    setCurrentMonthIndex((prev) => (prev === 11 ? 0 : prev + 1));
-  };
-
-  const monthlyData = processTransactionsForMonth(
-    props.data,
-    currentMonthIndex,
-  );
-  const textToTextData = processTransactionsByType(
-    props.data,
-    currentMonthIndex,
-    aiModel.TEXT_TO_TEXT,
-  );
-  const textToImageData = processTransactionsByType(
-    props.data,
-    currentMonthIndex,
-    aiModel.TEXT_TO_IMAGE,
-  );
-  const imageToImageData = processTransactionsByType(
-    props.data,
-    currentMonthIndex,
-    aiModel.IMAGE_TO_3D,
-  );
-  const imageToVideoData = processTransactionsByType(
-    props.data,
-    currentMonthIndex,
-    aiModel.IMAGE_TO_VIDEO,
-  );
+  const [monthlyTotal, setMonthyTotal] = useState<number>(0);
+  const [textToTextTotal, setTextToTextTotal] = useState<number>(0);
+  const [textToImageTotal, setTextToImageTotal] = useState<number>(0);
+  const [imageToImageTotal, setImageToImageTotal] = useState<number>(0);
+  const [imageToVideoTotal, setImageToVideoTotal] = useState<number>(0);
 
   const calculateTotal = (data: any[]) => {
     return data.reduce((total, item) => {
@@ -183,16 +166,59 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
     }, 0);
   };
 
-  const monthlyTotal = calculateTotal(monthlyData);
-  const textToTextTotal = calculateTotal(textToTextData);
-  const textToImageTotal = calculateTotal(textToImageData);
-  const imageToImageTotal = calculateTotal(imageToImageData);
-  const imageToVideoTotal = calculateTotal(imageToVideoData);
+  const updateGraphs = (monthIndex: number) => {
+    const monthlyDataTemp = processTransactionsForMonth(props.data, monthIndex);
+    const textToTextDataTemp = processTransactionsByType(
+      props.data,
+      monthIndex,
+      aiModel.TEXT_TO_TEXT,
+    );
+    const textToImageDataTemp = processTransactionsByType(
+      props.data,
+      monthIndex,
+      aiModel.TEXT_TO_IMAGE,
+    );
+    const imageToImageDataTemp = processTransactionsByType(
+      props.data,
+      monthIndex,
+      aiModel.IMAGE_TO_3D,
+    );
+    const imageToVideoDataTemp = processTransactionsByType(
+      props.data,
+      monthIndex,
+      aiModel.IMAGE_TO_VIDEO,
+    );
+    setMonthlyData(monthlyDataTemp);
+    setTextToTextData(textToTextDataTemp);
+    setTextToImageData(textToImageDataTemp);
+    setImageToImageData(imageToImageDataTemp);
+    setImageToVideoData(imageToVideoDataTemp);
+
+    setMonthyTotal(calculateTotal(monthlyDataTemp));
+    setTextToTextTotal(calculateTotal(textToImageDataTemp));
+    setTextToImageTotal(calculateTotal(textToImageDataTemp));
+    setImageToImageTotal(calculateTotal(imageToImageDataTemp));
+    setImageToVideoTotal(calculateTotal(imageToVideoDataTemp));
+  };
+
+  const handlePrevMonth = () => {
+    updateGraphs(currentMonthIndex === 0 ? 11 : currentMonthIndex - 1);
+    setCurrentMonthIndex((prev) => (prev === 0 ? 11 : prev - 1));
+  };
+
+  const handleNextMonth = () => {
+    updateGraphs(currentMonthIndex === 11 ? 0 : currentMonthIndex + 1);
+    setCurrentMonthIndex((prev) => (prev === 11 ? 0 : prev + 1));
+  };
+
+  useEffect(() => {
+    updateGraphs(currentDate.getMonth());
+  }, []);
 
   return (
     <div>
-      <div className="bg-[#FBFBFB] rounded-2xl shadow-sm mb-6 border border-[#EAEAEC]">
-        <div className="flex justify-between items-center p-8 pb-4">
+      <InsightBox className="mb-6 pl-0">
+        <div className="flex justify-between items-center mb-4 pl-8">
           <div>
             <h2>Monthly Spend</h2>
             <div className="flex items-center gap-1">
@@ -220,9 +246,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
             </button>
           </div>
         </div>
-        <SpendingCard
-          title=""
-          amount={monthlyTotal}
+        <StackedInsightsBarChart
           data={monthlyData}
           colors={[
             MODEL_COLORS[aiModel.TEXT_TO_TEXT],
@@ -231,10 +255,9 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
             MODEL_COLORS[aiModel.IMAGE_TO_VIDEO],
           ]}
           stacked={true}
-          showUSDCTotal={false}
-          className="pt-0"
+          tickFormatter={(value) => `$${value}`}
         />
-      </div>
+      </InsightBox>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <SpendingCard
@@ -244,6 +267,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           className="bg-purple-50"
           colors={[MODEL_COLORS[aiModel.TEXT_TO_TEXT]]}
           icon={<TextIcon className="text-purple-600" />}
+          tickFormatter={(value) => `$${value}`}
         />
         <SpendingCard
           title="Text to Image"
@@ -252,6 +276,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           className="bg-orange-50"
           colors={[MODEL_COLORS[aiModel.TEXT_TO_IMAGE]]}
           icon={<ImageIcon className="text-orange-600" />}
+          tickFormatter={(value) => `$${value}`}
         />
         <SpendingCard
           title="2D to 3D Image"
@@ -260,6 +285,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           className="bg-green-50"
           colors={[MODEL_COLORS[aiModel.IMAGE_TO_3D]]}
           icon={<Image3DIcon className="text-green-600" />}
+          tickFormatter={(value) => `$${value}`}
         />
         <SpendingCard
           title="Image to Video"
@@ -268,6 +294,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
           className="bg-blue-50"
           colors={[MODEL_COLORS[aiModel.IMAGE_TO_VIDEO]]}
           icon={<VideoIcon className="text-blue-600" />}
+          tickFormatter={(value) => `$${value}`}
         />
       </div>
     </div>
