@@ -1,20 +1,23 @@
-'use client';
-import { useEffect, useState } from 'react';
+'use client'
+import { redirect } from 'next/navigation';
 
 import AiTabs from '@/components/AiTabs';
 import { createClient } from '@/utils/supabase/client';
 
 import { Spinner } from '../../components/Spinner';
 import { SessionProvider } from '../contexts/SessionContext';
-import { redirect } from 'next/navigation';
-import { useWalletBalance } from '@/app/hooks/useWalletBalance';
+import { useState, useEffect } from 'react';
 
-export default function AILayout({ children }: { children: React.ReactNode }) {
+export default function AILayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [session, setSession] = useState('');
   const [loading, setLoading] = useState(true);
   const [apiKeyStatus, setApiKeyStatus] = useState({});
-  const [balance, setBalance] = useState(0);
   const [walletId, setWalletId] = useState('');
+  const [circleWalletId, setCircleWalletId] = useState('');
 
   useEffect(() => {
     const getSession = async () => {
@@ -27,65 +30,63 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
       } else {
         setSession('');
       }
-
       const {
         data: { user },
       } = await supabase.auth.getUser();
-    
+  
       if (!user) {
         return redirect('/sign-in');
       }
-    
+  
       const { data: profile } = await supabase
         .from('profiles')
         .select('id')
         .eq('auth_user_id', user.id)
         .single();
-    
+  
       const { data: userWallet } = await supabase
         .schema('public')
         .from('wallets')
         .select()
         .eq('profile_id', profile?.id)
         .single();
-      
-      if (userWallet) {
-        const { balance: walletBalance, loading } = useWalletBalance(userWallet.circle_wallet_id, userWallet.wallet_id);
-        setBalance(walletBalance);
-        setWalletId(userWallet.circle_wallet_id)
-      }
+      setWalletId(userWallet?.id);
+      setCircleWalletId(userWallet?.circle_wallet_id);
       setLoading(false);
     };
     getSession();
   }, []);
 
-  const fetchAPIStatus = async () => {
-    try {
-      const response = await fetch("/api/check-api-keys")
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch API status")
-      }
-
-      const data = await response.json()
-      setApiKeyStatus(data.apiKeyStatus)
-    } catch (err) {
-      console.error("Error fetching API status:", err)
-    } 
-  }
 
   useEffect(() => {
+    const fetchAPIStatus = async () => {
+      try {
+        const response = await fetch('/api/check-api-keys');
+  
+        if (!response.ok) {
+          throw new Error('Failed to fetch API status');
+        }
+  
+        const data = await response.json();
+        setApiKeyStatus(data.apiKeyStatus);
+      } catch (err) {
+        console.error('Error fetching API status:', err);
+      }
+    };
     fetchAPIStatus();
   }, []);
-
-  
 
   if (loading) {
     return <Spinner />;
   }
 
   return (
-    <SessionProvider access_token={session} api_key_status={apiKeyStatus} balance={balance} wallet_id={walletId}>
+    <SessionProvider
+      access_token={session}
+      api_key_status={apiKeyStatus}
+      wallet_id={walletId}
+      circle_wallet_id={circleWalletId}
+    >
       <div className="ai-layout flex flex-col h-full pt-5">
         <div className="flex flex-row h-full w-full">
           {/* Left side bar with tabs and history */}
