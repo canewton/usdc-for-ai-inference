@@ -99,7 +99,9 @@ export default function RightAiSidebar({
 
   return (
     <aside
-      className={`flex w-1/3 flex-col items-center p-6 border border-gray-200 rounded-l-3xl h-screen bg-section`}
+      className={`flex flex-shrink-0 flex-col items-center p-6 border border-gray-200 rounded-l-3xl bg-section h-[calc(100vh-85px)] overflow-y-auto ${
+        isImageInput ? 'w-[280px] min-w-[280px]' : 'w-60 min-w-60'
+      }`}
     >
       <div className="px-4 py-3 border border-gray-200 rounded-lg bg-white mb-4 w-full">
         {wallet ? (
