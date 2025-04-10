@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 
 import AiTabs from '@/components/AiTabs';
-import Navbar from '@/components/Navbar';
 import { createClient } from '@/utils/supabase/client';
 
 import { Spinner } from '../../components/Spinner';
@@ -34,19 +33,17 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SessionProvider access_token={session}>
-      <Navbar />
-
-      <div className="ai-layout flex flex-col pt-3">
-        <div className="flex flex-row h-screen w-full">
+      <div className="ai-layout flex flex-col h-full pt-5">
+        <div className="flex flex-row h-full w-full">
           {/* Left side bar with tabs and history */}
-          <aside className="w-1/4 h-screen flex flex-col pr-2">
+          <aside className="w-64 h-full flex flex-col pr-2">
             <AiTabs />
             {/* History section to be changed by tool */}
             <div id="ai-history" className="overflow-hidden" />
           </aside>
 
           {/* Middle and right sections  */}
-          <div className="flex flex-row w-full h-full overflow-auto justify-between space-x-2 ">
+          <div className="flex flex-row w-full h-full overflow-auto bg-white justify-between space-x-2 ">
             {children}
           </div>
         </div>
