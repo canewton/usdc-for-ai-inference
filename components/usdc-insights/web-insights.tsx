@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import type { TooltipProps } from 'recharts';
 
+import { USDCIcon } from '@/app/icons/USDCIcon';
 import { aiModel } from '@/types/ai.types';
 
 import { ActiveUsers } from './active-users';
@@ -137,6 +138,8 @@ export const WebInsights: React.FC<Props> = (props) => {
         break;
     }
 
+    startDate.setHours(0, 0, 0, 0);
+
     const filteredTransactions = transactions.filter((t) => {
       const transactionDate = new Date(t.created_at);
       return transactionDate >= startDate && transactionDate <= now;
@@ -212,7 +215,10 @@ export const WebInsights: React.FC<Props> = (props) => {
           <div className="flex justify-between items-center pl-8 mb-4">
             <div>
               <p className="text-sm">Total Sales</p>
-              <p className="text-blue-500 text-xl">${totalSales.toFixed(2)}</p>
+              <div className="flex items-center gap-1 text-blue-500">
+                <span className="text-xl">${totalSales.toFixed(2)}</span>
+                <USDCIcon />
+              </div>
             </div>
             <TimePeriodOptions
               selectedPeriod={selectedPeriodSales}

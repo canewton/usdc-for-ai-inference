@@ -88,7 +88,6 @@ export const StackedInsightsBarChart = ({
   tickFormatter,
   tooltip,
 }: Props) => {
-  console.log('tooltip', tooltip);
   return (
     <div className="h-[200px]">
       <ResponsiveContainer width="100%" height="100%">
