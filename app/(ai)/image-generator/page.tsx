@@ -17,6 +17,10 @@ import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
 import USDC from '@/public/usdc-circle.svg';
+import { aiModel } from '@/types/ai.types';
+import { IMAGE_MODEL_PRICING } from '@/utils/constants';
+import { WalletTransferRequest } from '../server/circleWalletTransfer';
+import UsdcBalanceCard from '@/components/UsdcBalanceCard';
 
 interface ConversationItem {
   type: 'prompt' | 'response';
@@ -162,6 +166,29 @@ export default function Page() {
       await fetchImages();
 
       setShowTryAgain(true);
+
+      // Transfer balance 
+      const transfer: WalletTransferRequest = {
+        circleWalletId: session.wallet_id ?? '',
+        amount: (IMAGE_MODEL_PRICING.userBilledPrice).toString(),
+        projectName: 'Hi',
+        aiModel: aiModel.TEXT_TO_IMAGE,
+      };
+
+      const transferResponse = await fetch('/api/wallet/transfer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transfer),
+      });
+
+      if (!transferResponse.ok) {
+        throw new Error('Transfer failed');
+      }
+
+      const result = await transferResponse.json();
+      console.log('Transfer initiated:', result);
     } catch (error) {
       console.error('Error generating image:', error);
     } finally {
@@ -365,57 +392,43 @@ export default function Page() {
       </MainAiSection>
 
       {/* RIGHT SIDEBAR */}
-      <RightAiSidebar isImageInput={true}>
-        <div className="space-y-6">
-          <Card className="w-full h-20 bg-white border-[#eaeaec]">
-            <CardContent className="flex items-center p-5">
-              <img src={USDC.src} className="w-12 h-12 mr-4" alt="USDC Icon" />
-              <div className="overflow-hidden">
-                <h3 className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-900 text-xl tracking-[-0.22px] leading-[30px] truncate">
-                  ${totalBilledAmount.toFixed(2)}
-                </h3>
-                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] truncate">
-                  USDC Balance
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <div className="flex flex-col space-x-2">
-            <div className="text-sub mb-1">Aspect Ratio</div>
-            <select
-              value={aspectRatio}
-              onChange={(e) => setAspectRatio(e.target.value)}
-              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
-            >
-              <option value="1:1">1:1</option>
-              <option value="3:2">3:2</option>
-              <option value="4:3">4:3</option>
-              <option value="16:9">16:9</option>
-              <option value="21:9">21:9</option>
-            </select>
-          </div>
-          <div className="flex flex-col space-x-2">
-            <div className="text-sub mb-1">Image Quality</div>
-            <select
-              value={quality}
-              onChange={(e) => setQuality(Number(e.target.value))}
-              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
-            >
-              <option value={50}>Low</option>
-              <option value={80}>Medium</option>
-              <option value={100}>High</option>
-            </select>
-          </div>
-          <div className="flex flex-col space-x-2">
-            <div className="text-sub mb-1">Model Type</div>
-            <select
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
-            >
-              <option value="flux-schnell">FLUX.1</option>
-            </select>
-          </div>
+      <RightAiSidebar isImageInput={false}>
+        <UsdcBalanceCard  direction="column"/>
+        <div className="flex flex-col space-x-2">
+          <div className="text-sub mb-1">Aspect Ratio</div>
+          <select
+            value={aspectRatio}
+            onChange={(e) => setAspectRatio(e.target.value)}
+            className="border border-gray-200 rounded-lg p-3 bg-white text-body"
+          >
+            <option value="1:1">1:1</option>
+            <option value="3:2">3:2</option>
+            <option value="4:3">4:3</option>
+            <option value="16:9">16:9</option>
+            <option value="21:9">21:9</option>
+          </select>
+        </div>
+        <div className="flex flex-col space-x-2">
+          <div className="text-sub mb-1">Image Quality</div>
+          <select
+            value={quality}
+            onChange={(e) => setQuality(Number(e.target.value))}
+            className="border border-gray-200 rounded-lg p-3 bg-white text-body"
+          >
+            <option value={50}>Low</option>
+            <option value={80}>Medium</option>
+            <option value={100}>High</option>
+          </select>
+        </div>
+        <div className="flex flex-col space-x-2">
+          <div className="text-sub mb-1">Model Type</div>
+          <select
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            className="border border-gray-200 rounded-lg p-3 bg-white text-body"
+          >
+            <option value="flux-schnell">FLUX.1</option>
+          </select>
         </div>
       </RightAiSidebar>
     </>
