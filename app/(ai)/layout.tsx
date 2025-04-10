@@ -1,18 +1,14 @@
-'use client'
+'use client';
 import { redirect } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import AiTabs from '@/components/AiTabs';
 import { createClient } from '@/utils/supabase/client';
 
 import { Spinner } from '../../components/Spinner';
 import { SessionProvider } from '../contexts/SessionContext';
-import { useState, useEffect } from 'react';
 
-export default function AILayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AILayout({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState('');
   const [loading, setLoading] = useState(true);
   const [apiKeyStatus, setApiKeyStatus] = useState({});
@@ -33,17 +29,17 @@ export default function AILayout({
       const {
         data: { user },
       } = await supabase.auth.getUser();
-  
+
       if (!user) {
         return redirect('/sign-in');
       }
-  
+
       const { data: profile } = await supabase
         .from('profiles')
         .select('id')
         .eq('auth_user_id', user.id)
         .single();
-  
+
       const { data: userWallet } = await supabase
         .schema('public')
         .from('wallets')
@@ -57,16 +53,15 @@ export default function AILayout({
     getSession();
   }, []);
 
-
   useEffect(() => {
     const fetchAPIStatus = async () => {
       try {
         const response = await fetch('/api/check-api-keys');
-  
+
         if (!response.ok) {
           throw new Error('Failed to fetch API status');
         }
-  
+
         const data = await response.json();
         setApiKeyStatus(data.apiKeyStatus);
       } catch (err) {
