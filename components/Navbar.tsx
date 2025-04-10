@@ -1,20 +1,47 @@
-import React from 'react';
+'use client';
 
-export default function Navbar() {
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+
+interface Props {
+  tabs: string[];
+  routes: string[];
+}
+
+export default function Navbar({ tabs, routes }: Props) {
+  const [selectedTab, setSelectedTab] = useState(tabs[0]);
+  const router = useRouter();
+
   return (
-    <div className="min-h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 shadow-lg">
-      <div className="flex items-center">
-        <div className="font-medium">CIRCLE</div>
-        <div className="ml-6 space-x-4">
-          <button className="text-sm font-medium">Manage Wallet</button>
-          <button className="text-sm font-medium text-blue-500">
-            Build with AI
-          </button>
+    <div className="mb-16">
+      <div className="fixed top-0 left-0 right-0 min-h-16 bg-white border-b border-gray-200 flex items-center justify-between shadow-lg px-20 z-50">
+        <div className="flex items-center">
+          <img
+            src="icons/circle-logo-1.png"
+            alt="Circle Logo"
+            className="h-8"
+          />
+          <div className="ml-10 space-x-4">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                className={`text-sm font-medium ${
+                  selectedTab === tab ? 'text-blue-500' : ''
+                }`}
+                onClick={() => {
+                  setSelectedTab(tab);
+                  router.push(`/${routes[tabs.indexOf(tab)]}`);
+                }}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="flex items-center">
-        <div className="bg-purple-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
-          <span>CL</span>
+        <div className="flex items-center">
+          <div className="bg-purple-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
+            <span>CL</span>
+          </div>
         </div>
       </div>
     </div>

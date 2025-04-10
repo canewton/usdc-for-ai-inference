@@ -37,7 +37,10 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <main className="h-screen flex flex-col overflow-auto">
-              <Navbar />
+              <Navbar
+                tabs={['Manage Wallet', 'Build with AI']}
+                routes={['dashboard', 'chat']}
+              />
               <div className="flex flex-col flex-1">{children}</div>
             </main>
           </ThemeProvider>
