@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 
 import { createClient } from '@/utils/supabase/client';
 
-import { WalletBalance } from './wallet-balance';
+import { WalletBalance } from './usdc-insights/wallet-balance';
 
 interface RightAiSidebarProps {
   children: React.ReactNode;
