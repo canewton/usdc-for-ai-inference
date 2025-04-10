@@ -22,13 +22,15 @@ export interface Transaction {
   id: string;
   wallet_id: string;
   profile_id: string;
+  status: string;
+  created_at: string;
   circle_transaction_id: string;
   transaction_type: string;
-  amount: number;
+  amount: string;
+  balance: string;
   currency: string;
-  status: string;
   description: string;
-  created_at: string;
+  circle_contact_address: string;
 }
 
 export type Database = {

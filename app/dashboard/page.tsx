@@ -11,7 +11,7 @@ import { createClient } from '@/utils/supabase/server';
 
 import { USDCIcon } from '../icons/USDCIcon';
 
-export default async function ProtectedPage() {
+export default async function Dashboard() {
   const supabase = await createClient();
 
   const {

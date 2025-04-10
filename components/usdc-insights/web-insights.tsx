@@ -157,13 +157,13 @@ export const WebInsights: React.FC<Props> = (props) => {
     setCountData(
       processTransactionsByRange(props.data, selectedPeriodCount, 'count'),
     );
-  }, [selectedPeriodCount]);
+  }, [selectedPeriodCount, props.data]);
 
   useEffect(() => {
     setSalesData(
       processTransactionsByRange(props.data, selectedPeriodSales, 'sales'),
     );
-  }, [selectedPeriodSales]);
+  }, [selectedPeriodSales, props.data]);
 
   return (
     <div>

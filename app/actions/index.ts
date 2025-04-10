@@ -129,6 +129,10 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect('error', '/sign-in', error.message);
   }
 
+  if (email == process.env.ADMIN_USERNAME) {
+    return redirect('/admin');
+  }
+
   return redirect('/dashboard');
 };
 

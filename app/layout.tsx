@@ -29,6 +29,11 @@ export default async function RootLayout({
 }>) {
   const supabase = await createClient();
   const user = await supabase.auth.getUser();
+  const profile = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('auth_user_id', user.data.user?.id)
+    .single();
 
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
@@ -41,11 +46,19 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <main className="h-screen flex flex-col overflow-auto">
-              <Navbar
-                tabs={['Manage Wallet', 'Build with AI']}
-                routes={['dashboard', 'chat']}
-                email={user.data.user?.email ?? ''}
-              />
+              {profile.data.is_admin ? (
+                <Navbar
+                  tabs={['Website Analytics', 'Treasury Wallet']}
+                  routes={['admin', 'treasury-wallet']}
+                  email={user.data.user?.email ?? ''}
+                />
+              ) : (
+                <Navbar
+                  tabs={['Manage Wallet', 'Build with AI']}
+                  routes={['dashboard', 'chat']}
+                  email={user.data.user?.email ?? ''}
+                />
+              )}
               <div className="flex flex-col flex-1">{children}</div>
             </main>
           </ThemeProvider>
