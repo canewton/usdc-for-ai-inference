@@ -2,7 +2,7 @@
 
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 import Blurs from '@/public/blurs.svg';
 import WalletIcon from '@/public/digital-wallet.svg';
@@ -45,9 +45,19 @@ export default function CanvasArea({
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const modelTooltip =
     'Rotate the 3D model by clicking and dragging in the canvas.';
+
   // scene to render 3d model
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { scene } = modelUrl ? useGLTF(modelUrl) : { scene: null };
+
+  // reset camera position when a new modelUrl is loaded
+  const orbitControlsRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (orbitControlsRef.current) {
+      orbitControlsRef.current.reset();
+    }
+  }, [modelUrl]);
 
   // download model
   const handleDownload = async () => {
@@ -115,7 +125,14 @@ export default function CanvasArea({
                 <ambientLight intensity={1.0} />
                 <directionalLight position={[10, 10, 5]} intensity={1.5} />
                 {scene && <primitive object={scene} scale={1} />}
-                <OrbitControls enableDamping={true} dampingFactor={0.1} />
+                <OrbitControls
+                  ref={orbitControlsRef}
+                  enableRotate={true}
+                  enableZoom={true}
+                  enablePan={false} // prevent user from moving camera -- ensures the model stays in canvas center
+                  enableDamping={true}
+                  dampingFactor={0.1}
+                />
               </Canvas>
               <button
                 onClick={handleDownload}
