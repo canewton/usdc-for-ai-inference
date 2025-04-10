@@ -129,7 +129,7 @@ export const TreasuryTransactions = ({ treasuryWallet }: Props) => {
           event: 'INSERT',
           schema: 'public',
           table: 'transactions',
-          filter: `wallet_id=eq.${process.env.NEXT_PUBLIC_TREASURY_WALLET_ID}.and.transaction_type=eq.INBOUND`,
+          filter: `wallet_id=eq.${process.env.NEXT_PUBLIC_TREASURY_WALLET_ID}`,
         },
         () => updateTransactions(),
       )
