@@ -155,13 +155,11 @@ export default function CanvasArea({
             </Suspense>
           </div>
         ) : (
-          <div className="relative w-full h-full">
-            <img
-              src={Blurs.src}
-              alt="blur background"
-              className="w-1/2 object-contain mx-auto"
-            />
-            <div className="inset-0 flex items-center justify-center absolute">
+          <div
+            className="relative w-full h-full bg-contain bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${Blurs.src})` }}
+          >
+            <div className="absolute inset-0 flex flex-col items-center justify-start pt-8">
               <div className="flex flex-col items-center justify-center w-1/3 text-center">
                 <h1 className="text-5xl text-body mb-2">
                   What will you create?
@@ -170,20 +168,20 @@ export default function CanvasArea({
                   Generate 3D assets from your own images
                 </p>
               </div>
-            </div>
-            <div className="relative z-20 mt-40">
-              <PromptSuggestions
-                onSelect={handleLocalInputChange}
-                suggestions={promptSuggestions}
-                disabled={!mode}
-              />
-            </div>
-            <div className="w-full mt-4">
-              <p
-                className={`text-center text-sm text-gray-500 ${imageDataUri ? 'invisible' : 'visible'}`}
-              >
-                Please upload an image in the control panel first.
-              </p>
+              <div className="relative z-20 mt-4">
+                <PromptSuggestions
+                  onSelect={handleLocalInputChange}
+                  suggestions={promptSuggestions}
+                  disabled={!mode}
+                />
+              </div>
+              <div className="w-full mt-4">
+                <p
+                  className={`text-center text-sm text-gray-500 ${imageDataUri ? 'invisible' : 'visible'}`}
+                >
+                  Please upload an image in the control panel first.
+                </p>
+              </div>
             </div>
           </div>
         )}
