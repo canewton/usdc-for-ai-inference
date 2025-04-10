@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import USDC from '@/public/usdc-circle.svg';
+import UsdcBalanceCard from '../UsdcBalanceCard';
 
 interface ControlPanelProps {
   imageDataUri: string;
@@ -70,19 +71,7 @@ export default function ControlPanel({
   return (
     <div className="flex flex-col gap-6 w-full min-w-0">
       {/* Balance Card */}
-      <Card className="w-full h-20 bg-white border-[#eaeaec]">
-        <CardContent className="flex items-center p-5">
-          <img src={USDC.src} className="w-12 h-12 mr-4" alt="USDC Icon" />
-          <div className="overflow-hidden">
-            <h3 className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-900 text-xl tracking-[-0.22px] leading-[30px] truncate">
-              ${totalBilledAmount.toFixed(2)}
-            </h3>
-            <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] truncate">
-              USDC Balance
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <UsdcBalanceCard  direction="row"/>
 
       {/* Image Upload Section */}
       <div className="flex flex-col gap-1">
