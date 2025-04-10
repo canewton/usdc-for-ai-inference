@@ -36,7 +36,7 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
       <div className="ai-layout flex flex-col h-full pt-5">
         <div className="flex flex-row h-full w-full">
           {/* Left side bar with tabs and history */}
-          <aside className="w-64 h-full flex flex-col pr-2">
+          <aside className="w-[300px] h-full flex flex-col pr-2">
             <AiTabs />
             {/* History section to be changed by tool */}
             <div id="ai-history" className="overflow-hidden" />
