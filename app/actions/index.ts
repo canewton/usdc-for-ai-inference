@@ -13,19 +13,9 @@ const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get('email')?.toString();
   const password = formData.get('password')?.toString();
-  const companyName = formData.get('company-name')?.toString().trim();
-  const fullName = formData.get('full-name')?.toString().trim();
   const supabase = await createClient();
   const storedHeaders = await headers();
   const origin = storedHeaders.get('origin');
-
-  if (fullName && (fullName.length < 3 || fullName.length > 255)) {
-    return { error: 'Full name must be between 3 and 255 characters' };
-  }
-
-  if (companyName && (companyName.length < 3 || companyName.length > 255)) {
-    return { error: 'Company name must be between 3 and 255 characters' };
-  }
 
   if (!email || !password) {
     return { error: 'Email and password are required' };
@@ -71,11 +61,7 @@ export const signUpAction = async (formData: FormData) => {
 
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
-      .update({
-        email,
-        full_name: fullName,
-        company_name: companyName,
-      })
+      .update({ email })
       .eq('auth_user_id', authData.user?.id)
       .select()
       .single();
