@@ -6,15 +6,15 @@ import { createContext, useContext } from 'react';
 type SessionContextType = {
   access_token: string;
   api_key_status: any;
-  balance: number;
   wallet_id: string;
+  circle_wallet_id: string;
 };
 
 export const SessionContext = createContext<SessionContextType>({
   access_token: '',
   api_key_status: {},
-  balance: 0,
   wallet_id: '',
+  circle_wallet_id: '',
 });
 
 export function useSession() {
@@ -29,19 +29,19 @@ export function SessionProvider({
   children,
   access_token,
   api_key_status,
-  balance,
   wallet_id,
+  circle_wallet_id,
 }: {
   children: React.ReactNode;
   access_token: string;
   api_key_status: any;
-  balance: number;
   wallet_id: string;
+  circle_wallet_id: string;
 }) {
   return (
-    <SessionContext.Provider value={{ access_token, api_key_status, 
-    balance, wallet_id 
-    }}>
+    <SessionContext.Provider
+      value={{ access_token, api_key_status, wallet_id, circle_wallet_id }}
+    >
       {children}
     </SessionContext.Provider>
   );
