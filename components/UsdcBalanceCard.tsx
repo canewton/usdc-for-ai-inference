@@ -1,8 +1,9 @@
-'use client'
+'use client';
+import { useSession } from '@/app/contexts/SessionContext';
+import { useWalletBalance } from '@/app/hooks/useWalletBalance';
 import USDC from '@/public/usdc-circle.svg';
 
 import { Card, CardContent } from './ui/card';
-import { useSession } from '@/app/contexts/SessionContext';
 
 interface UsdcBalanceCardProps {
   direction: 'row' | 'column';
@@ -10,6 +11,11 @@ interface UsdcBalanceCardProps {
 
 export default function UsdcBalanceCard({ direction }: UsdcBalanceCardProps) {
   const session = useSession();
+  const { balance, loading } = useWalletBalance(
+    session.wallet_id,
+    session.circle_wallet_id,
+  );
+
   return (
     <Card className="w-full h-fit bg-white border-[#eaeaec]">
       <CardContent
@@ -18,7 +24,7 @@ export default function UsdcBalanceCard({ direction }: UsdcBalanceCardProps) {
         <img src={USDC.src} className="w-12 h-12 mr-4" alt="USDC Icon" />
         <div className="overflow-hidden">
           <h3 className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-900 text-xl tracking-[-0.22px] leading-[30px] truncate">
-            ${session.balance.toFixed(2)}
+            ${balance.toFixed(2)}
           </h3>
           <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] truncate">
             USDC Balance

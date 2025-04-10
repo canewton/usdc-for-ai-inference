@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import USDC from '@/public/usdc-circle.svg';
+
 import UsdcBalanceCard from '../UsdcBalanceCard';
 
 interface ControlPanelProps {
@@ -95,7 +94,7 @@ export default function ControlPanel({
   return (
     <div className="flex flex-col space-y-4 w-full min-w-0 text-left">
       {/* Balance Card */}
-      <UsdcBalanceCard  direction="row"/>
+      <UsdcBalanceCard direction="row" />
 
       {/* Image Upload Section */}
       <div>
