@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { createContext, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
@@ -11,12 +11,6 @@ import RightAiSidebar from '@/components/RightAiSidebar';
 import VideoHistory from '@/components/VideoHistory';
 import Blurs from '@/public/blurs.svg';
 import { createClient } from '@/utils/supabase/client';
-
-// Create a context for refreshing components
-export const RefreshContext = createContext({
-  refreshTrigger: 0,
-  refreshComponents: () => {},
-});
 
 export default function Home() {
   const [image, setImage] = useState<File | null>(null);
@@ -29,17 +23,10 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSeedInfo, setShowSeedInfo] = useState(false);
 
-  // Add refresh state
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-
   const router = useRouter();
   const session = useSession();
 
   const sessionToken = session?.access_token;
-
-  const refreshComponents = () => {
-    setRefreshTrigger((prev) => prev + 1);
-  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -188,9 +175,6 @@ export default function Home() {
         const responseData = await response.json();
         const { task_id } = responseData;
 
-        // Refresh components before navigating
-        refreshComponents();
-
         // Redirect to the new video details page
         router.push(`/video/${task_id}`);
       };
@@ -205,10 +189,10 @@ export default function Home() {
   };
 
   return (
-    <RefreshContext.Provider value={{ refreshTrigger, refreshComponents }}>
+    <>
       {/* Left history section */}
       <AiHistoryPortal>
-        <VideoHistory key={`history-${refreshTrigger}`} />
+        <VideoHistory />
       </AiHistoryPortal>
 
       {/* Middle section */}
@@ -231,8 +215,8 @@ export default function Home() {
         </div>
       </MainAiSection>
 
-      {/* Right section with settings - passing refresh trigger */}
-      <RightAiSidebar isImageInput={true} refreshTrigger={refreshTrigger}>
+      {/* Right section with settings */}
+      <RightAiSidebar isImageInput={true}>
         <div className="space-y-6 w-full">
           <div className="flex flex-col mb-6">
             <div className="text-gray-600 mb-2">Image</div>
@@ -375,7 +359,7 @@ export default function Home() {
               <input
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className="border border-gray-200 rounded-lg p-3 w-full resize-y]"
+                className="border border-gray-200 rounded-lg p-3 w-full"
                 placeholder="Name your generation!"
               />
             </div>
@@ -414,6 +398,6 @@ export default function Home() {
           )}
         </div>
       </RightAiSidebar>
-    </RefreshContext.Provider>
+    </>
   );
 }

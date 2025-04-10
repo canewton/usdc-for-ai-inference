@@ -1,29 +1,37 @@
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { createClient } from '@/utils/supabase/client';
 
-export async function GET(req: Request, context: { params: { id: string } }) {
-  const { params } = context;
-  const videoId = params.id;
-  const supabase = await createClient();
-
+export async function POST(request: NextRequest) {
   try {
-    const token = req.headers.get('Authorization');
-    if (!token) {
+    const { videoId } = await request.json();
+
+    if (!videoId) {
+      return NextResponse.json(
+        { error: 'Video ID is required' },
+        { status: 400 },
+      );
+    }
+
+    const supabase = await createClient();
+
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const token = authHeader.split(' ')[1];
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token.split(' ')[1]);
+    } = await supabase.auth.getUser(token);
 
     if (error || !user) {
       console.error('Unauthorized', error);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get full details of the specific video generation
     const { data: videoGeneration, error: dbError } = await supabase
       .from('video_generations')
       .select('*')
