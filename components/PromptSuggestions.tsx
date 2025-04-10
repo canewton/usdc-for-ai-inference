@@ -37,7 +37,9 @@ const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({
             alt={suggestion.title}
             className="w-6 h-6 mr-2"
           />
-          {suggestion.title}
+          <span className="overflow-hidden text-ellipsis min-w-0">
+            {suggestion.title}
+          </span>
         </div>
       ))}
     </div>

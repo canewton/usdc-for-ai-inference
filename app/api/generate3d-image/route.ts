@@ -42,13 +42,26 @@ export async function POST(req: Request) {
     if (error || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
     /**
-     * INPUTS
-     * Two Modes (Defaults to 'preview') -> String:
-     *    'preview' - base mesh with no texture applied
-     *    'refine' - preview mesh with texuture applied, based on text prompt
-     *  Prompt -> String: required
-     *  Negative_prompt -> String, Art_style -> String, Should_remesh -> Bool: optional
+     * INPUT PARAMETERS:
+     *
+     * image_url         : string
+     *    Public image URL or a base64 data URI. (Required)
+     *
+     * enable_pbr        : boolean (default: false)
+     *    Indicates whether to generate Physically Based Rendering (PBR) maps in addition to the base color.
+     *
+     * should_remesh     : boolean (default: true)
+     *    Determines whether to disregard existing topology and target polycount during remeshing.
+     *
+     * should_texture    : boolean (default: true)
+     *    Specifies whether to add texturing to the 3D model.
+     *    - false: incurs a cost of 5 tokens.
+     *    - true: incurs a cost of 15 tokens.
+     *
+     * texture_prompt    : string
+     *    Descriptive prompt detailing the desired model texture. (Required)
      */
     const {
       image_url,
