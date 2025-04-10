@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +12,7 @@ interface ControlPanelProps {
   isLoading: boolean;
   error: string | null;
   totalBilledAmount: number | 0;
+  modelUrl: string | null;
   setImageDataUri: (uri: string) => void;
   setPrompt: (prompt: string) => void;
   setError: (error: string | null) => void;
@@ -25,12 +26,17 @@ export default function ControlPanel({
   isLoading,
   error,
   totalBilledAmount,
+  modelUrl,
   setImageDataUri,
   setPrompt,
   setError,
   submitPrompt,
 }: ControlPanelProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isDisabled = !!modelUrl;
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isDisabled) return;
     const file = e.target.files?.[0];
     if (file) {
       const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
@@ -63,6 +69,24 @@ export default function ControlPanel({
     }
   }, [mode, setPrompt]);
 
+  const resetGenerationState = () => {
+    setPrompt('');
+    setImageDataUri('');
+    setError(null);
+  };
+
+  useEffect(() => {
+    if (isDisabled) {
+      resetGenerationState();
+    }
+  }, [isDisabled, modelUrl]);
+
+  useEffect(() => {
+    if (!imageDataUri && fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [imageDataUri]);
+
   return (
     <div className="flex flex-col gap-6 w-full min-w-0">
       {/* Balance Card */}
@@ -86,8 +110,14 @@ export default function ControlPanel({
           Image
         </label>
         <div
-          className="w-full h-[150px] bg-white rounded-[10px] border border-dashed border-[#eaeaec] flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 overflow-hidden"
-          onClick={() => document.getElementById('image-upload')?.click()}
+          className={`w-full h-[150px] bg-white rounded-[10px] border border-dashed border-[#eaeaec] flex flex-col items-center justify-center cursor-pointer ${
+            isDisabled
+              ? 'opacity-50 pointer-events-none'
+              : 'hover:border-gray-400'
+          } overflow-hidden`}
+          onClick={() =>
+            !isDisabled && document.getElementById('image-upload')?.click()
+          }
         >
           {imageDataUri ? (
             <div className="flex flex-col items-center justify-center w-full h-full p-2">
@@ -123,6 +153,7 @@ export default function ControlPanel({
             accept="image/png, image/jpeg, image/jpg"
             onChange={handleImageUpload}
             className="hidden"
+            ref={fileInputRef}
           />
         </div>
       </div>
@@ -137,7 +168,7 @@ export default function ControlPanel({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           className="w-full border-[#E5E7EB] rounded-[8px] p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 truncate"
-          disabled={!mode}
+          disabled={!mode || isDisabled}
           required
         />
       </div>
@@ -159,6 +190,7 @@ export default function ControlPanel({
             backgroundRepeat: 'no-repeat',
             backgroundSize: '1.2rem',
           }}
+          disabled={isDisabled}
         >
           <option>OpenAI</option>
         </select>
@@ -169,7 +201,7 @@ export default function ControlPanel({
         <Button
           onClick={() => submitPrompt(prompt)}
           className="w-full bg-gray-100 text-gray-700 py-2 rounded-full flex items-center justify-center space-x-2"
-          disabled={isLoading || !imageDataUri || !prompt}
+          disabled={isDisabled || isLoading || !imageDataUri || !prompt}
         >
           <img className="w-6 h-6" alt="Generate" src="/spark-jelly.svg" />
           <span className="truncate">
