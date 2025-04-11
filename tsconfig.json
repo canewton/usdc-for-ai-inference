@@ -23,6 +23,16 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "tests/app/api/wallet/balance/route.test.js"
+  ],
+  "exclude": ["node_modules"],
+  "baseUrl": ".",
+  "paths": {
+    "@/*": ["./*"]
+  }
 }
