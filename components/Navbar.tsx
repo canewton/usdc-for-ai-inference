@@ -14,7 +14,10 @@ export default function Navbar({ tabs, routes, email }: Props) {
   const pathname = usePathname();
 
   // Get the current route's base path (first segment)
-  const currentRoute = pathname.split('/')[1] || '';
+  const currentRoute = pathname.substring(
+    pathname.indexOf('/') + 1,
+    pathname.length,
+  );
 
   // Find the index of the current route in the routes array
   const currentTabIndex = routes.indexOf(currentRoute);
@@ -27,7 +30,11 @@ export default function Navbar({ tabs, routes, email }: Props) {
       <div className="fixed top-0 left-0 right-0 min-h-16 bg-white border-b border-gray-200 flex items-center justify-between shadow-lg px-20 z-50">
         <div className="flex items-center">
           <img
-            src="icons/circle-logo-1.png"
+            src={`${
+              process.env.VERCEL_URL
+                ? `${process.env.VERCEL_URL}`
+                : 'localhost:3000'
+            }/icons/circle-logo-1.png`}
             alt="Circle Logo"
             className="h-8"
           />

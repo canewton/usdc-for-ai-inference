@@ -49,7 +49,7 @@ export default async function RootLayout({
               {profile.data.is_admin ? (
                 <Navbar
                   tabs={['Website Analytics', 'Treasury Wallet']}
-                  routes={['admin', 'treasury-wallet']}
+                  routes={['admin', 'admin/treasury-wallet']}
                   email={user.data.user?.email ?? ''}
                 />
               ) : (
