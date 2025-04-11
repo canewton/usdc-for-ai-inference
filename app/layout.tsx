@@ -4,6 +4,7 @@ import { Geist } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 
 import Navbar from '@/components/Navbar';
+import { NavbarAIDropdown } from '@/components/navbar-ai-dropdown';
 import UserLastLoginProvider from '@/components/UserLastLoginProvider';
 import { createClient } from '@/utils/supabase/server';
 
@@ -57,6 +58,16 @@ export default async function RootLayout({
                   tabs={['Manage Wallet', 'Build with AI']}
                   routes={['dashboard', 'chat']}
                   email={user.data.user?.email ?? ''}
+                  dropdowns={{ 'Build with AI': <NavbarAIDropdown /> }}
+                  dropdownRoutes={{
+                    'Build with AI': [
+                      'chat',
+                      '3d',
+                      'image',
+                      'image-generator',
+                      'video',
+                    ],
+                  }}
                 />
               )}
               <div className="flex flex-col flex-1">{children}</div>

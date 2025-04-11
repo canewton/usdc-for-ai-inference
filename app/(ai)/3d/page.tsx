@@ -191,8 +191,15 @@ export default function Generate3DModelPage() {
     }
   };
 
+  const resetGenerationState = () => {
+    setModelUrl(null);
+    setPrompt('');
+    setImageDataUri('');
+    setError(null);
+  };
+
   const handleNewChat = () => {
-    setModelUrl('');
+    resetGenerationState();
   };
 
   const handleDelete = async (modelId: string) => {
@@ -287,7 +294,7 @@ export default function Generate3DModelPage() {
         demoLimitLoading={demoLimitLoading}
       />
 
-      {/* --- Right Sidebar, TODO --- */}
+      {/* --- Right Sidebar --- */}
       <RightAiSidebar isImageInput={true}>
         <ControlPanel
           imageDataUri={imageDataUri}
@@ -300,6 +307,7 @@ export default function Generate3DModelPage() {
           setError={setError}
           submitPrompt={submitPrompt}
           totalBilledAmount={totalBilledAmount}
+          modelUrl={modelUrl}
           remaining={remaining}
           demoLimitLoading={demoLimitLoading}
         />

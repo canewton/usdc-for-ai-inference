@@ -6,7 +6,7 @@ export default function MainAiSection({
   children: React.ReactNode;
 }) {
   return (
-    <main className="flex flex-col w-full h-full border border-gray-200 p-6 px-4 rounded-3xl overflow-auto bg-section">
+    <main className="flex flex-col w-full h-[calc(100vh-85px)] border border-gray-200 p-6 px-4 rounded-3xl overflow-auto bg-section">
       {children}
     </main>
   );

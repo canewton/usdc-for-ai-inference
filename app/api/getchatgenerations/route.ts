@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       const { data: chats, error } = await supabase
         .from('chat_generations')
         .select(
-          'id, user_text, ai_text, created_at, prompt_tokens, completion_tokens',
+          'id, user_text, ai_text, created_at, prompt_tokens, completion_tokens, provider',
         )
         .eq('user_id', user.id)
         .eq('chat_id', chat_id)

@@ -1,29 +1,67 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
-import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface Props {
   tabs: string[];
   routes: string[];
   email: string;
+  dropdowns?: {
+    [tabKey: string]: React.JSX.Element;
+  };
+  dropdownRoutes?: {
+    [tabKey: string]: string[];
+  };
 }
 
-export default function Navbar({ tabs, routes, email }: Props) {
-  const router = useRouter();
+export default function Navbar({
+  tabs,
+  routes,
+  email,
+  dropdowns,
+  dropdownRoutes,
+}: Props) {
   const pathname = usePathname();
+  const [showDropdown, setShowDropdown] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const navbarRef = useRef<HTMLDivElement>(null);
 
-  // Get the current route's base path (first segment)
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        navbarRef.current &&
+        !navbarRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown('');
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const currentRoute = pathname.substring(
     pathname.indexOf('/') + 1,
     pathname.length,
   );
 
-  // Find the index of the current route in the routes array
   const currentTabIndex = routes.indexOf(currentRoute);
+  const selectedTab = currentTabIndex >= 0 ? tabs[currentTabIndex] : '';
 
-  // Determine the selected tab (fallback to first tab if not found)
-  const selectedTab = currentTabIndex >= 0 ? tabs[currentTabIndex] : tabs[0];
+  function tabContainsDropdownRoute(tab: string): boolean {
+    if (!dropdownRoutes || !dropdownRoutes[tab]) return false;
+
+    return dropdownRoutes[tab].some(
+      (route) => currentRoute.startsWith(route) || currentRoute === route,
+    );
+  }
 
   return (
     <div className="mb-16">
@@ -34,23 +72,38 @@ export default function Navbar({ tabs, routes, email }: Props) {
               process.env.VERCEL_URL
                 ? `${process.env.VERCEL_URL}`
                 : 'localhost:3000'
-            }/icons/circle-logo-1.png`}
+            }/circle-logo-1.png`}
             alt="Circle Logo"
             className="h-8"
           />
-          <div className="ml-10 space-x-4">
+          <div className="ml-10 space-x-4 flex items-center" ref={navbarRef}>
             {tabs.map((tab, index) => (
-              <button
-                key={tab}
-                className={`text-sm font-medium ${
-                  selectedTab === tab ? 'text-blue-500' : ''
-                }`}
-                onClick={() => {
-                  router.push(`/${routes[index]}`);
-                }}
-              >
-                {tab}
-              </button>
+              <div key={tab} className="relative">
+                <Link
+                  className={`text-sm font-medium ${
+                    selectedTab === tab || tabContainsDropdownRoute(tab)
+                      ? 'text-blue-500'
+                      : ''
+                  }`}
+                  href={`/${routes[index]}`}
+                  onMouseEnter={() => {
+                    if (dropdowns?.[tab]) {
+                      setShowDropdown(tab);
+                    }
+                  }}
+                >
+                  {tab}
+                </Link>
+                {showDropdown === tab && dropdowns?.[tab] && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute left-0 mt-6 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-72"
+                    onMouseLeave={() => setShowDropdown('')}
+                  >
+                    {dropdowns[tab]}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>

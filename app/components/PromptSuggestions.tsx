@@ -17,7 +17,7 @@ const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({
   }, []);
   if (!suggestions.length) return null;
   return (
-    <div className="flex justify-center space-x-4 mb-4 text-black">
+    <div className="flex justify-center space-x-4 mb-[20px] text-black">
       {suggestions.map((suggestion, index) => (
         <div
           key={index}
