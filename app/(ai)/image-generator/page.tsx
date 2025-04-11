@@ -393,41 +393,43 @@ export default function Page() {
 
       {/* RIGHT SIDEBAR */}
       <RightAiSidebar isImageInput={false}>
-        <div className="flex flex-col space-x-2">
-          <div className="text-sub mb-1">Aspect Ratio</div>
-          <select
-            value={aspectRatio}
-            onChange={(e) => setAspectRatio(e.target.value)}
-            className="border border-gray-200 rounded-lg p-3 bg-white text-body"
-          >
-            <option value="1:1">1:1</option>
-            <option value="3:2">3:2</option>
-            <option value="4:3">4:3</option>
-            <option value="16:9">16:9</option>
-            <option value="21:9">21:9</option>
-          </select>
-        </div>
-        <div className="flex flex-col space-x-2">
-          <div className="text-sub mb-1">Image Quality</div>
-          <select
-            value={quality}
-            onChange={(e) => setQuality(Number(e.target.value))}
-            className="border border-gray-200 rounded-lg p-3 bg-white text-body"
-          >
-            <option value={50}>Low</option>
-            <option value={80}>Medium</option>
-            <option value={100}>High</option>
-          </select>
-        </div>
-        <div className="flex flex-col space-x-2">
-          <div className="text-sub mb-1">Model Type</div>
-          <select
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            className="border border-gray-200 rounded-lg p-3 bg-white text-body"
-          >
-            <option value="flux-schnell">FLUX.1</option>
-          </select>
+        <div className="space-y-[20px] mt-4 w-full">
+          <div className="flex flex-col space-x-2">
+            <div className="text-sub mb-1">Aspect Ratio</div>
+            <select
+              value={aspectRatio}
+              onChange={(e) => setAspectRatio(e.target.value)}
+              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
+            >
+              <option value="1:1">1:1</option>
+              <option value="3:2">3:2</option>
+              <option value="4:3">4:3</option>
+              <option value="16:9">16:9</option>
+              <option value="21:9">21:9</option>
+            </select>
+          </div>
+          <div className="flex flex-col space-x-2">
+            <div className="text-sub mb-1">Image Quality</div>
+            <select
+              value={quality}
+              onChange={(e) => setQuality(Number(e.target.value))}
+              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
+            >
+              <option value={50}>Low</option>
+              <option value={80}>Medium</option>
+              <option value={100}>High</option>
+            </select>
+          </div>
+          <div className="flex flex-col space-x-2">
+            <div className="text-sub mb-1">Model Type</div>
+            <select
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
+            >
+              <option value="flux-schnell">FLUX.1</option>
+            </select>
+          </div>
         </div>
       </RightAiSidebar>
     </>

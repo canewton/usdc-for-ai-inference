@@ -525,34 +525,36 @@ export function Chat({ currChat }: ChatProps) {
 
       {/* Right section with balance and settings */}
       <RightAiSidebar isImageInput={false}>
-        <div className="flex flex-col space-y-[4px]">
-          <div className="text-sub m-1">Max Tokens</div>
-          <div className="flex w-full h-8 border border-gray-200 items-center justify-center rounded-3xl p-2">
-            <Slider
-              defaultValue={[maxTokens]}
-              max={2000}
-              step={1}
-              onValueChange={(val) => setMaxTokens(val[0])}
-            />
+        <div className="space-y-[20px] mt-4 w-full">
+          <div className="flex flex-col space-y-[4px]">
+            <div className="text-sub m-1">Max Tokens</div>
+            <div className="flex w-full h-8 border border-gray-200 items-center justify-center rounded-3xl p-2">
+              <Slider
+                defaultValue={[maxTokens]}
+                max={2000}
+                step={1}
+                onValueChange={(val) => setMaxTokens(val[0])}
+              />
+            </div>
+            <div className="text-sub mr-auto w-full text-end">
+              2k ≡ $
+              {(2000 * TEXT_MODEL_PRICING[model].userBilledOutputPrice).toFixed(
+                2,
+              )}
+            </div>
           </div>
-          <div className="text-sub mr-auto w-full text-end">
-            2k ≡ $
-            {(2000 * TEXT_MODEL_PRICING[model].userBilledOutputPrice).toFixed(
-              2,
-            )}
-          </div>
-        </div>
 
-        <div className="flex flex-col">
-          <div className="text-sub mb-1">Model Type</div>
-          <select
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            className="border border-gray-200 rounded-lg p-3 bg-white text-body w-full"
-          >
-            <option value={'gpt-4o-mini'}>gpt-4o-mini</option>
-            <option value={'gpt-4o'}>gpt-4o</option>
-          </select>
+          <div className="flex flex-col">
+            <div className="text-sub mb-1">Model Type</div>
+            <select
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              className="border border-gray-200 rounded-lg p-3 bg-white text-body w-full"
+            >
+              <option value={'gpt-4o-mini'}>gpt-4o-mini</option>
+              <option value={'gpt-4o'}>gpt-4o</option>
+            </select>
+          </div>
         </div>
       </RightAiSidebar>
     </>
