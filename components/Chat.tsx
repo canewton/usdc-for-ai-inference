@@ -527,7 +527,7 @@ export function Chat({ currChat }: ChatProps) {
 
       {/* Right section with balance and settings */}
       <RightAiSidebar isImageInput={false}>
-        <UsdcBalanceCard direction="column" />
+        {/* <UsdcBalanceCard direction="column" /> */}
         <div className="flex flex-col space-y-[4px]">
           <div className="text-sub m-1">Max Tokens</div>
           <div className="flex w-full h-8 border border-gray-200 items-center justify-center rounded-3xl p-2">

@@ -138,7 +138,7 @@ export function MessageItem({
                   {isNaN(message.completionTokens) ? (
                     <p className="text-sub">Calculating...</p>
                   ) : (
-                    `$ -${(message.promptTokens * TEXT_MODEL_PRICING[message.provider].userBilledInputPrice + message.completionTokens * TEXT_MODEL_PRICING[message.provider].userBilledOutputPrice).toFixed(3)}`
+                    `$ -${(message.promptTokens * TEXT_MODEL_PRICING[message.provider].userBilledInputPrice + message.completionTokens * TEXT_MODEL_PRICING[message.provider].userBilledOutputPrice).toFixed(4)}`
                   )}
                 </div>
               </TooltipTrigger>
@@ -149,14 +149,14 @@ export function MessageItem({
                     {(
                       message.promptTokens *
                       TEXT_MODEL_PRICING[message.provider].userBilledInputPrice
-                    ).toFixed(3)}
+                    ).toFixed(4)}
                   </p>
                   <p>
                     {message.completionTokens} completion tokens ≡ $
                     {(
                       message.completionTokens *
                       TEXT_MODEL_PRICING[message.provider].userBilledOutputPrice
-                    ).toFixed(3)}
+                    ).toFixed(4)}
                   </p>
                 </TooltipContent>
               )}
