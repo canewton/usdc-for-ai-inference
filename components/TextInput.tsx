@@ -2,6 +2,7 @@ import type { FormEvent } from 'react';
 import React from 'react';
 
 import DisabledSendIcon from '@/public/disabled-plane.svg';
+import PauseIcon from '@/public/pause-gumdrop.svg';
 import SendIcon from '@/public/plane.svg';
 
 interface TextInputProps {
@@ -52,10 +53,10 @@ export function TextInput({
         {isLoading ? (
           <button
             type="button"
-            className="px-4 py-2 text-gray-500 rounded-3xl border"
+            className="px-4 py-2"
             onClick={onStopGeneration}
           >
-            Stop
+            <img src={PauseIcon.src} alt="Pause icon" className="w-10 h-10" />
           </button>
         ) : !input.trim() ? (
           <button
