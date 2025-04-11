@@ -9,6 +9,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import type { NameType } from 'recharts/types/component/DefaultTooltipContent';
+import type { ValueType } from 'recharts/types/component/DefaultTooltipContent';
+import type { ContentType } from 'recharts/types/component/Tooltip';
 
 import { aiModel } from '@/types/ai.types';
 
@@ -32,6 +35,7 @@ interface Props {
   colors?: string[];
   stacked?: boolean;
   tickFormatter?: (value: number) => string;
+  tooltip?: ContentType<ValueType, NameType> | undefined;
 }
 
 const CustomTooltip = ({
@@ -82,6 +86,7 @@ export const StackedInsightsBarChart = ({
   ],
   stacked,
   tickFormatter,
+  tooltip,
 }: Props) => {
   return (
     <div className="h-[200px]">
@@ -102,7 +107,7 @@ export const StackedInsightsBarChart = ({
             allowDecimals={false}
           />
           <Tooltip
-            content={<CustomTooltip />}
+            content={tooltip != undefined ? tooltip : <CustomTooltip />}
             cursor={{ fill: 'transparent' }}
           />
           {data[0]?.value1 !== undefined && (

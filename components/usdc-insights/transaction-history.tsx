@@ -5,33 +5,16 @@ import { type FunctionComponent, useEffect, useMemo, useState } from 'react';
 
 import { Image3DIcon } from '@/app/icons/Image3DIcon';
 import { aiModel } from '@/types/ai.types';
-import type { Profile, Wallet } from '@/types/database.types';
+import type { Transaction, Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/client';
 
 import type { BillingTransaction } from './billing';
 import { Billing } from './billing';
 import { TransactionGraphs } from './transaction-graphs';
 import { Transactions } from './transactions';
-import { WebInsights } from './web-insights';
-
-interface Transaction {
-  id: string;
-  wallet_id: string;
-  profile_id: string;
-  status: string;
-  created_at: string;
-  circle_transaction_id: string;
-  transaction_type: string;
-  amount: string;
-  balance: string;
-  currency: string;
-  description: string;
-  circle_contact_address: string;
-}
 
 interface Props {
   wallet: Wallet;
-  treasuryWallet: Wallet;
   profile: {
     id: any;
   } | null;
@@ -46,11 +29,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   const [activeTab, setActiveTab] = useState('transactions');
   const [loading, setLoading] = useState(false);
   const [transactionData, setTransactionData] = useState<Transaction[]>([]);
-  const [treasuryData, setTreasuryData] = useState<Transaction[]>([]);
   const [userBillingData, setUserBillingData] = useState<BillingTransaction[]>(
-    [],
-  );
-  const [allBillingData, setAllBillingData] = useState<BillingTransaction[]>(
     [],
   );
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,7 +42,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     field: 'date',
     direction: 'desc',
   });
-  const [user, setUser] = useState<Profile | null>(null);
 
   const formatData = (data: Transaction[]) => {
     const formatted = data.map((transaction) => ({
@@ -109,10 +87,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   const formattedTransactionData = useMemo(() => {
     return formatData(transactionData);
   }, [transactionData, sortConfig]);
-
-  const formattedTreasuryData = useMemo(() => {
-    return formatData(treasuryData);
-  }, [treasuryData, sortConfig]);
 
   const formattedBillingData = useMemo(() => {
     // First filter by search query if it exists
@@ -176,28 +150,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
   const updateTransactions = async () => {
     try {
       setLoading(true);
-      const walletBalance = await (
-        await fetch('/api/wallet/balance', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ walletId: props.wallet?.circle_wallet_id }),
-        })
-      ).json();
-
-      const treasuryWalletBalance = await (
-        await fetch('/api/wallet/balance', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            walletId: props.treasuryWallet?.circle_wallet_id,
-          }),
-        })
-      ).json();
-
       const { data: transactions } = await supabase
         .from('transactions')
         .select('*')
@@ -205,63 +157,8 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         .eq('transaction_type', 'INBOUND')
         .order('created_at', { ascending: false });
 
-      const transactionsUpdated = await Promise.all(
-        (transactions ?? []).map(async (transaction: Transaction) => {
-          if (transaction.balance == null) {
-            const balance = walletBalance;
-            const parsedBalance = balance.tokenBalances?.find(
-              ({ token }: { token: { symbol: string } }) =>
-                token.symbol === 'USDC',
-            )?.amount;
-            transaction.balance = parsedBalance;
-            await supabase
-              .from('transactions')
-              .update({ balance: parseFloat(transaction.balance) })
-              .eq('id', transaction.id)
-              .select('*')
-              .single();
-          }
-          return transaction;
-        }),
-      );
-
-      const { data: treasuryTransactions } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('wallet_id', props.treasuryWallet?.id)
-        .order('created_at', { ascending: false });
-
-      const treasuryTransactionsUpdated = await Promise.all(
-        (treasuryTransactions ?? []).map(async (transaction: Transaction) => {
-          if (transaction.balance == null) {
-            const balance = treasuryWalletBalance;
-            const parsedBalance = balance.tokenBalances?.find(
-              ({ token }: { token: { symbol: string } }) =>
-                token.symbol === 'USDC',
-            )?.amount;
-            transaction.balance = parsedBalance;
-            await supabase
-              .from('transactions')
-              .update({ balance: parseFloat(transaction.balance) })
-              .eq('id', transaction.id)
-              .select('*')
-              .single();
-          }
-          return transaction;
-        }),
-      );
-
-      setTransactionData(transactionsUpdated);
-      setTreasuryData(treasuryTransactionsUpdated);
+      setTransactionData(transactions ?? []);
       updateBillingTransactions();
-      const { data: userTemp } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', props.wallet.profile_id)
-        .single();
-
-      setUser(userTemp);
-      console.log(userTemp);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {
@@ -329,22 +226,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       if (billingTransactions !== null) {
         setUserBillingData(billingTransactions);
       }
-
-      const { data: allProjects } = await supabase
-        .from('ai_projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      const { data: allTransactions } = await supabase
-        .from('transactions')
-        .select('*');
-
-      const allBillingTransactions: BillingTransaction[] | null =
-        createBillingData(allTransactions ?? [], allProjects ?? []);
-
-      if (allBillingTransactions !== null) {
-        setAllBillingData(allBillingTransactions);
-      }
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     }
@@ -362,20 +243,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
           filter: `circle_wallet_id=eq.${props.wallet?.circle_wallet_id}`,
         },
         () => updateBillingTransactions(),
-      )
-      .subscribe();
-
-    const transactionSubscription = supabase
-      .channel('transactions')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'transactions',
-          filter: `profile_id=eq.${props.profile?.id}`,
-        },
-        () => updateTransactions(),
       )
       .subscribe();
 
@@ -397,7 +264,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     updateBillingTransactions();
 
     return () => {
-      supabase.removeChannel(transactionSubscription);
       supabase.removeChannel(walletTransactionSubscription);
       supabase.removeChannel(billingSubscription);
     };
@@ -449,30 +315,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
             >
               Usage
             </button>
-            {user?.is_admin && (
-              <button
-                className={`pb-4 px-1 ${
-                  activeTab === 'treasury'
-                    ? 'border-b-2 border-blue-500 text-blue-600'
-                    : 'text-gray-500'
-                }`}
-                onClick={() => setActiveTab('treasury')}
-              >
-                Treasury Wallet
-              </button>
-            )}
-            {user?.is_admin && (
-              <button
-                className={`pb-4 px-1 ${
-                  activeTab === 'insights'
-                    ? 'border-b-2 border-blue-500 text-blue-600'
-                    : 'text-gray-500'
-                }`}
-                onClick={() => setActiveTab('insights')}
-              >
-                Website Insights
-              </button>
-            )}
           </div>
         </div>
 
@@ -570,19 +412,6 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         {activeTab == 'usage' && (
           <div className="mb-20">
             <TransactionGraphs data={userBillingData} />
-          </div>
-        )}
-        {activeTab == 'treasury' && (
-          <Transactions
-            data={formattedTreasuryData}
-            loading={loading}
-            sortConfig={sortConfig}
-            onSort={handleSort}
-          />
-        )}
-        {activeTab == 'insights' && (
-          <div className="mb-20">
-            <WebInsights data={allBillingData} />
           </div>
         )}
       </div>

@@ -28,20 +28,43 @@ export const updateSession = async (request: NextRequest) => {
       },
     );
 
-    const user = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-    if (request.nextUrl.pathname.startsWith('/dashboard') && user.error) {
+    if (error || !user) {
+      // If not logged in, redirect to sign-in for protected routes
+      if (!request.nextUrl.pathname.startsWith('/sign-in')) {
+        return NextResponse.redirect(new URL('/sign-in', request.url));
+      }
+      return response;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (profileError || !profile) {
+      // Handle profile fetch error
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
 
-    if (request.nextUrl.pathname === '/' && !user.error) {
+    // Redirect non-admins trying to access admin pages
+    if (request.nextUrl.pathname.startsWith('/admin') && !profile.is_admin) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    // Redirect logged-in non-admins from home to dashboard
+    if (request.nextUrl.pathname === '/' && !profile.is_admin) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     return response;
   } catch (e) {
-    // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
+    console.error('Middleware error:', e);
     return NextResponse.next({
       request: {
         headers: request.headers,

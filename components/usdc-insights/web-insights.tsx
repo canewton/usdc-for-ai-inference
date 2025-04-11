@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import type { TooltipProps } from 'recharts';
 
+import { USDCIcon } from '@/app/icons/USDCIcon';
 import { aiModel } from '@/types/ai.types';
 
 import { ActiveUsers } from './active-users';
@@ -58,6 +60,44 @@ interface Props {
   data: BillingTransaction[];
 }
 
+const CountCustomTooltip = ({
+  active,
+  payload,
+  label,
+}: TooltipProps<number, string>) => {
+  if (!active || !payload || !payload.length) return null;
+
+  const total = payload.reduce(
+    (sum, entry) => sum + (entry.value as number),
+    0,
+  );
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-100">
+      <div className="flex items-center justify-between w-[300px] mb-3">
+        <p className="text-xl font-medium">{label}</p>
+        <p className="text-lg">{total.toFixed(0)} Requests</p>
+      </div>
+      {payload.map((entry, index) => (
+        <div key={index} className="flex justify-between items-center mb-2">
+          <div className="flex items-center justify-between w-[300px]">
+            <div className="flex items-center gap-2">
+              <div
+                className="w-3 h-3 rounded"
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-gray-600">{entry.name}</span>
+            </div>
+            <span className="text-gray-400">
+              {(entry.value as number).toFixed(0)}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export const WebInsights: React.FC<Props> = (props) => {
   const [selectedPeriodCount, setSelectedPeriodCount] =
     useState<TimePeriod>('1M');
@@ -97,6 +137,8 @@ export const WebInsights: React.FC<Props> = (props) => {
         startDate.setFullYear(now.getFullYear() - 1);
         break;
     }
+
+    startDate.setHours(0, 0, 0, 0);
 
     const filteredTransactions = transactions.filter((t) => {
       const transactionDate = new Date(t.created_at);
@@ -157,13 +199,13 @@ export const WebInsights: React.FC<Props> = (props) => {
     setCountData(
       processTransactionsByRange(props.data, selectedPeriodCount, 'count'),
     );
-  }, [selectedPeriodCount]);
+  }, [selectedPeriodCount, props.data]);
 
   useEffect(() => {
     setSalesData(
       processTransactionsByRange(props.data, selectedPeriodSales, 'sales'),
     );
-  }, [selectedPeriodSales]);
+  }, [selectedPeriodSales, props.data]);
 
   return (
     <div>
@@ -173,7 +215,10 @@ export const WebInsights: React.FC<Props> = (props) => {
           <div className="flex justify-between items-center pl-8 mb-4">
             <div>
               <p className="text-sm">Total Sales</p>
-              <p className="text-blue-500 text-xl">${totalSales.toFixed(2)}</p>
+              <div className="flex items-center gap-1 text-blue-500">
+                <span className="text-xl">${totalSales.toFixed(2)}</span>
+                <USDCIcon />
+              </div>
             </div>
             <TimePeriodOptions
               selectedPeriod={selectedPeriodSales}
@@ -191,7 +236,11 @@ export const WebInsights: React.FC<Props> = (props) => {
             setSelectedPeriod={setSelectedPeriodCount}
           />
         </div>
-        <StackedInsightsBarChart data={countData} stacked={true} />
+        <StackedInsightsBarChart
+          data={countData}
+          stacked={true}
+          tooltip={<CountCustomTooltip />}
+        />
       </InsightBox>
       <USDCMarketCapGraph />
     </div>
