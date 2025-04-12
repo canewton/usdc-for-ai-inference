@@ -7,7 +7,7 @@ export async function PUT(req: NextRequest) {
   try {
     const { entityName } = await req.json();
 
-    if (!entityName.trim()) {
+    if (!entityName || !entityName.trim()) {
       return NextResponse.json(
         { error: 'entityName is required' },
         { status: 400 },
