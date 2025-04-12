@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { createClient } from '@/utils/supabase/client';
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const { videoId } = await request.json();
 
