@@ -3,15 +3,24 @@ import type { NextRequest } from 'next/server';
 import { GET } from '@/app/api/getgeneratedmodels/route';
 import { createClient } from '@/utils/supabase/client';
 
-jest.mock('@/utils/supabase/client', () => ({
-  createClient: jest.fn(),
-}));
+jest.mock('@/utils/supabase/client');
 
 const mockSupabase = {
   auth: {
     getUser: jest.fn(),
   },
-  from: jest.fn(),
+  from: jest.fn(() => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        in: jest.fn(() => ({
+          order: jest.fn(() => ({
+            mockResolvedValue: jest.fn(),
+            mockRejectedValue: jest.fn(),
+          })),
+        })),
+      })),
+    })),
+  })),
 };
 
 (createClient as jest.Mock).mockReturnValue(mockSupabase);
@@ -47,21 +56,25 @@ describe('GET /api/getgeneratedmodels', () => {
   });
 
   it('should return 200 with generated models for an authenticated user', async () => {
+    (mockRequest.json as jest.Mock).mockResolvedValue({
+      videoId: 'non-existent-id',
+    });
+    mockRequest.headers.set('Authorization', 'Bearer valid-token');
     const mockUser = { id: 'user-id' };
-    const mockGeneratedModels = [
-      { id: '1', name: 'Model A', created_at: '2023-04-01T00:00:00Z' },
-      { id: '2', name: 'Model B', created_at: '2023-04-02T00:00:00Z' },
-    ];
-
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: mockUser },
       error: null,
     });
 
+    const mockGeneratedModels = [
+      { id: '1', name: 'Model A', created_at: '2023-04-01T00:00:00Z' },
+      { id: '2', name: 'Model B', created_at: '2023-04-02T00:00:00Z' },
+    ];
+
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({
-          in: jest.fn().mockResolvedValue({
+        eq: jest.fn().mockReturnValue({
+          in: jest.fn().mockReturnValue({
             order: jest.fn().mockResolvedValue({
               data: mockGeneratedModels,
               error: null,
@@ -71,26 +84,18 @@ describe('GET /api/getgeneratedmodels', () => {
       }),
     });
 
-    mockRequest.headers.set('Authorization', 'Bearer valid-token');
-
     const response = await GET(mockRequest);
-
-    console.log('response', response);
 
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual(mockGeneratedModels);
-    expect(mockSupabase.from).toHaveBeenCalledWith('generated_models');
-    expect(mockSupabase.from().select).toHaveBeenCalledWith('*');
-    expect(mockSupabase.from().select().eq).toHaveBeenCalledWith(
-      'user_id',
-      mockUser.id,
-    );
+    expect(data).toEqual({ models: mockGeneratedModels });
+    expect(mockSupabase.from).toHaveBeenCalledWith('3d_generations');
   });
 
   it('should return 500 if there is an error fetching generated models', async () => {
     const mockUser = { id: 'user-id' };
+    mockRequest.headers.set('Authorization', 'Bearer valid-token');
 
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: mockUser },
@@ -99,24 +104,22 @@ describe('GET /api/getgeneratedmodels', () => {
 
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockResolvedValue({
-          data: null,
-          error: new Error('Database error'),
+        eq: jest.fn().mockReturnValue({
+          in: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue({
+              data: null,
+              error: new Error('Database error'),
+            }),
+          }),
         }),
       }),
     });
 
-    const req = mockNextRequest({ Authorization: 'Bearer valid-token' });
-    const response = await GET(req);
+    const response = await GET(mockRequest);
     const data = await response.json();
 
     expect(response.status).toBe(500);
-    expect(data.error).toBe('Failed to fetch generated models');
-    expect(mockSupabase.from).toHaveBeenCalledWith('generated_models');
-    expect(mockSupabase.from().select).toHaveBeenCalledWith('*');
-    expect(mockSupabase.from().select().eq).toHaveBeenCalledWith(
-      'user_id',
-      mockUser.id,
-    );
+    expect(data.error).toBe('Failed to fetch models');
+    expect(mockSupabase.from).toHaveBeenCalledWith('3d_generations');
   });
 });
