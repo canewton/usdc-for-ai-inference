@@ -3,8 +3,6 @@ import { NextResponse } from 'next/server';
 
 import { createClient } from '@/utils/supabase/client';
 
-const supabase = createClient();
-
 export async function GET(req: NextRequest) {
   try {
     // Get authenticated user
@@ -12,6 +10,8 @@ export async function GET(req: NextRequest) {
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const supabase = createClient();
     const {
       data: { user },
       error: authError,

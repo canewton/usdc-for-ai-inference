@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { GET } from '@/app/api/getgeneratedmodels/route';
+import { GET } from '@/app/api/getgeneratedimages/route';
 import { createClient } from '@/utils/supabase/client';
 
 jest.mock('@/utils/supabase/client');
@@ -14,10 +14,8 @@ const mockSupabase = {
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
           in: jest.fn(() => ({
-            order: jest.fn(() => ({
-              mockResolvedValue: jest.fn(),
-              mockRejectedValue: jest.fn(),
-            })),
+            mockResolvedValue: jest.fn(),
+            mockRejectedValue: jest.fn(),
           })),
         })),
       })),
@@ -25,10 +23,8 @@ const mockSupabase = {
     jest.fn(() => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
-          order: jest.fn(() => ({
-            mockResolvedValue: jest.fn(),
-            mockRejectedValue: jest.fn(),
-          })),
+          mockResolvedValue: jest.fn(),
+          mockRejectedValue: jest.fn(),
         })),
       })),
     })),
@@ -36,7 +32,7 @@ const mockSupabase = {
 
 (createClient as jest.Mock).mockReturnValue(mockSupabase);
 
-describe('GET /api/getgeneratedmodels', () => {
+describe('GET /api/getgeneratedimages', () => {
   let mockRequest: NextRequest;
 
   beforeEach(() => {
@@ -44,7 +40,7 @@ describe('GET /api/getgeneratedmodels', () => {
     mockRequest = {
       json: jest.fn(),
       headers: new Headers(),
-      url: 'http://localhost/api/getgeneratedmodels?modelids=1&modelids=2',
+      url: 'http://localhost/api/getgeneratedimages?imageids=1&imageids=2',
     } as unknown as NextRequest;
   });
 
@@ -61,7 +57,7 @@ describe('GET /api/getgeneratedmodels', () => {
     expect(data.error).toBe('Unauthorized');
   });
 
-  it('should return 200 with generated models for an authenticated user', async () => {
+  it('should return 200 with generated images for an authenticated user', async () => {
     mockRequest.headers.set('Authorization', 'Bearer valid-token');
     const mockUser = { id: 'user-id' };
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -69,19 +65,17 @@ describe('GET /api/getgeneratedmodels', () => {
       error: null,
     });
 
-    const mockGeneratedModels = [
-      { id: '1', name: 'Model A', created_at: '2023-04-01T00:00:00Z' },
-      { id: '2', name: 'Model B', created_at: '2023-04-02T00:00:00Z' },
+    const mockGeneratedImages = [
+      { id: '1', name: 'Image A', created_at: '2023-04-01T00:00:00Z' },
+      { id: '2', name: 'Image B', created_at: '2023-04-02T00:00:00Z' },
     ];
 
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
-          in: jest.fn().mockReturnValue({
-            order: jest.fn().mockResolvedValue({
-              data: mockGeneratedModels,
-              error: null,
-            }),
+          in: jest.fn().mockResolvedValue({
+            data: mockGeneratedImages,
+            error: null,
           }),
         }),
       }),
@@ -92,20 +86,20 @@ describe('GET /api/getgeneratedmodels', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual({ models: mockGeneratedModels });
-    expect(mockSupabase.from).toHaveBeenCalledWith('3d_generations');
+    expect(data).toEqual({ images: mockGeneratedImages });
+    expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 
-  it('should return 200 with all generated models for an authenticated user if no modelids specified', async () => {
+  it('should return 200 with all generated images for an authenticated user if no imageids specified', async () => {
     const mockUser = { id: 'user-id' };
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: mockUser },
       error: null,
     });
 
-    const mockGeneratedModels = [
-      { id: '1', name: 'Model A', created_at: '2023-04-01T00:00:00Z' },
-      { id: '2', name: 'Model B', created_at: '2023-04-02T00:00:00Z' },
+    const mockGeneratedImages = [
+      { id: '1', name: 'Image A', created_at: '2023-04-01T00:00:00Z' },
+      { id: '2', name: 'Image B', created_at: '2023-04-02T00:00:00Z' },
     ];
 
     let otherRequest = {
@@ -117,11 +111,9 @@ describe('GET /api/getgeneratedmodels', () => {
 
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          order: jest.fn().mockResolvedValue({
-            data: mockGeneratedModels,
-            error: null,
-          }),
+        eq: jest.fn().mockResolvedValue({
+          data: mockGeneratedImages,
+          error: null,
         }),
       }),
     });
@@ -131,11 +123,11 @@ describe('GET /api/getgeneratedmodels', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual({ models: mockGeneratedModels });
-    expect(mockSupabase.from).toHaveBeenCalledWith('3d_generations');
+    expect(data).toEqual({ images: mockGeneratedImages });
+    expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 
-  it('should return 500 if there is an error fetching generated models', async () => {
+  it('should return 500 if there is an error fetching generated images', async () => {
     const mockUser = { id: 'user-id' };
     mockRequest.headers.set('Authorization', 'Bearer valid-token');
 
@@ -147,11 +139,9 @@ describe('GET /api/getgeneratedmodels', () => {
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
-          in: jest.fn().mockReturnValue({
-            order: jest.fn().mockResolvedValue({
-              data: null,
-              error: new Error('Database error'),
-            }),
+          in: jest.fn().mockResolvedValue({
+            data: null,
+            error: new Error('Database error'),
           }),
         }),
       }),
@@ -161,7 +151,7 @@ describe('GET /api/getgeneratedmodels', () => {
     const data = await response.json();
 
     expect(response.status).toBe(500);
-    expect(data.error).toBe('Failed to fetch models');
-    expect(mockSupabase.from).toHaveBeenCalledWith('3d_generations');
+    expect(data.error).toBe('Failed to fetch images');
+    expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 });

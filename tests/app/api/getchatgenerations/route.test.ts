@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { GET } from '@/app/api/getgeneratedmodels/route';
+import { GET } from '@/app/api/getchatgenerations/route';
 import { createClient } from '@/utils/supabase/client';
 
 jest.mock('@/utils/supabase/client');
@@ -9,21 +9,9 @@ const mockSupabase = {
   auth: {
     getUser: jest.fn(),
   },
-  from:
-    jest.fn(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          in: jest.fn(() => ({
-            order: jest.fn(() => ({
-              mockResolvedValue: jest.fn(),
-              mockRejectedValue: jest.fn(),
-            })),
-          })),
-        })),
-      })),
-    })) ||
-    jest.fn(() => ({
-      select: jest.fn(() => ({
+  from: jest.fn(() => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
         eq: jest.fn(() => ({
           order: jest.fn(() => ({
             mockResolvedValue: jest.fn(),
@@ -32,6 +20,7 @@ const mockSupabase = {
         })),
       })),
     })),
+  })),
 };
 
 (createClient as jest.Mock).mockReturnValue(mockSupabase);
@@ -44,7 +33,7 @@ describe('GET /api/getgeneratedmodels', () => {
     mockRequest = {
       json: jest.fn(),
       headers: new Headers(),
-      url: 'http://localhost/api/getgeneratedmodels?modelids=1&modelids=2',
+      url: 'http://localhost/api/getgeneratedmodels?id=1&id=2',
     } as unknown as NextRequest;
   });
 
@@ -61,7 +50,7 @@ describe('GET /api/getgeneratedmodels', () => {
     expect(data.error).toBe('Unauthorized');
   });
 
-  it('should return 200 with generated models for an authenticated user', async () => {
+  it('should return 200 with generated chats for an authenticated user', async () => {
     mockRequest.headers.set('Authorization', 'Bearer valid-token');
     const mockUser = { id: 'user-id' };
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -69,17 +58,17 @@ describe('GET /api/getgeneratedmodels', () => {
       error: null,
     });
 
-    const mockGeneratedModels = [
-      { id: '1', name: 'Model A', created_at: '2023-04-01T00:00:00Z' },
-      { id: '2', name: 'Model B', created_at: '2023-04-02T00:00:00Z' },
+    const mockGeneratedChats = [
+      { id: '1', name: 'Chat A', created_at: '2023-04-01T00:00:00Z' },
+      { id: '2', name: 'Chat B', created_at: '2023-04-02T00:00:00Z' },
     ];
 
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
-          in: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
             order: jest.fn().mockResolvedValue({
-              data: mockGeneratedModels,
+              data: mockGeneratedChats,
               error: null,
             }),
           }),
@@ -92,47 +81,8 @@ describe('GET /api/getgeneratedmodels', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual({ models: mockGeneratedModels });
-    expect(mockSupabase.from).toHaveBeenCalledWith('3d_generations');
-  });
-
-  it('should return 200 with all generated models for an authenticated user if no modelids specified', async () => {
-    const mockUser = { id: 'user-id' };
-    mockSupabase.auth.getUser.mockResolvedValue({
-      data: { user: mockUser },
-      error: null,
-    });
-
-    const mockGeneratedModels = [
-      { id: '1', name: 'Model A', created_at: '2023-04-01T00:00:00Z' },
-      { id: '2', name: 'Model B', created_at: '2023-04-02T00:00:00Z' },
-    ];
-
-    let otherRequest = {
-      json: jest.fn(),
-      headers: new Headers(),
-      url: 'http://localhost/api/getgeneratedimages',
-    } as unknown as NextRequest;
-    otherRequest.headers.set('Authorization', 'Bearer valid-token');
-
-    mockSupabase.from.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        eq: jest.fn().mockReturnValue({
-          order: jest.fn().mockResolvedValue({
-            data: mockGeneratedModels,
-            error: null,
-          }),
-        }),
-      }),
-    });
-
-    const response = await GET(otherRequest);
-
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data).toEqual({ models: mockGeneratedModels });
-    expect(mockSupabase.from).toHaveBeenCalledWith('3d_generations');
+    expect(data).toEqual({ chats: mockGeneratedChats });
+    expect(mockSupabase.from).toHaveBeenCalledWith('chat_generations');
   });
 
   it('should return 500 if there is an error fetching generated models', async () => {
@@ -147,7 +97,7 @@ describe('GET /api/getgeneratedmodels', () => {
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
-          in: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
             order: jest.fn().mockResolvedValue({
               data: null,
               error: new Error('Database error'),
@@ -161,7 +111,7 @@ describe('GET /api/getgeneratedmodels', () => {
     const data = await response.json();
 
     expect(response.status).toBe(500);
-    expect(data.error).toBe('Failed to fetch models');
-    expect(mockSupabase.from).toHaveBeenCalledWith('3d_generations');
+    expect(data.error).toBe('Failed to fetch chat generations');
+    expect(mockSupabase.from).toHaveBeenCalledWith('chat_generations');
   });
 });
