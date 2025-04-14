@@ -6,6 +6,9 @@ interface Props {
 }
 
 export const WalletQRCode: FunctionComponent<Props> = ({ walletId }) => {
+  if (!walletId) {
+    return <div />;
+  }
   return (
     <div className="flex justify-center">
       <QRCodeSVG value={walletId} size={256} level="H" className="p-4" />

@@ -18,13 +18,12 @@ interface Props {
   wallet: Wallet;
 }
 
-export const WalletInformationDialog: FunctionComponent<Props> = (props) => {
-  const formattedBalance = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(props.wallet.balance));
+export const WalletInformationDialog: FunctionComponent<Props> = ({
+  wallet,
+}) => {
+  if (!wallet) {
+    return <div />;
+  }
 
   return (
     <Dialog>
@@ -41,25 +40,25 @@ export const WalletInformationDialog: FunctionComponent<Props> = (props) => {
           <h4 className="scroll-m-20 text-xl tracking-tight mb-2">Balance</h4>
           <div className="text-xl text-muted-foreground cursor-pointer mb-4">
             <WalletBalance
-              walletId={props.wallet.id}
-              circleWalletId={props.wallet.circle_wallet_id}
+              walletId={wallet.id}
+              circleWalletId={wallet.circle_wallet_id}
             />
           </div>
           <h4 className="scroll-m-20 text-xl tracking-tight mb-2">ID</h4>
           <div className="flex w-full items-center mb-4">
-            <Input disabled value={props.wallet.circle_wallet_id} />
-            <CopyButton text={props.wallet.circle_wallet_id} />
+            <Input disabled value={wallet.circle_wallet_id} />
+            <CopyButton text={wallet.circle_wallet_id} />
           </div>
           <h4 className="scroll-m-20 text-xl tracking-tight mb-2">Address</h4>
           <div className="flex w-full items-center mb-4">
-            <Input disabled value={props.wallet.wallet_address} />
-            <CopyButton text={props.wallet.wallet_address} />
+            <Input disabled value={wallet.wallet_address} />
+            <CopyButton text={wallet.wallet_address} />
           </div>
           <h4 className="scroll-m-20 text-xl tracking-tight mb-2">
             Blockchain
           </h4>
           <p className="text-xl text-muted-foreground cursor-pointer">
-            {props.wallet.blockchain || 'No wallet found'}
+            {wallet.blockchain || 'No wallet found'}
           </p>
         </div>
       </DialogContent>
