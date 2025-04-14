@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
@@ -53,7 +52,6 @@ export default function Page() {
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [quality, setQuality] = useState(80);
   const [model, setModel] = useState('flux-schnell');
-  const [totalBilledAmount, setTotalBilledAmount] = useState(0);
 
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const wordsPerToken = 'Indicative cost or info...';
@@ -70,27 +68,6 @@ export default function Page() {
     }, 100);
     return () => clearTimeout(timer);
   }, [conversation]);
-
-  const fetchTotalBilledAmount = async () => {
-    if (!session) return;
-    try {
-      const response = await fetch(
-        '/api/gettotalbilledamount?table=image_generations',
-        {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        },
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setTotalBilledAmount(data.totalBilledAmount);
-      } else {
-        console.error('Error fetching billed amount:', data.error);
-      }
-    } catch (error) {
-      console.error('Error fetching billed amount:', error);
-    }
-  };
 
   const fetchImages = async () => {
     if (!session) return;
@@ -112,7 +89,6 @@ export default function Page() {
 
   useEffect(() => {
     fetchImages();
-    fetchTotalBilledAmount();
   }, [session]);
 
   const generateImage = async (promptToSubmit: string) => {
@@ -161,7 +137,6 @@ export default function Page() {
       ]);
 
       // Refresh billing info & history
-      await fetchTotalBilledAmount();
       await fetchImages();
 
       setShowTryAgain(true);

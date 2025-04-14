@@ -9,7 +9,6 @@ interface ControlPanelProps {
   mode: boolean;
   isLoading: boolean;
   error: string | null;
-  totalBilledAmount: number;
   modelUrl: string | null;
   remaining: number | null;
   demoLimitLoading: boolean;
@@ -25,7 +24,6 @@ export default function ControlPanel({
   mode,
   isLoading,
   error,
-  totalBilledAmount,
   modelUrl,
   remaining,
   demoLimitLoading,

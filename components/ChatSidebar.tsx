@@ -138,7 +138,10 @@ export function ChatSidebar({
               Cancel
             </button>
             <button
-              onClick={() => onDeleteChat(chat.id)}
+              onClick={() => {
+                onDeleteChat(chat.id);
+                setOpen(false);
+              }}
               className="bg-[#D5666E] rounded-[10px] py-3 px-4 text-background"
             >
               Delete

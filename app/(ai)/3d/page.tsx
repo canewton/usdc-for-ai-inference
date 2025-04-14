@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -32,7 +31,6 @@ export default function Generate3DModelPage() {
   const [modelUrl, setModelUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ModelHistoryItem[]>([]);
-  const [totalBilledAmount, setTotalBilledAmount] = useState(0);
   const session = useSession();
 
   useEffect(() => {
@@ -41,45 +39,18 @@ export default function Generate3DModelPage() {
     }
   }, [mode]);
 
-  const fetchTotalBilledAmount = async () => {
-    if (!session) return;
-    const sessionToken = session.access_token;
-    try {
-      const response = await fetch(
-        `/api/gettotalbilledamount?table=3d_generations`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${sessionToken}`,
-          },
-        },
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setTotalBilledAmount(data.totalBilledAmount);
-      } else {
-        console.error('Error fetching billed amount:', data.error);
-      }
-    } catch (error) {
-      console.error('Error fetching billed amount:', error);
-    }
-  };
-
   const fetchHistory = async () => {
     if (!session) return;
     console.log('Fetching history...');
     setIsLoading(true);
     const sessionToken = session.access_token;
     try {
-      const response = await fetch(
-        'http://localhost:3000/api/getgeneratedmodels',
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${sessionToken}`,
-          },
+      const response = await fetch('/api/getgeneratedmodels', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
         },
-      );
+      });
 
       const data = await response.json();
       if (response.ok) {
@@ -119,7 +90,6 @@ export default function Generate3DModelPage() {
 
   useEffect(() => {
     if (session) {
-      fetchTotalBilledAmount();
       fetchHistory();
     }
   }, [session]);
@@ -138,21 +108,18 @@ export default function Generate3DModelPage() {
 
     try {
       const sessionToken = session.access_token;
-      const response = await fetch(
-        'http://localhost:3000/api/generate3d-image',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${sessionToken}`,
-          },
-          body: JSON.stringify({
-            image_url: imageDataUri,
-            should_texture: mode,
-            texture_prompt: selectedPrompt,
-          }),
+      const response = await fetch('/api/generate3d-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionToken}`,
         },
-      );
+        body: JSON.stringify({
+          image_url: imageDataUri,
+          should_texture: mode,
+          texture_prompt: selectedPrompt,
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -169,7 +136,6 @@ export default function Generate3DModelPage() {
         setModelUrl(data.modelUrl);
         console.log('Generated model URL:', data.modelUrl);
         fetchHistory();
-        fetchTotalBilledAmount();
       } else {
         setError(data.error || 'Failed to generate model');
         console.error('Generation failed:', data);
@@ -242,15 +208,12 @@ export default function Generate3DModelPage() {
 
     try {
       const sessionToken = session.access_token;
-      const response = await fetch(
-        `http://localhost:3000/api/deletemodel?modelid=${modelId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${sessionToken}`,
-          },
+      const response = await fetch('/api/deletemodel?modelid=${modelId}', {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${sessionToken}`,
         },
-      );
+      });
 
       const data = await response.json();
       if (response.ok) {
@@ -259,7 +222,6 @@ export default function Generate3DModelPage() {
         if (modelUrl === urlToDelete) {
           setModelUrl(null);
         }
-        fetchTotalBilledAmount();
       } else {
         setError(data.error || 'Failed to delete model');
         console.error('Deletion failed:', data);
@@ -350,7 +312,6 @@ export default function Generate3DModelPage() {
           setPrompt={setPrompt}
           setError={setError}
           submitPrompt={submitPrompt}
-          totalBilledAmount={totalBilledAmount}
           modelUrl={modelUrl}
           remaining={remaining}
           demoLimitLoading={demoLimitLoading}
