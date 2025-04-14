@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import type { WalletTransferRequest } from '@/app/(ai)/server/circleWalletTransfer';
 import { useSession } from '@/app/contexts/SessionContext';
 import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
@@ -20,9 +21,8 @@ import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
+import { aiModel } from '@/types/ai.types';
 import { TEXT_MODEL_PRICING } from '@/utils/constants';
-
-import UsdcBalanceCard from './UsdcBalanceCard';
 
 const promptSuggestions = [
   { title: 'Explain how to load my wallet', icon: WalletIcon },
@@ -93,6 +93,33 @@ export function Chat({ currChat }: ChatProps) {
             provider: model,
           },
         ]);
+
+        const transfer: WalletTransferRequest = {
+          circleWalletId: session.wallet_id ?? '',
+          amount: (
+            usage.promptTokens *
+              TEXT_MODEL_PRICING[model].userBilledInputPrice +
+            usage.completionTokens *
+              TEXT_MODEL_PRICING[model].userBilledOutputPrice
+          ).toString(),
+          projectName: 'Hi',
+          aiModel: aiModel.TEXT_TO_TEXT,
+        };
+
+        const response = await fetch('/api/wallet/transfer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(transfer),
+        });
+
+        if (!response.ok) {
+          throw new Error('Transfer failed');
+        }
+
+        const result = await response.json();
+        console.log('Transfer initiated:', result);
       }
     },
   });
@@ -405,6 +432,11 @@ export function Chat({ currChat }: ChatProps) {
 
   return (
     <>
+      <div
+        className={`${!session.api_key_status.openai ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+      >
+        This page is not available during the hosted demo.
+      </div>
       {/* Left history section */}
       <AiHistoryPortal>
         <ChatSidebar
@@ -494,7 +526,6 @@ export function Chat({ currChat }: ChatProps) {
       {/* Right section with balance and settings */}
       <RightAiSidebar isImageInput={false}>
         <div className="space-y-[20px] mt-4 w-full">
-          <UsdcBalanceCard direction="column" />
           <div className="flex flex-col space-y-[4px]">
             <div className="text-sub m-1">Max Tokens</div>
             <div className="flex w-full h-8 border border-gray-200 items-center justify-center rounded-3xl p-2">

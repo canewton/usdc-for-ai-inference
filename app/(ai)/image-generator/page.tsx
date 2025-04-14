@@ -10,13 +10,15 @@ import MainAiSection from '@/components/MainAiSection';
 import PromptSuggestions from '@/components/PromptSuggestions';
 import RightAiSidebar from '@/components/RightAiSidebar';
 import { TextInput } from '@/components/TextInput';
-import { Card, CardContent } from '@/components/ui/card';
 import Blurs from '@/public/blurs.svg';
 import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
-import USDC from '@/public/usdc-circle.svg';
+import { aiModel } from '@/types/ai.types';
+import { IMAGE_MODEL_PRICING } from '@/utils/constants';
+
+import type { WalletTransferRequest } from '../server/circleWalletTransfer';
 
 interface ConversationItem {
   type: 'prompt' | 'response';
@@ -162,6 +164,29 @@ export default function Page() {
       await fetchImages();
 
       setShowTryAgain(true);
+
+      // Transfer balance
+      const transfer: WalletTransferRequest = {
+        circleWalletId: session.wallet_id ?? '',
+        amount: IMAGE_MODEL_PRICING.userBilledPrice.toString(),
+        projectName: 'Hi',
+        aiModel: aiModel.TEXT_TO_IMAGE,
+      };
+
+      const transferResponse = await fetch('/api/wallet/transfer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transfer),
+      });
+
+      if (!transferResponse.ok) {
+        throw new Error('Transfer failed');
+      }
+
+      const result = await transferResponse.json();
+      console.log('Transfer initiated:', result);
     } catch (error) {
       console.error('Error generating image:', error);
     } finally {
@@ -226,6 +251,11 @@ export default function Page() {
 
   return (
     <>
+      <div
+        className={`${!session.api_key_status.replicate ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+      >
+        This page is not available during the hosted demo.
+      </div>
       {/* LEFT SIDEBAR (history) */}
       <AiHistoryPortal>
         <ChatSidebar
@@ -362,21 +392,8 @@ export default function Page() {
       </MainAiSection>
 
       {/* RIGHT SIDEBAR */}
-      <RightAiSidebar isImageInput={true}>
-        <div className="space-y-6">
-          <Card className="w-full h-20 bg-white border-[#eaeaec]">
-            <CardContent className="flex items-center p-5">
-              <img src={USDC.src} className="w-12 h-12 mr-4" alt="USDC Icon" />
-              <div className="overflow-hidden">
-                <h3 className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-900 text-xl tracking-[-0.22px] leading-[30px] truncate">
-                  ${totalBilledAmount.toFixed(2)}
-                </h3>
-                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] truncate">
-                  USDC Balance
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+      <RightAiSidebar isImageInput={false}>
+        <div className="space-y-[20px] mt-4 w-full">
           <div className="flex flex-col space-x-2">
             <div className="text-sub mb-1">Aspect Ratio</div>
             <select

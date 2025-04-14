@@ -1,3 +1,6 @@
+'use client';
+import { useSession } from '@/app/contexts/SessionContext';
+import { useWalletBalance } from '@/app/hooks/useWalletBalance';
 import USDC from '@/public/usdc-circle.svg';
 
 import { Card, CardContent } from './ui/card';
@@ -7,7 +10,12 @@ interface UsdcBalanceCardProps {
 }
 
 export default function UsdcBalanceCard({ direction }: UsdcBalanceCardProps) {
-  const balance = 0;
+  const session = useSession();
+  const { balance, loading } = useWalletBalance(
+    session.wallet_id,
+    session.circle_wallet_id,
+  );
+
   return (
     <Card className="w-full h-fit bg-white border-[#eaeaec]">
       <CardContent
