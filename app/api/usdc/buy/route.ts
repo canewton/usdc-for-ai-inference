@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from 'next/server';
 
-import { createRampSession } from "@/utils/create-circle-ramp-session";
+import { createRampSession } from '@/utils/create-circle-ramp-session';
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,22 +8,22 @@ export async function POST(req: NextRequest) {
 
     if (!body.wallet_address) {
       return NextResponse.json(
-        { error: "Missing wallet_address" },
+        { error: 'Missing wallet_address' },
         { status: 400 },
       );
     }
 
     const usdcAccessResponse = await createRampSession(
-      "BUY",
+      'BUY',
       body.wallet_address,
     );
 
     return NextResponse.json({ url: usdcAccessResponse.data.url });
   } catch (error) {
-    console.error("Error requesting buy url:", error);
+    console.error('Error requesting buy url:', error);
 
     return NextResponse.json(
-      { error: "Internal server error while requesting buy url" },
+      { error: 'Internal server error while requesting buy url' },
       { status: 500 },
     );
   }

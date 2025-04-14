@@ -7,8 +7,6 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    const hi = await supabase.auth.getUser();
-
     const {
       data: { user },
       error: authError,

@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import type { TooltipProps } from "recharts";
+import React, { useEffect, useState } from 'react';
+import type { TooltipProps } from 'recharts';
 
-import { USDCIcon } from "@/app/icons/USDCIcon";
-import { aiModel } from "@/types/ai.types";
+import { USDCIcon } from '@/app/icons/USDCIcon';
+import { aiModel } from '@/types/ai.types';
 
-import { ActiveUsers } from "./active-users";
-import { InsightBox } from "./insight-box";
-import type { StackedInsightsBarChartData } from "./stacked-insights-bar-chart";
-import { StackedInsightsBarChart } from "./stacked-insights-bar-chart";
-import type { TimePeriod } from "./time-period-options";
-import { TimePeriodOptions } from "./time-period-options";
-import { USDCMarketCapGraph } from "./usdc-market-cap-graph";
+import { ActiveUsers } from './active-users';
+import { InsightBox } from './insight-box';
+import type { StackedInsightsBarChartData } from './stacked-insights-bar-chart';
+import { StackedInsightsBarChart } from './stacked-insights-bar-chart';
+import type { TimePeriod } from './time-period-options';
+import { TimePeriodOptions } from './time-period-options';
+import { USDCMarketCapGraph } from './usdc-market-cap-graph';
 
 interface BillingTransaction {
   id: string;
@@ -26,18 +26,18 @@ interface BillingTransaction {
 }
 
 const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 function generateDateRange(startDate: Date): string[] {
@@ -50,7 +50,7 @@ function generateDateRange(startDate: Date): string[] {
     date.setDate(date.getDate() + 1)
   ) {
     dates.push(
-      `${String(date.getDate()).padStart(2, "0")} ${months[date.getMonth()].substring(0, 3)}`,
+      `${String(date.getDate()).padStart(2, '0')} ${months[date.getMonth()].substring(0, 3)}`,
     );
   }
   return dates;
@@ -100,9 +100,9 @@ const CountCustomTooltip = ({
 
 export const WebInsights: React.FC<Props> = (props) => {
   const [selectedPeriodCount, setSelectedPeriodCount] =
-    useState<TimePeriod>("1M");
+    useState<TimePeriod>('1M');
   const [selectedPeriodSales, setSelectedPeriodSales] =
-    useState<TimePeriod>("1M");
+    useState<TimePeriod>('1M');
   const [countData, setCountData] = useState<any[]>([]);
   const [salesData, setSalesData] = useState<any[]>([]);
   const [totalSales, setTotalSales] = useState<number>(0);
@@ -110,29 +110,29 @@ export const WebInsights: React.FC<Props> = (props) => {
   function processTransactionsByRange(
     transactions: BillingTransaction[],
     range: TimePeriod,
-    mode: "count" | "sales" = "count",
+    mode: 'count' | 'sales' = 'count',
   ) {
     const now = new Date();
     let startDate: Date;
 
     switch (range) {
-      case "1D":
+      case '1D':
         startDate = new Date(now);
         startDate.setDate(now.getDate());
         break;
-      case "7D":
+      case '7D':
         startDate = new Date(now);
         startDate.setDate(now.getDate() - 6);
         break;
-      case "1M":
+      case '1M':
         startDate = new Date(now);
         startDate.setMonth(now.getMonth() - 1);
         break;
-      case "3M":
+      case '3M':
         startDate = new Date(now);
         startDate.setMonth(now.getMonth() - 3);
         break;
-      case "1Y":
+      case '1Y':
         startDate = new Date(now);
         startDate.setFullYear(now.getFullYear() - 1);
         break;
@@ -153,7 +153,7 @@ export const WebInsights: React.FC<Props> = (props) => {
       const dateTransactions = filteredTransactions.filter((t) => {
         const tDate = new Date(t.created_at);
         return (
-          `${String(tDate.getDate()).padStart(2, "0")} ${months[tDate.getMonth()].substring(0, 3)}` ===
+          `${String(tDate.getDate()).padStart(2, '0')} ${months[tDate.getMonth()].substring(0, 3)}` ===
           date
         );
       });
@@ -168,13 +168,13 @@ export const WebInsights: React.FC<Props> = (props) => {
 
       dateTransactions.forEach((t) => {
         if (t.ai_model === aiModel.TEXT_TO_TEXT)
-          value.value1! += mode === "count" ? 1 : parseFloat(t.amount);
+          value.value1! += mode === 'count' ? 1 : parseFloat(t.amount);
         if (t.ai_model === aiModel.TEXT_TO_IMAGE)
-          value.value2! += mode === "count" ? 1 : parseFloat(t.amount);
+          value.value2! += mode === 'count' ? 1 : parseFloat(t.amount);
         if (t.ai_model === aiModel.IMAGE_TO_3D)
-          value.value3! += mode === "count" ? 1 : parseFloat(t.amount);
+          value.value3! += mode === 'count' ? 1 : parseFloat(t.amount);
         if (t.ai_model === aiModel.IMAGE_TO_VIDEO)
-          value.value4! += mode === "count" ? 1 : parseFloat(t.amount);
+          value.value4! += mode === 'count' ? 1 : parseFloat(t.amount);
 
         if (
           t.ai_model === aiModel.TEXT_TO_TEXT ||
@@ -188,7 +188,7 @@ export const WebInsights: React.FC<Props> = (props) => {
       returnData.push(value);
     });
 
-    if (mode === "sales") {
+    if (mode === 'sales') {
       setTotalSales(totalSalesTemp);
     }
 
@@ -197,13 +197,13 @@ export const WebInsights: React.FC<Props> = (props) => {
 
   useEffect(() => {
     setCountData(
-      processTransactionsByRange(props.data, selectedPeriodCount, "count"),
+      processTransactionsByRange(props.data, selectedPeriodCount, 'count'),
     );
   }, [selectedPeriodCount, props.data]);
 
   useEffect(() => {
     setSalesData(
-      processTransactionsByRange(props.data, selectedPeriodSales, "sales"),
+      processTransactionsByRange(props.data, selectedPeriodSales, 'sales'),
     );
   }, [selectedPeriodSales, props.data]);
 

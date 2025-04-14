@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Loader2 } from "lucide-react";
-import { type FunctionComponent, useState } from "react";
-import { toast } from "sonner";
+import { Loader2 } from 'lucide-react';
+import { type FunctionComponent, useState } from 'react';
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
 interface Props {
   walletAddress: string;
@@ -12,7 +12,7 @@ interface Props {
 
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? process.env.NEXT_PUBLIC_VERCEL_URL
-  : "http://localhost:3000";
+  : 'http://localhost:3000';
 
 export const RequestUsdcButton: FunctionComponent<Props> = ({
   walletAddress,
@@ -24,9 +24,9 @@ export const RequestUsdcButton: FunctionComponent<Props> = ({
       setRequesting(true);
 
       const response = await fetch(`${baseUrl}/api/wallet/balance/request`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ walletAddress }),
       });
@@ -42,8 +42,8 @@ export const RequestUsdcButton: FunctionComponent<Props> = ({
 
       toast.success(parsedResponse.message);
     } catch (error) {
-      console.error("Failed to request USDC via faucet", error);
-      toast.error("Failed to request USDC via faucet");
+      console.error('Failed to request USDC via faucet', error);
+      toast.error('Failed to request USDC via faucet');
     }
   };
 
@@ -55,7 +55,7 @@ export const RequestUsdcButton: FunctionComponent<Props> = ({
           Loading...
         </>
       ) : (
-        "Dev Environment: Request 20 USDC via Faucet"
+        'Dev Environment: Request 20 USDC via Faucet'
       )}
     </Button>
   );
