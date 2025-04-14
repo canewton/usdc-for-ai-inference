@@ -1,65 +1,65 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from "@/utils/supabase/client";
 
-const NOVITA_API_URL = 'https://api.novita.ai/v3/async/task-result';
+const NOVITA_API_URL = "https://api.novita.ai/v3/async/task-result";
 const NOVITA_API_KEY = process.env.NEXT_PUBLIC_NOVITA_API_KEY;
 
 export async function POST(req: Request) {
   const supabase = await createClient();
   try {
-    const token = req.headers.get('Authorization');
+    const token = req.headers.get("Authorization");
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token.split(' ')[1]);
+    } = await supabase.auth.getUser(token.split(" ")[1]);
 
     if (error || !user) {
-      console.error('Unauthorized', error);
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.error("Unauthorized", error);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { task_id } = await req.json();
 
     const { data: videoGeneration, error: dbError } = await supabase
-      .from('video_generations')
-      .select('*')
-      .eq('task_id', task_id)
-      .eq('user_id', user.id);
+      .from("video_generations")
+      .select("*")
+      .eq("task_id", task_id)
+      .eq("user_id", user.id);
 
     if (dbError) {
-      console.error('Error fetching video generation:', dbError);
+      console.error("Error fetching video generation:", dbError);
       return NextResponse.json(
-        { error: 'Video generation not found' },
+        { error: "Video generation not found" },
         { status: 404 },
       );
     }
 
     const response = await fetch(`${NOVITA_API_URL}?task_id=${task_id}`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${NOVITA_API_KEY}`,
       },
     });
 
     const data = await response.json();
     if (!response.ok) {
-      console.error('Error from Novita API:', data);
+      console.error("Error from Novita API:", data);
 
       await supabase
-        .from('video_generations')
+        .from("video_generations")
         .update({
-          processing_status: 'error',
-          error_message: data.error || 'Error from Novita API',
+          processing_status: "error",
+          error_message: data.error || "Error from Novita API",
         })
-        .eq('task_id', task_id);
+        .eq("task_id", task_id);
       return NextResponse.json(
-        { error: 'Error from Novita API' },
+        { error: "Error from Novita API" },
         { status: 500 },
       );
     }
@@ -75,37 +75,37 @@ export async function POST(req: Request) {
       const filePath = `videos/${fileName}`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('video-gen')
+        .from("video-gen")
         .upload(filePath, videoBlob, {
-          cacheControl: '3600',
+          cacheControl: "3600",
           upsert: false,
         });
 
       let publicUrlData;
       if (!uploadError) {
         const { data } = supabase.storage
-          .from('video-gen')
+          .from("video-gen")
           .getPublicUrl(uploadData?.path);
         publicUrlData = data;
       }
 
       if (publicUrlData) {
         await supabase
-          .from('video_generations')
+          .from("video_generations")
           .update({
             processing_status: taskStatus.toLowerCase(),
             video_url: publicUrlData.publicUrl,
             error_message: null,
           })
-          .eq('task_id', task_id)
-          .eq('user_id', user.id);
+          .eq("task_id", task_id)
+          .eq("user_id", user.id);
       }
     }
     return NextResponse.json({ taskStatus, videos });
   } catch (error) {
-    console.error('Could not retrieve video:', error);
+    console.error("Could not retrieve video:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Generation failed' },
+      { error: error instanceof Error ? error.message : "Generation failed" },
       { status: 500 },
     );
   }

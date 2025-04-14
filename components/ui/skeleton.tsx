@@ -1,6 +1,6 @@
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
-const baseClasses = 'animate-pulse rounded-md bg-muted' as const;
+const baseClasses = "animate-pulse rounded-md bg-muted" as const;
 
 function Skeleton({
   className,

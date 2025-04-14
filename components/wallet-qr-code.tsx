@@ -1,5 +1,5 @@
-import { QRCodeSVG } from 'qrcode.react';
-import type { FunctionComponent } from 'react';
+import { QRCodeSVG } from "qrcode.react";
+import type { FunctionComponent } from "react";
 
 interface Props {
   walletId: string;

@@ -1,38 +1,38 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from "@/utils/supabase/client";
 
 const supabase = createClient();
 
 export async function GET(req: Request) {
   try {
-    const token = req.headers.get('Authorization');
+    const token = req.headers.get("Authorization");
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token.split(' ')[1]);
+    } = await supabase.auth.getUser(token.split(" ")[1]);
     if (error || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const url = new URL(req.url);
-    const modelids = url.searchParams.get('modelids');
+    const modelids = url.searchParams.get("modelids");
 
     if (modelids) {
       const ids = JSON.parse(modelids);
       const { data: models, error } = await supabase
-        .from('3d_generations')
-        .select('id, url, prompt, created_at')
-        .eq('user_id', user.id)
-        .in('id', ids)
-        .order('created_at', { ascending: false });
+        .from("3d_generations")
+        .select("id, url, prompt, created_at")
+        .eq("user_id", user.id)
+        .in("id", ids)
+        .order("created_at", { ascending: false });
 
       if (error) {
         return NextResponse.json(
-          { error: 'Failed to fetch models' },
+          { error: "Failed to fetch models" },
           { status: 500 },
         );
       }
@@ -40,14 +40,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ models: models }, { status: 200 });
     } else {
       const { data: models, error } = await supabase
-        .from('3d_generations')
-        .select('id, url, prompt, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .from("3d_generations")
+        .select("id, url, prompt, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
       if (error) {
         return NextResponse.json(
-          { error: 'Failed to fetch models' },
+          { error: "Failed to fetch models" },
           { status: 500 },
         );
       }
@@ -55,9 +55,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ models: models }, { status: 200 });
     }
   } catch (error: any) {
-    console.error('Model get error: ', error);
+    console.error("Model get error: ", error);
     return NextResponse.json(
-      { error: error.message || 'Failed to get models' },
+      { error: error.message || "Failed to get models" },
       { status: 500 },
     );
   }

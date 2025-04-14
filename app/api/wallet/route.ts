@@ -1,8 +1,8 @@
-import type { Blockchain } from '@circle-fin/smart-contract-platform';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import type { Blockchain } from "@circle-fin/smart-contract-platform";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
+import { circleDeveloperSdk } from "@/utils/developer-controlled-wallets-client";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,17 +10,17 @@ export async function POST(req: NextRequest) {
 
     if (!walletSetId) {
       return NextResponse.json(
-        { error: 'walletSetId is required' },
+        { error: "walletSetId is required" },
         { status: 400 },
       );
     }
 
     if (!process.env.CIRCLE_BLOCKCHAIN) {
-      throw new Error('CIRCLE_BLOCKCHAIN environment variable is not set');
+      throw new Error("CIRCLE_BLOCKCHAIN environment variable is not set");
     }
 
     const response = await circleDeveloperSdk.createWallets({
-      accountType: 'SCA',
+      accountType: "SCA",
       blockchains: [process.env.CIRCLE_BLOCKCHAIN as Blockchain],
       count: 1,
       walletSetId,
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     if (!response.data?.wallets?.length) {
       return NextResponse.json(
-        { error: 'No wallets were created' },
+        { error: "No wallets were created" },
         { status: 500 },
       );
     }
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(createdWallet, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to create wallet: ${message}` },
       { status: 500 },

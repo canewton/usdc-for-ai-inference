@@ -1,7 +1,7 @@
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
-import { useSession } from '@/app/contexts/SessionContext';
+import { useSession } from "@/app/contexts/SessionContext";
 
 interface VideoHistoryItem {
   id: string;
@@ -20,21 +20,21 @@ const VideoHistory = () => {
       if (session?.access_token) {
         try {
           setIsLoading(true);
-          const response = await fetch('/api/videos', {
-            method: 'GET',
+          const response = await fetch("/api/videos", {
+            method: "GET",
             headers: {
               Authorization: `Bearer ${session.access_token}`,
             },
           });
 
           if (!response.ok) {
-            throw new Error('Failed to fetch history');
+            throw new Error("Failed to fetch history");
           }
 
           const data = await response.json();
           setVideoHistory(data.videoGenerations || []);
         } catch (error) {
-          console.error('Error fetching video history:', error);
+          console.error("Error fetching video history:", error);
         } finally {
           setIsLoading(false);
         }
@@ -67,7 +67,7 @@ const VideoHistory = () => {
                   onClick={() => navigateToVideo(item.task_id)}
                 >
                   <p className="text-md truncate">
-                    {item.prompt || 'New Chat'}
+                    {item.prompt || "New Chat"}
                   </p>
                 </div>
               ))}

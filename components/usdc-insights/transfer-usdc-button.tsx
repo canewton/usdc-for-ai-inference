@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Loader2 } from 'lucide-react';
-import { type FunctionComponent, type HTMLProps, useState } from 'react';
+import { Loader2 } from "lucide-react";
+import { type FunctionComponent, type HTMLProps, useState } from "react";
 
-import type { WalletTransferRequest } from '@/app/(ai)/server/circleWalletTransfer';
-import { Button } from '@/components/ui/button';
-import { aiModel } from '@/types/ai.types';
+import type { WalletTransferRequest } from "@/app/(ai)/server/circleWalletTransfer";
+import { Button } from "@/components/ui/button";
+import { aiModel } from "@/types/ai.types";
 
 interface Props extends HTMLProps<HTMLElement> {
   walletId?: string;
@@ -21,28 +21,28 @@ export const TransferUSDCButton: FunctionComponent<Props> = ({
     setLoading(true);
     try {
       const transfer: WalletTransferRequest = {
-        circleWalletId: walletId ?? '',
-        amount: '0.1',
-        projectName: 'Hi',
+        circleWalletId: walletId ?? "",
+        amount: "0.1",
+        projectName: "Hi",
         aiModel: aiModel.TEXT_TO_TEXT,
       };
 
-      const response = await fetch('/api/wallet/transfer', {
-        method: 'POST',
+      const response = await fetch("/api/wallet/transfer", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(transfer),
       });
 
       if (!response.ok) {
-        throw new Error('Transfer failed');
+        throw new Error("Transfer failed");
       }
 
       const result = await response.json();
-      console.log('Transfer initiated:', result);
+      console.log("Transfer initiated:", result);
     } catch (error) {
-      console.error('Action failed:', error);
+      console.error("Action failed:", error);
     } finally {
       setLoading(false);
     }
@@ -56,7 +56,7 @@ export const TransferUSDCButton: FunctionComponent<Props> = ({
           Loading...
         </>
       ) : (
-        'Transfer USDC'
+        "Transfer USDC"
       )}
     </Button>
   );

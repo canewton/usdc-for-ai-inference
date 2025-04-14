@@ -1,27 +1,27 @@
-import { WalletIcon } from 'lucide-react';
-import type { FunctionComponent } from 'react';
+import { WalletIcon } from "lucide-react";
+import type { FunctionComponent } from "react";
 
-import { CopyButton } from '@/components/copy-button';
-import { Button } from '@/components/ui/button';
+import { CopyButton } from "@/components/copy-button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { WalletBalance } from '@/components/usdc-insights/wallet-balance';
-import type { Wallet } from '@/types/database.types';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { WalletBalance } from "@/components/usdc-insights/wallet-balance";
+import type { Wallet } from "@/types/database.types";
 
 interface Props {
   wallet: Wallet;
 }
 
 export const WalletInformationDialog: FunctionComponent<Props> = (props) => {
-  const formattedBalance = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  const formattedBalance = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(Number(props.wallet.balance));
@@ -59,7 +59,7 @@ export const WalletInformationDialog: FunctionComponent<Props> = (props) => {
             Blockchain
           </h4>
           <p className="text-xl text-muted-foreground cursor-pointer">
-            {props.wallet.blockchain || 'No wallet found'}
+            {props.wallet.blockchain || "No wallet found"}
           </p>
         </div>
       </DialogContent>

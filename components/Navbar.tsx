@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import React, { useEffect, useRef, useState } from 'react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
 
 interface Props {
   tabs: string[];
@@ -24,7 +24,7 @@ export default function Navbar({
   dropdownRoutes,
 }: Props) {
   const pathname = usePathname();
-  const [showDropdown, setShowDropdown] = useState('');
+  const [showDropdown, setShowDropdown] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
 
@@ -37,23 +37,23 @@ export default function Navbar({
         navbarRef.current &&
         !navbarRef.current.contains(event.target as Node)
       ) {
-        setShowDropdown('');
+        setShowDropdown("");
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   const currentRoute = pathname.substring(
-    pathname.indexOf('/') + 1,
+    pathname.indexOf("/") + 1,
     pathname.length,
   );
 
   const currentTabIndex = routes.indexOf(currentRoute);
-  const selectedTab = currentTabIndex >= 0 ? tabs[currentTabIndex] : '';
+  const selectedTab = currentTabIndex >= 0 ? tabs[currentTabIndex] : "";
 
   function tabContainsDropdownRoute(tab: string): boolean {
     if (!dropdownRoutes || !dropdownRoutes[tab]) return false;
@@ -71,7 +71,7 @@ export default function Navbar({
             src={`${
               process.env.VERCEL_URL
                 ? `${process.env.VERCEL_URL}`
-                : 'localhost:3000'
+                : "localhost:3000"
             }/circle-logo-1.png`}
             alt="Circle Logo"
             className="h-8"
@@ -82,8 +82,8 @@ export default function Navbar({
                 <Link
                   className={`text-sm font-medium ${
                     selectedTab === tab || tabContainsDropdownRoute(tab)
-                      ? 'text-blue-500'
-                      : ''
+                      ? "text-blue-500"
+                      : ""
                   }`}
                   href={`/${routes[index]}`}
                   onMouseEnter={() => {
@@ -98,7 +98,7 @@ export default function Navbar({
                   <div
                     ref={dropdownRef}
                     className="absolute left-0 mt-6 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-72"
-                    onMouseLeave={() => setShowDropdown('')}
+                    onMouseLeave={() => setShowDropdown("")}
                   >
                     {dropdowns[tab]}
                   </div>

@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Copy } from 'lucide-react';
-import { type FunctionComponent, useState } from 'react';
+import { Copy } from "lucide-react";
+import { type FunctionComponent, useState } from "react";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { sleep } from '@/utils/sleep';
+} from "@/components/ui/tooltip";
+import { sleep } from "@/utils/sleep";
 
 interface Props {
   text: string;

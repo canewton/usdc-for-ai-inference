@@ -1,33 +1,33 @@
-'use client';
+"use client";
 
-import { useChat } from '@ai-sdk/react';
-import { format } from 'date-fns';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useChat } from "@ai-sdk/react";
+import { format } from "date-fns";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-import type { WalletTransferRequest } from '@/app/(ai)/server/circleWalletTransfer';
-import { useSession } from '@/app/contexts/SessionContext';
-import { useDemoLimit } from '@/app/hooks/useDemoLimit';
-import AiHistoryPortal from '@/components/AiHistoryPortal';
-import { ChatMessages } from '@/components/ChatMessages';
-import { ChatSidebar } from '@/components/ChatSidebar';
-import MainAiSection from '@/components/MainAiSection';
-import PromptSuggestions from '@/components/PromptSuggestions';
-import RightAiSidebar from '@/components/RightAiSidebar';
-import { TextInput } from '@/components/TextInput';
-import { Slider } from '@/components/ui/slider';
-import Blurs from '@/public/blurs.svg';
-import WalletIcon from '@/public/digital-wallet.svg';
-import SparkIcon from '@/public/spark.svg';
-import TrustIcon from '@/public/trust.svg';
-import UsdcIcon from '@/public/usdc.svg';
-import { aiModel } from '@/types/ai.types';
-import { TEXT_MODEL_PRICING } from '@/utils/constants';
+import type { WalletTransferRequest } from "@/app/(ai)/server/circleWalletTransfer";
+import { useSession } from "@/app/contexts/SessionContext";
+import { useDemoLimit } from "@/app/hooks/useDemoLimit";
+import AiHistoryPortal from "@/components/AiHistoryPortal";
+import { ChatMessages } from "@/components/ChatMessages";
+import { ChatSidebar } from "@/components/ChatSidebar";
+import MainAiSection from "@/components/MainAiSection";
+import PromptSuggestions from "@/components/PromptSuggestions";
+import RightAiSidebar from "@/components/RightAiSidebar";
+import { TextInput } from "@/components/TextInput";
+import { Slider } from "@/components/ui/slider";
+import Blurs from "@/public/blurs.svg";
+import WalletIcon from "@/public/digital-wallet.svg";
+import SparkIcon from "@/public/spark.svg";
+import TrustIcon from "@/public/trust.svg";
+import UsdcIcon from "@/public/usdc.svg";
+import { aiModel } from "@/types/ai.types";
+import { TEXT_MODEL_PRICING } from "@/utils/constants";
 
 const promptSuggestions = [
-  { title: 'Explain how to load my wallet', icon: WalletIcon },
-  { title: 'Tell me about USDC security', icon: UsdcIcon },
-  { title: 'Surprise me', icon: SparkIcon },
+  { title: "Explain how to load my wallet", icon: WalletIcon },
+  { title: "Tell me about USDC security", icon: UsdcIcon },
+  { title: "Surprise me", icon: SparkIcon },
 ];
 
 interface ChatProps {
@@ -36,15 +36,15 @@ interface ChatProps {
 
 export function Chat({ currChat }: ChatProps) {
   const { remaining, loading: demoLimitLoading } = useDemoLimit();
-  const [model, setModel] = useState('gpt-4o-mini');
+  const [model, setModel] = useState("gpt-4o-mini");
   const [maxTokens, setMaxTokens] = useState(200);
-  const [chatId, setChatId] = useState(currChat || '');
+  const [chatId, setChatId] = useState(currChat || "");
   const [chats, setChats] = useState<
     { id: string; title: string; created_at: string }[]
   >([]);
   const chatIdRef = useRef<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [editedContent, setEditedContent] = useState<string>('');
+  const [editedContent, setEditedContent] = useState<string>("");
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const [showLimitError, setShowLimitError] = useState(false);
 
@@ -63,7 +63,7 @@ export function Chat({ currChat }: ChatProps) {
     stop,
     setInput,
   } = useChat({
-    api: '/api/generatetext',
+    api: "/api/generatetext",
     headers: {
       Authorization: session.access_token,
     },
@@ -77,16 +77,16 @@ export function Chat({ currChat }: ChatProps) {
         setMessages((prevMsgs: any) => [
           ...prevMsgs.slice(0, -2),
           {
-            id: generateChatData.id + 'user',
-            role: 'user',
+            id: generateChatData.id + "user",
+            role: "user",
             content: input,
             promptTokens: usage.promptTokens,
             completionTokens: usage.completionTokens,
             provider: model,
           },
           {
-            id: generateChatData.id + 'ai',
-            role: 'assistant',
+            id: generateChatData.id + "ai",
+            role: "assistant",
             content: message.content,
             promptTokens: usage.promptTokens,
             completionTokens: usage.completionTokens,
@@ -95,41 +95,41 @@ export function Chat({ currChat }: ChatProps) {
         ]);
 
         const transfer: WalletTransferRequest = {
-          circleWalletId: session.wallet_id ?? '',
+          circleWalletId: session.wallet_id ?? "",
           amount: (
             usage.promptTokens *
               TEXT_MODEL_PRICING[model].userBilledInputPrice +
             usage.completionTokens *
               TEXT_MODEL_PRICING[model].userBilledOutputPrice
           ).toString(),
-          projectName: 'Hi',
+          projectName: "Hi",
           aiModel: aiModel.TEXT_TO_TEXT,
         };
 
-        const response = await fetch('/api/wallet/transfer', {
-          method: 'POST',
+        const response = await fetch("/api/wallet/transfer", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(transfer),
         });
 
         if (!response.ok) {
-          throw new Error('Transfer failed');
+          throw new Error("Transfer failed");
         }
 
         const result = await response.json();
-        console.log('Transfer initiated:', result);
+        console.log("Transfer initiated:", result);
       }
     },
   });
 
   const postChatGeneration = async (message: any, usage: any) => {
     try {
-      const response = await fetch('/api/postchatgeneration', {
-        method: 'POST',
+      const response = await fetch("/api/postchatgeneration", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
@@ -147,7 +147,7 @@ export function Chat({ currChat }: ChatProps) {
         return data;
       }
     } catch (error) {
-      console.error('Error saving chat:', error);
+      console.error("Error saving chat:", error);
     }
   };
 
@@ -155,7 +155,7 @@ export function Chat({ currChat }: ChatProps) {
     if (!id.trim()) return;
     try {
       const response = await fetch(`/api/getchatgenerations?id=${id}`, {
-        method: 'GET',
+        method: "GET",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
@@ -167,16 +167,16 @@ export function Chat({ currChat }: ChatProps) {
         // Rearrange the chats to individual messages
         const msgs = data.chats.map((obj: any) => [
           {
-            id: obj.id + 'user',
-            role: 'user',
+            id: obj.id + "user",
+            role: "user",
             content: obj.user_text,
             promptTokens: obj.prompt_tokens,
             completionTokens: obj.completion_tokens,
             provider: obj.provider,
           },
           {
-            id: obj.id + 'ai',
-            role: 'assistant',
+            id: obj.id + "ai",
+            role: "assistant",
             content: obj.ai_text,
             promptTokens: obj.prompt_tokens,
             completionTokens: obj.completion_tokens,
@@ -186,10 +186,10 @@ export function Chat({ currChat }: ChatProps) {
         // Store the fetched messages
         setMessages(msgs.flat());
       } else {
-        console.error('Error fetching messages:', data.error);
+        console.error("Error fetching messages:", data.error);
       }
     } catch (error) {
-      console.error('Fetch chat messages error:', error);
+      console.error("Fetch chat messages error:", error);
     }
   };
 
@@ -197,16 +197,16 @@ export function Chat({ currChat }: ChatProps) {
     await getChatMessages(id);
     setChatId(id);
     chatIdRef.current = id;
-    window.history.replaceState(null, '', `/chat/${id}`);
+    window.history.replaceState(null, "", `/chat/${id}`);
   };
 
   const onDeleteChat = (id: string) => {
     const deleteChat = async (id: string) => {
       try {
         const response = await fetch(`/api/deletechat?id=${id}`, {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${session.access_token}`,
           },
         });
@@ -216,29 +216,29 @@ export function Chat({ currChat }: ChatProps) {
           // Remove deleted chat from state
           setChats((prevChats) => prevChats.filter((chat) => chat.id !== id));
         } else {
-          console.error('Error deleting chat:', result.error);
+          console.error("Error deleting chat:", result.error);
         }
       } catch (error) {
-        console.error('Delete request failed:', error);
+        console.error("Delete request failed:", error);
       }
     };
     if (session) {
       deleteChat(id);
       setMessages([]);
-      router.push('/chat/');
+      router.push("/chat/");
     }
   };
 
   const onNewChat = () => {
     setChats((prevChats) => [
       {
-        id: '',
-        title: '',
+        id: "",
+        title: "",
         created_at: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"),
       },
       ...prevChats,
     ]);
-    setChatId('');
+    setChatId("");
     setMessages([]);
   };
 
@@ -246,7 +246,7 @@ export function Chat({ currChat }: ChatProps) {
     if (!session) return;
     try {
       const response = await fetch(`/api/getchats`, {
-        method: 'GET',
+        method: "GET",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
@@ -257,19 +257,19 @@ export function Chat({ currChat }: ChatProps) {
         // Store the fetched chats
         setChats(data.chats);
       } else {
-        console.error('Error fetching chat:', data.error);
+        console.error("Error fetching chat:", data.error);
       }
     } catch (error) {
-      console.error('Error fetching chats:', error);
+      console.error("Error fetching chats:", error);
     }
   };
 
   const createNewChat = async (title: string) => {
     try {
-      const response = await fetch('/api/postchat', {
-        method: 'POST',
+      const response = await fetch("/api/postchat", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
@@ -280,10 +280,10 @@ export function Chat({ currChat }: ChatProps) {
       if (response.ok) {
         return data;
       } else {
-        console.error('Error posting chat:', data.error);
+        console.error("Error posting chat:", data.error);
       }
     } catch (error) {
-      console.error('Error saving chat:', error);
+      console.error("Error saving chat:", error);
     }
   };
 
@@ -301,9 +301,9 @@ export function Chat({ currChat }: ChatProps) {
       if (chatData.id) {
         setChatId(chatData.id);
         chatIdRef.current = chatData.id;
-        window.history.replaceState(null, '', `/chat/${chatData.id}`);
+        window.history.replaceState(null, "", `/chat/${chatData.id}`);
         // Update chats
-        if (chats[0].id === '') {
+        if (chats[0].id === "") {
           setChats((prevChats) => [
             {
               id: chatData.id,
@@ -323,7 +323,7 @@ export function Chat({ currChat }: ChatProps) {
           ]);
         }
       } else {
-        console.error('Failed to create new chat');
+        console.error("Failed to create new chat");
       }
     }
 
@@ -336,7 +336,7 @@ export function Chat({ currChat }: ChatProps) {
         },
       });
     } catch (error) {
-      console.error('Error in message submission:', error);
+      console.error("Error in message submission:", error);
     }
   };
 
@@ -358,7 +358,7 @@ export function Chat({ currChat }: ChatProps) {
     if (!editedContent.trim()) return;
     // Get original message
     const originalMessage = messages.find((msg) => msg.id === editingMessageId);
-    if (!originalMessage || originalMessage.role !== 'user') return;
+    if (!originalMessage || originalMessage.role !== "user") return;
 
     // Find the next assistant message (if any)
     const messageIndex = messages.findIndex(
@@ -373,9 +373,9 @@ export function Chat({ currChat }: ChatProps) {
       const response = await fetch(
         `/api/deletechatgenerations?id=${chatGenerationId}`,
         {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${session.access_token}`,
           },
         },
@@ -386,10 +386,10 @@ export function Chat({ currChat }: ChatProps) {
         // Remove deleted chat from state
         console.log(result);
       } else {
-        console.error('Error deleting chat generations:', result.error);
+        console.error("Error deleting chat generations:", result.error);
       }
     } catch (error) {
-      console.error('Delete request failed:', error);
+      console.error("Delete request failed:", error);
     }
 
     // Submit the edited message to generate a new response
@@ -398,7 +398,7 @@ export function Chat({ currChat }: ChatProps) {
         body: {
           messages: [
             {
-              role: 'user',
+              role: "user",
               content: editedContent,
             },
           ],
@@ -407,17 +407,17 @@ export function Chat({ currChat }: ChatProps) {
         },
       });
     } catch (error) {
-      console.error('Error in message submission:', error);
+      console.error("Error in message submission:", error);
     }
 
     // Reset editing state
     setEditingMessageId(null);
-    setEditedContent('');
+    setEditedContent("");
   };
 
   const cancelEdit = () => {
     setEditingMessageId(null);
-    setEditedContent('');
+    setEditedContent("");
   };
 
   useEffect(() => {
@@ -433,7 +433,7 @@ export function Chat({ currChat }: ChatProps) {
   return (
     <>
       <div
-        className={`${!session.api_key_status.openai ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.api_key_status.openai ? "flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto" : "hidden"}`}
       >
         This page is not available during the hosted demo.
       </div>
@@ -463,7 +463,7 @@ export function Chat({ currChat }: ChatProps) {
                     onMouseLeave={() => setTrustHovered(false)}
                   />
                   <div
-                    className={`${trustHovered ? 'opacity-100' : 'opacity-0'} cursor-default flex w-fit border border-gray-200 rounded-3xl h-10 justify-center items-center p-4 shadow-md text-sub transition-opacity duration-300`}
+                    className={`${trustHovered ? "opacity-100" : "opacity-0"} cursor-default flex w-fit border border-gray-200 rounded-3xl h-10 justify-center items-center p-4 shadow-md text-sub transition-opacity duration-300`}
                   >
                     {wordsPerToken}
                   </div>
@@ -551,8 +551,8 @@ export function Chat({ currChat }: ChatProps) {
               onChange={(e) => setModel(e.target.value)}
               className="border border-gray-200 rounded-lg p-3 bg-white text-body w-full"
             >
-              <option value={'gpt-4o-mini'}>gpt-4o-mini</option>
-              <option value={'gpt-4o'}>gpt-4o</option>
+              <option value={"gpt-4o-mini"}>gpt-4o-mini</option>
+              <option value={"gpt-4o"}>gpt-4o</option>
             </select>
           </div>
         </div>

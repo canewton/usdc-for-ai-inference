@@ -1,19 +1,19 @@
-'use client';
-import { redirect } from 'next/navigation';
-import { useEffect, useState } from 'react';
+"use client";
+import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
 
-import AiTabs from '@/components/AiTabs';
-import { createClient } from '@/utils/supabase/client';
+import AiTabs from "@/components/AiTabs";
+import { createClient } from "@/utils/supabase/client";
 
-import { Spinner } from '../../components/Spinner';
-import { SessionProvider } from '../contexts/SessionContext';
+import { Spinner } from "../../components/Spinner";
+import { SessionProvider } from "../contexts/SessionContext";
 
 export default function AILayout({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState('');
+  const [session, setSession] = useState("");
   const [loading, setLoading] = useState(true);
   const [apiKeyStatus, setApiKeyStatus] = useState({});
-  const [walletId, setWalletId] = useState('');
-  const [circleWalletId, setCircleWalletId] = useState('');
+  const [walletId, setWalletId] = useState("");
+  const [circleWalletId, setCircleWalletId] = useState("");
 
   useEffect(() => {
     const getSession = async () => {
@@ -24,7 +24,7 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
       if (session) {
         setSession(session.access_token);
       } else {
-        setSession('');
+        setSession("");
       }
 
       const {
@@ -32,20 +32,20 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        return redirect('/sign-in');
+        return redirect("/sign-in");
       }
 
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('auth_user_id', user.id)
+        .from("profiles")
+        .select("id")
+        .eq("auth_user_id", user.id)
         .single();
 
       const { data: userWallet } = await supabase
-        .schema('public')
-        .from('wallets')
+        .schema("public")
+        .from("wallets")
         .select()
-        .eq('profile_id', profile?.id)
+        .eq("profile_id", profile?.id)
         .single();
       setWalletId(userWallet?.id);
       setCircleWalletId(userWallet?.circle_wallet_id);
@@ -57,16 +57,16 @@ export default function AILayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const fetchAPIStatus = async () => {
       try {
-        const response = await fetch('/api/check-api-keys');
+        const response = await fetch("/api/check-api-keys");
 
         if (!response.ok) {
-          throw new Error('Failed to fetch API status');
+          throw new Error("Failed to fetch API status");
         }
 
         const data = await response.json();
         setApiKeyStatus(data.apiKeyStatus);
       } catch (err) {
-        console.error('Error fetching API status:', err);
+        console.error("Error fetching API status:", err);
       }
     };
     fetchAPIStatus();

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useParams, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
-import { useSession } from '@/app/contexts/SessionContext';
-import AiHistoryPortal from '@/components/AiHistoryPortal';
-import MainAiSection from '@/components/MainAiSection';
-import RightAiSidebar from '@/components/RightAiSidebar';
-import VideoHistory from '@/components/VideoHistory';
+import { useSession } from "@/app/contexts/SessionContext";
+import AiHistoryPortal from "@/components/AiHistoryPortal";
+import MainAiSection from "@/components/MainAiSection";
+import RightAiSidebar from "@/components/RightAiSidebar";
+import VideoHistory from "@/components/VideoHistory";
 
 interface VideoData {
   task_id: string;
@@ -30,9 +30,9 @@ export default function VideoChatPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [model, setModel] = useState('SVD-XT');
-  const [title, setTitle] = useState('');
-  const [seed, setSeed] = useState('-1');
+  const [model, setModel] = useState("SVD-XT");
+  const [title, setTitle] = useState("");
+  const [seed, setSeed] = useState("-1");
 
   useEffect(() => {
     if (!sessionToken) return;
@@ -40,17 +40,17 @@ export default function VideoChatPage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch('/api/getvideochat', {
-          method: 'POST',
+        const response = await fetch("/api/getvideochat", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${sessionToken}`,
           },
           body: JSON.stringify({ videoId: id }),
         });
         if (!response.ok) {
           const errData = await response.json();
-          throw new Error(errData.error || 'Failed to load video data');
+          throw new Error(errData.error || "Failed to load video data");
         }
         const data: VideoData = await response.json();
         setVideoData(data);
@@ -59,8 +59,8 @@ export default function VideoChatPage() {
         setSeed(data.seed.toString());
         setImagePreview(data.prompt_image_path);
       } catch (err: any) {
-        console.error('Error fetching video data:', err);
-        setError(err.message || 'An error occurred');
+        console.error("Error fetching video data:", err);
+        setError(err.message || "An error occurred");
       } finally {
         setLoading(false);
       }
@@ -70,23 +70,23 @@ export default function VideoChatPage() {
 
   useEffect(() => {
     if (!videoData || !sessionToken) return;
-    if (videoData.processing_status !== 'TASK_STATUS_PROCESSING') return;
+    if (videoData.processing_status !== "TASK_STATUS_PROCESSING") return;
     const pollStatus = async () => {
       try {
-        const response = await fetch('/api/checkvideostatus', {
-          method: 'POST',
+        const response = await fetch("/api/checkvideostatus", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${sessionToken}`,
           },
           body: JSON.stringify({ task_id: videoData.task_id }),
         });
         if (!response.ok) {
           const errData = await response.json();
-          throw new Error(errData.error || 'Failed to check video status');
+          throw new Error(errData.error || "Failed to check video status");
         }
         const data = await response.json();
-        if (data.taskStatus === 'TASK_STATUS_PROCESSING') {
+        if (data.taskStatus === "TASK_STATUS_PROCESSING") {
           setTimeout(pollStatus, 5000);
         } else {
           if (data.videos && data.videos.length > 0) {
@@ -106,7 +106,7 @@ export default function VideoChatPage() {
           }
         }
       } catch (err: any) {
-        console.error('Error polling video status:', err);
+        console.error("Error polling video status:", err);
       }
     };
     pollStatus();
@@ -124,8 +124,8 @@ export default function VideoChatPage() {
           <div className="text-red-500">{error}</div>
         ) : !videoData ? (
           <div>No video data found.</div>
-        ) : videoData.processing_status === 'TASK_STATUS_PROCESSING' ||
-          videoData.processing_status === 'pending' ? (
+        ) : videoData.processing_status === "TASK_STATUS_PROCESSING" ||
+          videoData.processing_status === "pending" ? (
           <div className="flex flex-col items-center justify-center w-full h-full py-8">
             <div className="bg-white border border-gray-200 shadow-md rounded-lg p-6 max-w-lg text-center">
               <p className="text-xl font-semibold mb-4">
@@ -199,7 +199,7 @@ export default function VideoChatPage() {
             </div>
           </div>
           <button
-            onClick={() => router.push('/video')}
+            onClick={() => router.push("/video")}
             className="mt-6 bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition-colors"
           >
             Generate new video

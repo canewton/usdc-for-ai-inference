@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { ChevronRight } from 'lucide-react';
-import React, { useEffect } from 'react';
-import { type FunctionComponent, useState } from 'react';
+import { ChevronRight } from "lucide-react";
+import React, { useEffect } from "react";
+import { type FunctionComponent, useState } from "react";
 
-import { SortIcon } from '@/app/icons/SortIcon';
-import { USDCIcon } from '@/app/icons/USDCIcon';
+import { SortIcon } from "@/app/icons/SortIcon";
+import { USDCIcon } from "@/app/icons/USDCIcon";
 import {
   Pagination,
   PaginationContent,
@@ -14,8 +14,8 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
-import { Skeleton } from '@/components/ui/skeleton';
+} from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -23,9 +23,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 
-import type { SortField } from './transaction-history';
+import type { SortField } from "./transaction-history";
 
 interface Transaction {
   id: string;
@@ -83,7 +83,7 @@ export const Transactions: FunctionComponent<Props> = ({
   }
 
   const toggleExpand = (id: string) => {
-    console.log('toggleExpand', id, paginatedData);
+    console.log("toggleExpand", id, paginatedData);
     setPaginatedData(
       paginatedData.map((tx) =>
         tx.id === id ? { ...tx, expanded: !tx.expanded } : tx,
@@ -91,7 +91,7 @@ export const Transactions: FunctionComponent<Props> = ({
     );
   };
 
-  const blockchain = process.env.CIRCLE_BLOCKCHAIN ?? 'ARB-SEPOLIA';
+  const blockchain = process.env.CIRCLE_BLOCKCHAIN ?? "ARB-SEPOLIA";
 
   return (
     <>
@@ -99,25 +99,25 @@ export const Transactions: FunctionComponent<Props> = ({
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead colSpan={2} onClick={() => onSort('date')}>
+              <TableHead colSpan={2} onClick={() => onSort("date")}>
                 <div className="flex items-center gap-1">
                   Date
                   <SortIcon />
                 </div>
               </TableHead>
-              <TableHead onClick={() => onSort('amount')}>
+              <TableHead onClick={() => onSort("amount")}>
                 <div className="flex items-center gap-1">
                   Total Amount
                   <SortIcon />
                 </div>
               </TableHead>
-              <TableHead onClick={() => onSort('balance')}>
+              <TableHead onClick={() => onSort("balance")}>
                 <div className="flex items-center gap-1">
                   Balance
                   <SortIcon />
                 </div>
               </TableHead>
-              <TableHead onClick={() => onSort('status')}>Status</TableHead>
+              <TableHead onClick={() => onSort("status")}>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -131,38 +131,38 @@ export const Transactions: FunctionComponent<Props> = ({
                   <TableCell className="p-4" colSpan={2}>
                     <div className="flex items-center gap-2">
                       <div
-                        className={`transition-transform duration-300 ${transaction.expanded ? 'rotate-90' : ''}`}
+                        className={`transition-transform duration-300 ${transaction.expanded ? "rotate-90" : ""}`}
                       >
                         <ChevronRight className="text-gray-500" size={20} />
                       </div>
                       {transaction.created_at}
                     </div>
                   </TableCell>
-                  {transaction.transaction_type === 'INBOUND' && (
+                  {transaction.transaction_type === "INBOUND" && (
                     <TableCell className="text-green-600">
                       <div className="flex items-center gap-1">
-                        +{transaction.amount}{' '}
+                        +{transaction.amount}{" "}
                         <USDCIcon className="text-green-600" />
                       </div>
                     </TableCell>
                   )}
-                  {transaction.transaction_type === 'OUTBOUND' && (
+                  {transaction.transaction_type === "OUTBOUND" && (
                     <TableCell className="text-red-600">
                       <div className="flex items-center gap-1">
-                        -{transaction.amount}{' '}
+                        -{transaction.amount}{" "}
                         <USDCIcon className="text-red-600" />
                       </div>
                     </TableCell>
                   )}
                   <TableCell>{transaction.balance}</TableCell>
-                  {transaction.status == 'CONFIRMED' && (
+                  {transaction.status == "CONFIRMED" && (
                     <TableCell>
                       <span className="inline-flex items-center px-4 py-1.5 rounded-full font-medium bg-green-100 text-green-800">
                         {transaction.status}
                       </span>
                     </TableCell>
                   )}
-                  {transaction.status !== 'CONFIRMED' && (
+                  {transaction.status !== "CONFIRMED" && (
                     <TableCell colSpan={1}>
                       <span className="inline-flex items-center px-4 py-1.5 rounded-full font-medium bg-red-100 text-red-800">
                         {transaction.status}
@@ -175,8 +175,8 @@ export const Transactions: FunctionComponent<Props> = ({
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${
                         transaction.expanded
-                          ? 'max-h-20 opacity-100'
-                          : 'max-h-0 opacity-0'
+                          ? "max-h-20 opacity-100"
+                          : "max-h-0 opacity-0"
                       }`}
                     >
                       <div className="p-6 px-11 align-middle">
@@ -188,8 +188,8 @@ export const Transactions: FunctionComponent<Props> = ({
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${
                         transaction.expanded
-                          ? 'max-h-20 opacity-100'
-                          : 'max-h-0 opacity-0'
+                          ? "max-h-20 opacity-100"
+                          : "max-h-0 opacity-0"
                       }`}
                     >
                       <div className="p-6 align-middle">
@@ -214,7 +214,7 @@ export const Transactions: FunctionComponent<Props> = ({
                   setCurrentPage((prev) => Math.max(1, prev - 1));
                 }}
                 className={
-                  currentPage === 1 ? 'pointer-events-none opacity-50' : ''
+                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
                 }
               />
             </PaginationItem>
@@ -320,8 +320,8 @@ export const Transactions: FunctionComponent<Props> = ({
                 }}
                 className={
                   currentPage === totalPages
-                    ? 'pointer-events-none opacity-50'
-                    : ''
+                    ? "pointer-events-none opacity-50"
+                    : ""
                 }
               />
             </PaginationItem>

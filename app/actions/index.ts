@@ -1,24 +1,24 @@
-'use server';
+"use server";
 
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-import { createClient } from '@/utils/supabase/server';
-import { encodedRedirect } from '@/utils/utils';
+import { createClient } from "@/utils/supabase/server";
+import { encodedRedirect } from "@/utils/utils";
 
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? process.env.NEXT_PUBLIC_VERCEL_URL
-  : 'http://localhost:3000';
+  : "http://localhost:3000";
 
 export const signUpAction = async (formData: FormData) => {
-  const email = formData.get('email')?.toString();
-  const password = formData.get('password')?.toString();
+  const email = formData.get("email")?.toString();
+  const password = formData.get("password")?.toString();
   const supabase = await createClient();
   const storedHeaders = await headers();
-  const origin = storedHeaders.get('origin');
+  const origin = storedHeaders.get("origin");
 
   if (!email || !password) {
-    return { error: 'Email and password are required' };
+    return { error: "Email and password are required" };
   }
 
   const { error, data: authData } = await supabase.auth.signUp({
@@ -30,50 +30,50 @@ export const signUpAction = async (formData: FormData) => {
   });
 
   if (error) {
-    console.error(error.code + ' ' + error.message);
-    return encodedRedirect('error', '/sign-up', error.message);
+    console.error(error.code + " " + error.message);
+    return encodedRedirect("error", "/sign-up", error.message);
   }
 
   try {
     const createdWalletSetResponse = await fetch(`${baseUrl}/api/wallet-set`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify({
         entityName: email,
       }),
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
     const createdWalletSet = await createdWalletSetResponse.json();
 
     const createdWalletResponse = await fetch(`${baseUrl}/api/wallet`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify({
         walletSetId: createdWalletSet.id,
       }),
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
     const createdWallet = await createdWalletResponse.json();
 
     const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
+      .from("profiles")
       .update({ email })
-      .eq('auth_user_id', authData.user?.id)
+      .eq("auth_user_id", authData.user?.id)
       .select()
       .single();
 
     if (profileError) {
-      console.error('Error while attempting to create user:', profileError);
-      return { error: 'Could not create user' };
+      console.error("Error while attempting to create user:", profileError);
+      return { error: "Could not create user" };
     }
 
     const { error: walletError } = await supabase
-      .schema('public')
-      .from('wallets')
+      .schema("public")
+      .from("wallets")
       .insert({
         profile_id: profileData.id,
         circle_wallet_id: createdWallet.id,
@@ -82,7 +82,7 @@ export const signUpAction = async (formData: FormData) => {
         wallet_address: createdWallet.address,
         account_type: createdWallet.accountType,
         blockchain: createdWallet.blockchain,
-        currency: 'USDC',
+        currency: "USDC",
       })
       .select();
 
@@ -91,19 +91,19 @@ export const signUpAction = async (formData: FormData) => {
         "Error while attempting to create user's wallet:",
         walletError,
       );
-      return { error: 'Could not create wallet' };
+      return { error: "Could not create wallet" };
     }
   } catch (error: any) {
     console.error(error.message);
     return { error: error.message };
   }
 
-  return redirect('/dashboard');
+  return redirect("/dashboard");
 };
 
 export const signInAction = async (formData: FormData) => {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
   const supabase = await createClient();
 
   const { data: user, error } = await supabase.auth.signInWithPassword({
@@ -112,25 +112,25 @@ export const signInAction = async (formData: FormData) => {
   });
 
   if (error) {
-    return encodedRedirect('error', '/sign-in', error.message);
+    return encodedRedirect("error", "/sign-in", error.message);
   }
 
   if (email == process.env.ADMIN_USERNAME) {
-    return redirect('/admin');
+    return redirect("/admin");
   }
 
-  return redirect('/dashboard');
+  return redirect("/dashboard");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
-  const email = formData.get('email')?.toString();
+  const email = formData.get("email")?.toString();
   const supabase = await createClient();
   const storedHeaders = await headers();
-  const origin = storedHeaders.get('origin');
-  const callbackUrl = formData.get('callbackUrl')?.toString();
+  const origin = storedHeaders.get("origin");
+  const callbackUrl = formData.get("callbackUrl")?.toString();
 
   if (!email) {
-    return encodedRedirect('error', '/forgot-password', 'Email is required');
+    return encodedRedirect("error", "/forgot-password", "Email is required");
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -140,9 +140,9 @@ export const forgotPasswordAction = async (formData: FormData) => {
   if (error) {
     console.error(error.message);
     return encodedRedirect(
-      'error',
-      '/forgot-password',
-      'Could not reset password',
+      "error",
+      "/forgot-password",
+      "Could not reset password",
     );
   }
 
@@ -151,31 +151,31 @@ export const forgotPasswordAction = async (formData: FormData) => {
   }
 
   return encodedRedirect(
-    'success',
-    '/forgot-password',
-    'Check your email for a link to reset your password.',
+    "success",
+    "/forgot-password",
+    "Check your email for a link to reset your password.",
   );
 };
 
 export const resetPasswordAction = async (formData: FormData) => {
   const supabase = await createClient();
 
-  const password = formData.get('password') as string;
-  const confirmPassword = formData.get('confirmPassword') as string;
+  const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
 
   if (!password || !confirmPassword) {
     encodedRedirect(
-      'error',
-      '/dashboard/reset-password',
-      'Password and confirm password are required',
+      "error",
+      "/dashboard/reset-password",
+      "Password and confirm password are required",
     );
   }
 
   if (password !== confirmPassword) {
     encodedRedirect(
-      'error',
-      '/dashboard/reset-password',
-      'Passwords do not match',
+      "error",
+      "/dashboard/reset-password",
+      "Passwords do not match",
     );
   }
 
@@ -185,17 +185,17 @@ export const resetPasswordAction = async (formData: FormData) => {
 
   if (error) {
     encodedRedirect(
-      'error',
-      '/dashboard/reset-password',
-      'Password update failed',
+      "error",
+      "/dashboard/reset-password",
+      "Password update failed",
     );
   }
 
-  encodedRedirect('success', '/dashboard/reset-password', 'Password updated');
+  encodedRedirect("success", "/dashboard/reset-password", "Password updated");
 };
 
 export const signOutAction = async () => {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  return redirect('/sign-in');
+  return redirect("/sign-in");
 };

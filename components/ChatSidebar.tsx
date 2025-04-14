@@ -1,5 +1,5 @@
-import { isThisWeek, isYesterday, subDays } from 'date-fns';
-import { useState } from 'react';
+import { isThisWeek, isYesterday, subDays } from "date-fns";
+import { useState } from "react";
 
 import {
   Dialog,
@@ -7,15 +7,15 @@ import {
   DialogDescription,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import CancelIcon from '@/public/cancel.svg';
-import RedCancelIcon from '@/public/red-cancel.svg';
+} from "@/components/ui/tooltip";
+import CancelIcon from "@/public/cancel.svg";
+import RedCancelIcon from "@/public/red-cancel.svg";
 
 interface Chat {
   id: string;
@@ -38,10 +38,10 @@ export function ChatSidebar({
   onSelectChat,
   onDeleteChat,
 }: ChatSidebarProps) {
-  const [hoveredChatId, setHoveredChatId] = useState<string>('');
+  const [hoveredChatId, setHoveredChatId] = useState<string>("");
   const [cancelHovered, setCancelHovered] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
-  const [selectedChatTitle, setSelectedChatTitle] = useState<string>('');
+  const [selectedChatTitle, setSelectedChatTitle] = useState<string>("");
 
   // Group chats by time period
   const groupChatsByTimePeriod = (chats: Chat[]) => {
@@ -81,14 +81,14 @@ export function ChatSidebar({
       key={chat.id}
       className={`p-2 mb-2 cursor-pointer flex justify-between items-center rounded-lg text-body ${
         chat.id === currentChatId
-          ? 'bg-[#F1F0F5]'
-          : 'hover:bg-[#F1F0F5] transition duration-300'
+          ? "bg-[#F1F0F5]"
+          : "hover:bg-[#F1F0F5] transition duration-300"
       }`}
       onClick={() => onSelectChat(chat.id)}
       onMouseEnter={() => setHoveredChatId(chat.id)}
-      onMouseLeave={() => setHoveredChatId('')}
+      onMouseLeave={() => setHoveredChatId("")}
     >
-      <span className="truncate">{chat.title || 'New Chat'}</span>
+      <span className="truncate">{chat.title || "New Chat"}</span>
       <Dialog open={open} onOpenChange={setOpen}>
         <TooltipProvider>
           <Tooltip>
@@ -174,10 +174,10 @@ export function ChatSidebar({
         </button>
         {chats && chats.length > 0 ? (
           <>
-            {renderChatGroup('Today', chatGroups.today)}
-            {renderChatGroup('Yesterday', chatGroups.yesterday)}
-            {renderChatGroup('Past Week', chatGroups.pastWeek)}
-            {renderChatGroup('Older', chatGroups.older)}
+            {renderChatGroup("Today", chatGroups.today)}
+            {renderChatGroup("Yesterday", chatGroups.yesterday)}
+            {renderChatGroup("Past Week", chatGroups.pastWeek)}
+            {renderChatGroup("Older", chatGroups.older)}
           </>
         ) : (
           <div className="text-center text-gray-500">No chats yet</div>

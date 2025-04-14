@@ -1,28 +1,28 @@
-import { NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
+import { NextResponse } from "next/server";
+import { v4 as uuidv4 } from "uuid";
 
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from "@/utils/supabase/client";
 
-const NOVITA_API_URL = 'https://api.novita.ai/v3/async/img2video';
+const NOVITA_API_URL = "https://api.novita.ai/v3/async/img2video";
 const NOVITA_API_KEY = process.env.NEXT_PUBLIC_NOVITA_API_KEY;
 
 export async function POST(req: Request) {
   const supabase = await createClient();
 
   try {
-    const token = req.headers.get('Authorization');
+    const token = req.headers.get("Authorization");
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token.split(' ')[1]);
+    } = await supabase.auth.getUser(token.split(" ")[1]);
 
     if (error || !user) {
-      console.error('Unauthorized', error);
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.error("Unauthorized", error);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const requestBody = await req.json();
@@ -32,30 +32,30 @@ export async function POST(req: Request) {
     const fileData = image_file;
     const fileName = `${user.id}_${uuidv4()}.webp`;
 
-    const base64Data = fileData.split(';base64,').pop();
-    const fileBuffer = Buffer.from(base64Data, 'base64');
+    const base64Data = fileData.split(";base64,").pop();
+    const fileBuffer = Buffer.from(base64Data, "base64");
 
     const { error: storageError } = await supabase.storage
-      .from('video-prompts')
+      .from("video-prompts")
       .upload(fileName, fileBuffer, {
-        contentType: 'image/webp',
-        cacheControl: '3600',
+        contentType: "image/webp",
+        cacheControl: "3600",
       });
 
     if (storageError) {
-      console.error('Error uploading to Supabase:', storageError);
+      console.error("Error uploading to Supabase:", storageError);
       return NextResponse.json(
-        { error: 'Failed to upload image' },
+        { error: "Failed to upload image" },
         { status: 500 },
       );
     }
 
     const { data: publicUrlData } = supabase.storage
-      .from('video-prompts')
+      .from("video-prompts")
       .getPublicUrl(fileName);
 
     if (!publicUrlData.publicUrl) {
-      throw new Error('Failed to retrieve public URL for image');
+      throw new Error("Failed to retrieve public URL for image");
     }
 
     const { publicUrl } = publicUrlData;
@@ -63,9 +63,9 @@ export async function POST(req: Request) {
     const input = {
       model_name: model_name,
       image_file: image_file,
-      frames_num: model_name === 'SVD-XT' ? 25 : 14,
+      frames_num: model_name === "SVD-XT" ? 25 : 14,
       frames_per_second: 6,
-      image_file_resize_mode: 'ORIGINAL_RESOLUTION',
+      image_file_resize_mode: "ORIGINAL_RESOLUTION",
       steps: 20,
       seed: seed || Math.floor(Math.random() * 1000000),
       motion_bucket_id: 1,
@@ -74,9 +74,9 @@ export async function POST(req: Request) {
     };
 
     const response = await fetch(NOVITA_API_URL, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${NOVITA_API_KEY}`,
       },
       body: JSON.stringify(input),
@@ -84,16 +84,16 @@ export async function POST(req: Request) {
 
     const data = await response.json();
     if (!response.ok) {
-      console.error('Error from Novita API:', data);
+      console.error("Error from Novita API:", data);
       return NextResponse.json(
-        { error: 'Error from Novita API' },
+        { error: "Error from Novita API" },
         { status: 500 },
       );
     }
 
     const { task_id } = data;
 
-    const promptInput = prompt || 'Test';
+    const promptInput = prompt || "Test";
 
     await saveVideoGeneration({
       user_id: user.id,
@@ -102,14 +102,14 @@ export async function POST(req: Request) {
       seed: input.seed,
       prompt_image_path: publicUrl,
       task_id,
-      processing_status: 'pending',
+      processing_status: "pending",
     });
 
     return NextResponse.json({ task_id });
   } catch (error) {
-    console.error('Generation error:', error);
+    console.error("Generation error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Generation failed' },
+      { error: error instanceof Error ? error.message : "Generation failed" },
       { status: 500 },
     );
   }
@@ -140,7 +140,7 @@ async function saveVideoGeneration({
 }: VideoGenerationParams) {
   const supabase = await createClient();
   try {
-    const { error } = await supabase.from('video_generations').insert({
+    const { error } = await supabase.from("video_generations").insert({
       user_id,
       prompt,
       model_name,
@@ -153,9 +153,9 @@ async function saveVideoGeneration({
     });
 
     if (error) {
-      console.error('Error saving video generation:', error);
+      console.error("Error saving video generation:", error);
     }
   } catch (err) {
-    console.error('Exception saving video generation:', err);
+    console.error("Exception saving video generation:", err);
   }
 }

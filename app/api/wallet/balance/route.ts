@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
+import { circleDeveloperSdk } from "@/utils/developer-controlled-wallets-client";
 
 const WalletIdSchema = z.object({
   walletId: z.string().uuid(),
@@ -22,7 +22,7 @@ export async function POST(
 
     if (!parseResult.success) {
       return NextResponse.json(
-        { error: 'Invalid walletId format' },
+        { error: "Invalid walletId format" },
         { status: 400 },
       );
     }
@@ -38,19 +38,19 @@ export async function POST(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid request format' },
+        { error: "Invalid request format" },
         { status: 400 },
       );
     }
 
-    console.error('Error fetching balance from wallet:', error);
+    console.error("Error fetching balance from wallet:", error);
 
-    if (error instanceof Error && error.message.includes('not found')) {
-      return NextResponse.json({ error: 'Wallet not found' }, { status: 404 });
+    if (error instanceof Error && error.message.includes("not found")) {
+      return NextResponse.json({ error: "Wallet not found" }, { status: 404 });
     }
 
     return NextResponse.json(
-      { error: 'Internal server error while fetching balance' },
+      { error: "Internal server error while fetching balance" },
       { status: 500 },
     );
   }
