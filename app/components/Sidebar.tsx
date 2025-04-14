@@ -1,5 +1,5 @@
-import Link from "next/link";
-import React from "react";
+import Link from 'next/link';
+import React from 'react';
 
 type SidebarItemProps = {
   title: string;
@@ -10,7 +10,7 @@ const SidebarItem = ({ title, active = false }: SidebarItemProps) => {
   return (
     <Link
       href="#"
-      className={`block py-2 px-4 text-sm hover:bg-gray-100 rounded-md ${active ? "bg-gray-100 text-blue-500 font-medium" : ""}`}
+      className={`block py-2 px-4 text-sm hover:bg-gray-100 rounded-md ${active ? 'bg-gray-100 text-blue-500 font-medium' : ''}`}
     >
       {title}
     </Link>

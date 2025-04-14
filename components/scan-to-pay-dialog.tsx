@@ -1,17 +1,17 @@
-import type { FunctionComponent } from "react";
+import type { FunctionComponent } from 'react';
 
-import { ScanIcon } from "@/app/icons/ScanIcon";
+import { ScanIcon } from '@/app/icons/ScanIcon';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { WalletQRCode } from "@/components/wallet-qr-code";
-import type { Wallet } from "@/types/database.types";
+} from '@/components/ui/dialog';
+import { WalletQRCode } from '@/components/wallet-qr-code';
+import type { Wallet } from '@/types/database.types';
 
-import { Button } from "./ui/button";
+import { Button } from './ui/button';
 
 interface Props {
   wallet: Wallet;

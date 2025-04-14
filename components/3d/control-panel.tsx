@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface ControlPanelProps {
   imageDataUri: string;
@@ -41,14 +41,14 @@ export default function ControlPanel({
     if (isDisabled) return;
     const file = e.target.files?.[0];
     if (file) {
-      const validTypes = ["image/png", "image/jpeg", "image/jpg"];
+      const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
       const maxSize = 20 * 1024 * 1024;
       if (!validTypes.includes(file.type)) {
-        setError("Please upload a PNG, JPG, or JPEG file.");
+        setError('Please upload a PNG, JPG, or JPEG file.');
         return;
       }
       if (file.size > maxSize) {
-        setError("File size exceeds 20MB.");
+        setError('File size exceeds 20MB.');
         return;
       }
 
@@ -59,7 +59,7 @@ export default function ControlPanel({
         setError(null);
       };
       reader.onerror = () => {
-        setError("Error reading the image file.");
+        setError('Error reading the image file.');
       };
       reader.readAsDataURL(file);
     }
@@ -67,13 +67,13 @@ export default function ControlPanel({
 
   useEffect(() => {
     if (!mode) {
-      setPrompt("");
+      setPrompt('');
     }
   }, [mode, setPrompt]);
 
   const resetGenerationState = () => {
-    setPrompt("");
-    setImageDataUri("");
+    setPrompt('');
+    setImageDataUri('');
     setError(null);
   };
 
@@ -85,7 +85,7 @@ export default function ControlPanel({
 
   useEffect(() => {
     if (!imageDataUri && fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   }, [imageDataUri]);
 
@@ -97,11 +97,11 @@ export default function ControlPanel({
         <div
           className={`w-full h-[120px] bg-white rounded-md border border-dashed border-[#eaeaec] flex flex-col items-center justify-center cursor-pointer ${
             isDisabled
-              ? "opacity-50 pointer-events-none"
-              : "hover:border-gray-400"
+              ? 'opacity-50 pointer-events-none'
+              : 'hover:border-gray-400'
           } overflow-hidden`}
           onClick={() =>
-            !isDisabled && document.getElementById("image-upload")?.click()
+            !isDisabled && document.getElementById('image-upload')?.click()
           }
         >
           {imageDataUri ? (
@@ -155,14 +155,14 @@ export default function ControlPanel({
         <select
           className="w-full p-2 border rounded-md text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
           style={{
-            borderColor: "#E5E7EB",
-            fontSize: "14px",
-            color: "#374151",
-            paddingRight: "2.5rem",
+            borderColor: '#E5E7EB',
+            fontSize: '14px',
+            color: '#374151',
+            paddingRight: '2.5rem',
             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23374151' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
-            backgroundPosition: "right 0.5rem center",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "1.2rem",
+            backgroundPosition: 'right 0.5rem center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: '1.2rem',
           }}
           disabled={isDisabled}
         >
@@ -179,7 +179,7 @@ export default function ControlPanel({
         >
           <img className="w-6 h-6" alt="Generate" src="/spark-jelly.svg" />
           <span className="text-sm">
-            {isLoading ? "Generating..." : "Generate your asset"}
+            {isLoading ? 'Generating...' : 'Generate your asset'}
           </span>
         </Button>
         {error && (
@@ -190,7 +190,7 @@ export default function ControlPanel({
       {!demoLimitLoading && remaining !== null && (
         <div className="text-sm text-gray-500">
           {remaining === 0
-            ? "Demo limit reached"
+            ? 'Demo limit reached'
             : `${remaining} generations remaining`}
         </div>
       )}

@@ -6,8 +6,8 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner'; // Import Sonner Toaster
 
 import Navbar from '@/components/Navbar'; // Corrected path
-import { createClient } from '@/utils/supabase/server';
 import type { Profile } from '@/types/database.types'; // Assuming types/database.types.ts exists
+import { createClient } from '@/utils/supabase/server';
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -57,8 +57,8 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <main className="h-screen flex flex-col overflow-auto">
-             {/* Pass user and profile (which can be null) to Navbar */}
-             <Navbar user={user} profile={profile} />
+            {/* Pass user and profile (which can be null) to Navbar */}
+            <Navbar user={user} profile={profile} />
             <div className="flex flex-col flex-1">{children}</div>
           </main>
           {/* Add Sonner Toaster for notifications */}

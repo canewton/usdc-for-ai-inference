@@ -1,6 +1,6 @@
-import React from "react";
+import React from 'react';
 
-import { WebAnalytics } from "@/components/usdc-insights/web-analytics";
+import { WebAnalytics } from '@/components/usdc-insights/web-analytics';
 
 export default function AdminPage() {
   return (

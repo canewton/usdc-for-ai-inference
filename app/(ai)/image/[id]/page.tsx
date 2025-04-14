@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-import { useSession } from "@/app/contexts/SessionContext";
-import { Spinner } from "@/components/Spinner";
+import { useSession } from '@/app/contexts/SessionContext';
+import { Spinner } from '@/components/Spinner';
 
 export default function ImagePage() {
   const params = useParams();
@@ -14,7 +14,7 @@ export default function ImagePage() {
     url: string;
     prompt: string;
     created_at: string;
-  }>({ id: "", url: "", prompt: "", created_at: "" });
+  }>({ id: '', url: '', prompt: '', created_at: '' });
   const [isDownloading, setIsDownloading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const session = useSession();
@@ -28,7 +28,7 @@ export default function ImagePage() {
         const response = await fetch(
           `/api/getgeneratedimages?imageids=${encodeURIComponent(JSON.stringify([imageid]))}`,
           {
-            method: "GET",
+            method: 'GET',
             headers: {
               Authorization: `Bearer ${sessionToken}`,
             },
@@ -40,10 +40,10 @@ export default function ImagePage() {
         if (response.ok) {
           setImageData(data.images[0]);
         } else {
-          console.error("Error fetching images:", data.error);
+          console.error('Error fetching images:', data.error);
         }
       } catch (error) {
-        console.error("Error fetching images:", error);
+        console.error('Error fetching images:', error);
       } finally {
         setIsLoading(false);
       }
@@ -59,7 +59,7 @@ export default function ImagePage() {
         const response = await fetch(imageData.url);
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = url;
         link.download = `${imageData.prompt}.png`;
         document.body.appendChild(link);
@@ -67,7 +67,7 @@ export default function ImagePage() {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       } catch (error) {
-        console.error("Error downloading image:", error);
+        console.error('Error downloading image:', error);
       } finally {
         setIsDownloading(false);
       }

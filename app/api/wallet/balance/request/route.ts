@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
@@ -6,19 +6,19 @@ export async function POST(req: NextRequest) {
 
     if (!body.walletAddress) {
       return NextResponse.json(
-        { error: "walletAddress is required" },
+        { error: 'walletAddress is required' },
         { status: 400 },
       );
     }
 
     if (!process.env.CIRCLE_BLOCKCHAIN) {
-      throw new Error("CIRCLE_BLOCKCHAIN environment variable is not defined");
+      throw new Error('CIRCLE_BLOCKCHAIN environment variable is not defined');
     }
 
-    await fetch("https://api.circle.com/v1/faucet/drips", {
-      method: "POST",
+    await fetch('https://api.circle.com/v1/faucet/drips', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.CIRCLE_API_KEY}`,
       },
       body: JSON.stringify({
@@ -28,11 +28,11 @@ export async function POST(req: NextRequest) {
       }),
     });
 
-    return NextResponse.json({ message: "Funds requested successfully" });
+    return NextResponse.json({ message: 'Funds requested successfully' });
   } catch (error) {
-    console.error("Failed to request USDC via faucet", error);
+    console.error('Failed to request USDC via faucet', error);
     return NextResponse.json(
-      { error: "Failed to request USDC via faucet" },
+      { error: 'Failed to request USDC via faucet' },
       { status: 500 },
     );
   }

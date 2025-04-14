@@ -38,18 +38,18 @@ export type Database = {
     Tables: {
       profiles: {
         Row: Profile;
-        Insert: Omit<Profile, "created_at">;
-        Update: Partial<Omit<Profile, "created_at">>;
+        Insert: Omit<Profile, 'created_at'>;
+        Update: Partial<Omit<Profile, 'created_at'>>;
       };
       wallets: {
         Row: Wallet;
-        Insert: Omit<Wallet, "created_at">;
-        Update: Partial<Omit<Wallet, "created_at">>;
+        Insert: Omit<Wallet, 'created_at'>;
+        Update: Partial<Omit<Wallet, 'created_at'>>;
       };
       transactions: {
         Row: Transaction;
-        Insert: Omit<Transaction, "created_at">;
-        Update: Partial<Omit<Transaction, "created_at">>;
+        Insert: Omit<Transaction, 'created_at'>;
+        Update: Partial<Omit<Transaction, 'created_at'>>;
       };
     };
   };

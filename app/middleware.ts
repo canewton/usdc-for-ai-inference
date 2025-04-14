@@ -1,5 +1,5 @@
 // middleware.ts
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { type CookieOptions, createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function middleware(request: NextRequest) {
@@ -64,15 +64,33 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Define protected routes
-  const protectedRoutes = ['/dashboard', '/admin', '/chat', '/image-generator', '/3d', '/video'];
+  const protectedRoutes = [
+    '/dashboard',
+    '/admin',
+    '/chat',
+    '/image-generator',
+    '/3d',
+    '/video',
+  ];
   const adminRoutes = ['/admin'];
   const authRoutes = ['/sign-in', '/sign-up', '/forgot-password'];
-  const userOnlyRoutes = ['/dashboard', '/3d', '/chat', '/image', '/video', '/image-generator'];
+  const userOnlyRoutes = [
+    '/dashboard',
+    '/3d',
+    '/chat',
+    '/image',
+    '/video',
+    '/image-generator',
+  ];
 
-  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route),
+  );
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
-  const isUserOnlyRoute = userOnlyRoutes.some((route) => pathname === route || pathname.startsWith(route));
+  const isUserOnlyRoute = userOnlyRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route),
+  );
 
   if (!user && isProtectedRoute) {
     // Redirect unauthenticated users trying to access protected routes
@@ -93,7 +111,7 @@ export async function middleware(request: NextRequest) {
       if (request.nextUrl.pathname === '/') {
         return NextResponse.redirect(new URL('/admin', request.url));
       }
-      
+
       // Redirect admin from user-only routes to admin dashboard
       if (isUserOnlyRoute) {
         return NextResponse.redirect(new URL('/admin', request.url));
@@ -121,21 +139,21 @@ export async function middleware(request: NextRequest) {
   // If user is trying to access the root path '/', redirect based on auth status
   if (pathname === '/') {
     if (user) {
-       // Check admin status and redirect accordingly
-       const { data: profile } = await supabase
-       .from('profiles')
-       .select('is_admin')
-       .eq('auth_user_id', user.id)
-       .single();
+      // Check admin status and redirect accordingly
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('auth_user_id', user.id)
+        .single();
 
-       if (profile?.is_admin) {
-         return NextResponse.redirect(new URL('/admin', request.url));
-       } else {
-         return NextResponse.redirect(new URL('/dashboard', request.url));
-       }
+      if (profile?.is_admin) {
+        return NextResponse.redirect(new URL('/admin', request.url));
+      } else {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
     } else {
-       // Redirect unauthenticated users from root to sign-in
-       return NextResponse.redirect(new URL('/sign-in', request.url));
+      // Redirect unauthenticated users from root to sign-in
+      return NextResponse.redirect(new URL('/sign-in', request.url));
     }
   }
 

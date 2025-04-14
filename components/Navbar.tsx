@@ -26,7 +26,12 @@ interface NavTab {
 
 const commonTabs: NavTab[] = [
   { name: 'Manage Wallet', route: '/dashboard' },
-  { name: 'Build with AI', route: '/chat', dropdown: <NavbarAIDropdown />, dropdownRoutes: ['chat', '3d', 'image', 'image-generator', 'video'] },
+  {
+    name: 'Build with AI',
+    route: '/chat',
+    dropdown: <NavbarAIDropdown />,
+    dropdownRoutes: ['chat', '3d', 'image', 'image-generator', 'video'],
+  },
 ];
 
 const adminTabs: NavTab[] = [
@@ -65,23 +70,31 @@ export default function Navbar({ user, profile }: NavbarProps) {
   // Function to determine if a tab is active
   const isTabActive = (tabRoute: string, tabDropdownRoutes?: string[]) => {
     // Exact match or base path match
-     if (pathname === tabRoute || pathname.startsWith(tabRoute + '/')) {
-        return true;
-     }
-     // Check dropdown routes if provided
-     if (tabDropdownRoutes) {
-        return tabDropdownRoutes.some(dropdownRoute => pathname.startsWith(`/${dropdownRoute}`));
-     }
-     return false;
+    if (pathname === tabRoute || pathname.startsWith(tabRoute + '/')) {
+      return true;
+    }
+    // Check dropdown routes if provided
+    if (tabDropdownRoutes) {
+      return tabDropdownRoutes.some((dropdownRoute) =>
+        pathname.startsWith(`/${dropdownRoute}`),
+      );
+    }
+    return false;
   };
 
-
   return (
-    <div className="mb-16"> {/* Added margin-bottom to prevent content overlap */}
+    <div className="mb-16">
+      {' '}
+      {/* Added margin-bottom to prevent content overlap */}
       <div className="fixed top-0 left-0 right-0 min-h-16 bg-white border-b border-gray-200 flex items-center justify-between shadow-lg px-6 md:px-20 z-50">
         {/* Logo */}
-        <Link href={user ? (profile?.is_admin ? '/admin' : '/dashboard') : '/sign-in'} className="flex items-center">
-           <img
+        <Link
+          href={
+            user ? (profile?.is_admin ? '/admin' : '/dashboard') : '/sign-in'
+          }
+          className="flex items-center"
+        >
+          <img
             src="/circle-logo-1.png" // Assumes logo is in public folder
             alt="Circle Logo"
             className="h-8 w-auto" // Use w-auto for proper scaling
@@ -90,11 +103,14 @@ export default function Navbar({ user, profile }: NavbarProps) {
 
         {/* Navigation Tabs (Only if user is logged in) */}
         {user && (
-          <div className="flex-grow flex justify-center items-center" ref={navbarRef}>
+          <div
+            className="flex-grow flex justify-center items-center"
+            ref={navbarRef}
+          >
             <div className="flex items-center space-x-4 md:space-x-8">
               {tabsToDisplay.map((tab) => (
                 <div key={tab.name} className="relative">
-                   <Link
+                  <Link
                     href={tab.route}
                     className={`text-sm font-medium transition-colors ${
                       isTabActive(tab.route, tab.dropdownRoutes)
@@ -132,10 +148,10 @@ export default function Navbar({ user, profile }: NavbarProps) {
               <div className="text-sm text-gray-600 hidden md:block">
                 {user.email}
               </div>
-               {/* Simple Profile Initial Circle */}
-               <div className="bg-indigo-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
+              {/* Simple Profile Initial Circle */}
+              <div className="bg-indigo-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
                 {user.email ? user.email[0].toUpperCase() : '?'}
-               </div>
+              </div>
               <form action={signOutAction}>
                 <Button type="submit" variant="outline" size="sm">
                   Sign Out
@@ -143,16 +159,17 @@ export default function Navbar({ user, profile }: NavbarProps) {
               </form>
             </>
           ) : (
-             // Show Sign In/Sign Up buttons if not logged in and not on auth pages
-             !pathname.startsWith('/sign-in') && !pathname.startsWith('/sign-up') && (
-                <>
-                    <Button asChild size="sm" variant="ghost">
-                    <Link href="/sign-in">Sign In</Link>
-                    </Button>
-                    <Button asChild size="sm" variant="default">
-                    <Link href="/sign-up">Sign Up</Link>
-                    </Button>
-                </>
+            // Show Sign In/Sign Up buttons if not logged in and not on auth pages
+            !pathname.startsWith('/sign-in') &&
+            !pathname.startsWith('/sign-up') && (
+              <>
+                <Button asChild size="sm" variant="ghost">
+                  <Link href="/sign-in">Sign In</Link>
+                </Button>
+                <Button asChild size="sm" variant="default">
+                  <Link href="/sign-up">Sign Up</Link>
+                </Button>
+              </>
             )
           )}
         </div>

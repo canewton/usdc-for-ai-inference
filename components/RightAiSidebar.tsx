@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from '@/utils/supabase/client';
 
-import { WalletBalance } from "./usdc-insights/wallet-balance";
+import { WalletBalance } from './usdc-insights/wallet-balance';
 
 interface RightAiSidebarProps {
   children: React.ReactNode;
@@ -43,24 +43,24 @@ export default function RightAiSidebar({
         } = await supabase.auth.getUser();
 
         if (!user) {
-          router.push("/sign-in");
+          router.push('/sign-in');
           return;
         }
 
         // Get profile
         const { data: profile } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("auth_user_id", user.id)
+          .from('profiles')
+          .select('id')
+          .eq('auth_user_id', user.id)
           .single();
 
         if (profile && isMounted) {
           // Get wallet
           const { data: walletData } = await supabase
-            .schema("public")
-            .from("wallets")
+            .schema('public')
+            .from('wallets')
             .select()
-            .eq("profile_id", profile.id)
+            .eq('profile_id', profile.id)
             .single();
 
           if (isMounted) {
@@ -68,7 +68,7 @@ export default function RightAiSidebar({
           }
         }
       } catch (error) {
-        console.error("Error fetching wallet data:", error);
+        console.error('Error fetching wallet data:', error);
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -100,7 +100,7 @@ export default function RightAiSidebar({
   return (
     <aside
       className={`flex flex-shrink-0 flex-col items-center p-6 border border-gray-200 rounded-l-3xl bg-section h-[calc(100vh-85px)] overflow-y-auto space-y-[20px] ${
-        isImageInput ? "w-[300px] min-w-[300px]" : "w-[200px] min-w-[200px]"
+        isImageInput ? 'w-[300px] min-w-[300px]' : 'w-[200px] min-w-[200px]'
       }`}
     >
       <div className="px-4 py-3 border border-gray-200 rounded-lg bg-white mb-4 w-full">

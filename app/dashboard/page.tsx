@@ -1,15 +1,15 @@
-import { redirect } from "next/navigation";
+import { redirect } from 'next/navigation';
 
-import { RequestUsdcButton } from "@/components/request-usdc-button";
-import { ScanToPayDialog } from "@/components/scan-to-pay-dialog";
-import { USDCButton } from "@/components/usdc-button";
-import { TransactionHistory } from "@/components/usdc-insights/transaction-history";
-import { TransferUSDCButton } from "@/components/usdc-insights/transfer-usdc-button";
-import { WalletBalance } from "@/components/usdc-insights/wallet-balance";
-import { WalletInformationDialog } from "@/components/usdc-insights/wallet-information-dialog";
-import { createClient } from "@/utils/supabase/server";
+import { RequestUsdcButton } from '@/components/request-usdc-button';
+import { ScanToPayDialog } from '@/components/scan-to-pay-dialog';
+import { USDCButton } from '@/components/usdc-button';
+import { TransactionHistory } from '@/components/usdc-insights/transaction-history';
+import { TransferUSDCButton } from '@/components/usdc-insights/transfer-usdc-button';
+import { WalletBalance } from '@/components/usdc-insights/wallet-balance';
+import { WalletInformationDialog } from '@/components/usdc-insights/wallet-information-dialog';
+import { createClient } from '@/utils/supabase/server';
 
-import { USDCIcon } from "../icons/USDCIcon";
+import { USDCIcon } from '../icons/USDCIcon';
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -19,27 +19,27 @@ export default async function Dashboard() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/sign-in");
+    return redirect('/sign-in');
   }
 
   const { data: profile } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("auth_user_id", user.id)
+    .from('profiles')
+    .select('id')
+    .eq('auth_user_id', user.id)
     .single();
 
   const { data: wallet } = await supabase
-    .schema("public")
-    .from("wallets")
+    .schema('public')
+    .from('wallets')
     .select()
-    .eq("profile_id", profile?.id)
+    .eq('profile_id', profile?.id)
     .single();
 
   const { data: treasuryWallet } = await supabase
-    .schema("public")
-    .from("wallets")
+    .schema('public')
+    .from('wallets')
     .select()
-    .eq("circle_wallet_id", process.env.NEXT_PUBLIC_TREASURY_WALLET_ID)
+    .eq('circle_wallet_id', process.env.NEXT_PUBLIC_TREASURY_WALLET_ID)
     .single();
 
   return (
@@ -61,7 +61,7 @@ export default async function Dashboard() {
           </div>
         </div>
         <div className="flex gap-4">
-          {process.env.NODE_ENV === "development" && (
+          {process.env.NODE_ENV === 'development' && (
             <RequestUsdcButton walletAddress={wallet?.wallet_address} />
           )}
           <TransferUSDCButton
