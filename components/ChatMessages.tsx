@@ -1,7 +1,7 @@
-import type { Message } from 'ai';
-import { useEffect, useRef, useState } from 'react';
+import type { Message } from "ai";
+import { useEffect, useRef, useState } from "react";
 
-import { MessageItem } from './MessageItem';
+import { MessageItem } from "./MessageItem";
 
 interface ChatMessagesProps {
   messages: Message[];
@@ -32,7 +32,7 @@ export function ChatMessages({
   useEffect(() => {
     // Scroll to bottom of messages
     if (!editingMessageId) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 

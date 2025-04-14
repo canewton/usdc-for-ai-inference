@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { Search, SlidersHorizontal } from 'lucide-react';
-import { type FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { Search, SlidersHorizontal } from "lucide-react";
+import { type FunctionComponent, useEffect, useMemo, useState } from "react";
 
-import { Image3DIcon } from '@/app/icons/Image3DIcon';
-import { aiModel } from '@/types/ai.types';
-import type { Transaction, Wallet } from '@/types/database.types';
-import { createClient } from '@/utils/supabase/client';
+import { Image3DIcon } from "@/app/icons/Image3DIcon";
+import { aiModel } from "@/types/ai.types";
+import type { Transaction, Wallet } from "@/types/database.types";
+import { createClient } from "@/utils/supabase/client";
 
-import type { BillingTransaction } from './billing';
-import { Billing } from './billing';
-import { TransactionGraphs } from './transaction-graphs';
-import { Transactions } from './transactions';
+import type { BillingTransaction } from "./billing";
+import { Billing } from "./billing";
+import { TransactionGraphs } from "./transaction-graphs";
+import { Transactions } from "./transactions";
 
 interface Props {
   wallet: Wallet;
@@ -22,25 +22,25 @@ interface Props {
 
 const supabase = createClient();
 
-export type SortField = 'date' | 'amount' | 'status' | 'balance' | 'name';
-type SortDirection = 'asc' | 'desc';
+export type SortField = "date" | "amount" | "status" | "balance" | "name";
+type SortDirection = "asc" | "desc";
 
 export const TransactionHistory: FunctionComponent<Props> = (props) => {
-  const [activeTab, setActiveTab] = useState('transactions');
+  const [activeTab, setActiveTab] = useState("transactions");
   const [loading, setLoading] = useState(false);
   const [transactionData, setTransactionData] = useState<Transaction[]>([]);
   const [userBillingData, setUserBillingData] = useState<BillingTransaction[]>(
     [],
   );
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [sortConfig, setSortConfig] = useState<{
     field: SortField;
     direction: SortDirection;
   }>({
-    field: 'date',
-    direction: 'desc',
+    field: "date",
+    direction: "desc",
   });
 
   const formatData = (data: Transaction[]) => {
@@ -48,35 +48,35 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       ...transaction,
       created_at: new Date(transaction.created_at).toLocaleString(),
       expanded: false,
-      amount: new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
+      amount: new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(Number(transaction.amount)),
-      balance: new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
+      balance: new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(Number(transaction.balance)),
     }));
 
     return formatted.sort((a, b) => {
-      if (sortConfig.field === 'date') {
+      if (sortConfig.field === "date") {
         const dateA = new Date(a.created_at).getTime();
         const dateB = new Date(b.created_at).getTime();
-        return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
-      } else if (sortConfig.field === 'amount') {
-        const amountA = parseFloat(a.amount.replace(/[^0-9.-]+/g, ''));
-        const amountB = parseFloat(b.amount.replace(/[^0-9.-]+/g, ''));
-        return sortConfig.direction === 'asc'
+        return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
+      } else if (sortConfig.field === "amount") {
+        const amountA = parseFloat(a.amount.replace(/[^0-9.-]+/g, ""));
+        const amountB = parseFloat(b.amount.replace(/[^0-9.-]+/g, ""));
+        return sortConfig.direction === "asc"
           ? amountA - amountB
           : amountB - amountA;
-      } else if (sortConfig.field === 'balance') {
-        const amountA = parseFloat(a.balance.replace(/[^0-9.-]+/g, ''));
-        const amountB = parseFloat(b.balance.replace(/[^0-9.-]+/g, ''));
-        return sortConfig.direction === 'asc'
+      } else if (sortConfig.field === "balance") {
+        const amountA = parseFloat(a.balance.replace(/[^0-9.-]+/g, ""));
+        const amountB = parseFloat(b.balance.replace(/[^0-9.-]+/g, ""));
+        return sortConfig.direction === "asc"
           ? amountA - amountB
           : amountB - amountA;
       }
@@ -111,27 +111,27 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       ...transaction,
       created_at: new Date(transaction.created_at).toLocaleString(),
       expanded: false,
-      amount: new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
+      amount: new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(Number(transaction.amount)),
     }));
 
     return formatted.sort((a, b) => {
-      if (sortConfig.field === 'date') {
+      if (sortConfig.field === "date") {
         const dateA = new Date(a.created_at).getTime();
         const dateB = new Date(b.created_at).getTime();
-        return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
-      } else if (sortConfig.field === 'amount') {
-        const amountA = parseFloat(a.amount.replace(/[^0-9.-]+/g, ''));
-        const amountB = parseFloat(b.amount.replace(/[^0-9.-]+/g, ''));
-        return sortConfig.direction === 'asc'
+        return sortConfig.direction === "asc" ? dateA - dateB : dateB - dateA;
+      } else if (sortConfig.field === "amount") {
+        const amountA = parseFloat(a.amount.replace(/[^0-9.-]+/g, ""));
+        const amountB = parseFloat(b.amount.replace(/[^0-9.-]+/g, ""));
+        return sortConfig.direction === "asc"
           ? amountA - amountB
           : amountB - amountA;
-      } else if (sortConfig.field === 'name') {
-        return sortConfig.direction === 'asc'
+      } else if (sortConfig.field === "name") {
+        return sortConfig.direction === "asc"
           ? a.project_name?.localeCompare(b.project_name)
           : b.project_name?.localeCompare(a.project_name);
       }
@@ -143,7 +143,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     setSortConfig((prev) => ({
       field,
       direction:
-        prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc',
+        prev.field === field && prev.direction === "asc" ? "desc" : "asc",
     }));
   };
 
@@ -151,16 +151,16 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
     try {
       setLoading(true);
       const { data: transactions } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('wallet_id', props.wallet?.id)
-        .eq('transaction_type', 'INBOUND')
-        .order('created_at', { ascending: false });
+        .from("transactions")
+        .select("*")
+        .eq("wallet_id", props.wallet?.id)
+        .eq("transaction_type", "INBOUND")
+        .order("created_at", { ascending: false });
 
       setTransactionData(transactions ?? []);
       updateBillingTransactions();
     } catch (error) {
-      console.error('Failed to fetch transactions:', error);
+      console.error("Failed to fetch transactions:", error);
     } finally {
       setLoading(false);
     }
@@ -206,19 +206,19 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       setLoading(true);
 
       const { data: projects } = await supabase
-        .from('ai_projects')
-        .select('*')
-        .eq('circle_wallet_id', props.wallet?.circle_wallet_id)
-        .order('created_at', { ascending: false });
+        .from("ai_projects")
+        .select("*")
+        .eq("circle_wallet_id", props.wallet?.circle_wallet_id)
+        .order("created_at", { ascending: false });
 
       const circleTransactionIds = (projects ?? []).map(
         (p) => p.circle_transaction_id,
       );
 
       const { data: transactions } = await supabase
-        .from('transactions')
-        .select('*')
-        .in('circle_transaction_id', circleTransactionIds);
+        .from("transactions")
+        .select("*")
+        .in("circle_transaction_id", circleTransactionIds);
 
       const billingTransactions: BillingTransaction[] | null =
         createBillingData(transactions ?? [], projects ?? []);
@@ -227,19 +227,19 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         setUserBillingData(billingTransactions);
       }
     } catch (error) {
-      console.error('Failed to fetch transactions:', error);
+      console.error("Failed to fetch transactions:", error);
     }
   };
 
   useEffect(() => {
     const billingSubscription = supabase
-      .channel('ai-projects')
+      .channel("ai-projects")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'ai_projects',
+          event: "INSERT",
+          schema: "public",
+          table: "ai_projects",
           filter: `circle_wallet_id=eq.${props.wallet?.circle_wallet_id}`,
         },
         () => updateBillingTransactions(),
@@ -247,13 +247,13 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
       .subscribe();
 
     const walletTransactionSubscription = supabase
-      .channel('wallet-history')
+      .channel("wallet-history")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'transactions',
+          event: "INSERT",
+          schema: "public",
+          table: "transactions",
           filter: `wallet_id=eq.${props.wallet?.id}`,
         },
         () => updateTransactions(),
@@ -287,31 +287,31 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
           <div className="flex gap-8">
             <button
               className={`pb-4 px-1 ${
-                activeTab === 'transactions'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500'
+                activeTab === "transactions"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500"
               }`}
-              onClick={() => setActiveTab('transactions')}
+              onClick={() => setActiveTab("transactions")}
             >
               Transaction History
             </button>
             <button
               className={`pb-4 px-1 ${
-                activeTab === 'billing'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500'
+                activeTab === "billing"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500"
               }`}
-              onClick={() => setActiveTab('billing')}
+              onClick={() => setActiveTab("billing")}
             >
               Billing History
             </button>
             <button
               className={`pb-4 px-1 ${
-                activeTab === 'usage'
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500'
+                activeTab === "usage"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500"
               }`}
-              onClick={() => setActiveTab('usage')}
+              onClick={() => setActiveTab("usage")}
             >
               Usage
             </button>
@@ -319,7 +319,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
         </div>
 
         {/* Transaction Table */}
-        {activeTab == 'transactions' && (
+        {activeTab == "transactions" && (
           <Transactions
             data={formattedTransactionData}
             loading={loading}
@@ -327,7 +327,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
             onSort={handleSort}
           />
         )}
-        {activeTab == 'billing' && (
+        {activeTab == "billing" && (
           <>
             <div className="flex items-center justify-between mb-6">
               <div className="relative flex-1 max-w-md">
@@ -343,7 +343,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
               <div className="flex gap-4">
                 <div className="relative">
                   <button
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors ${showFilterMenu ? 'bg-gray-50' : ''}`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors ${showFilterMenu ? "bg-gray-50" : ""}`}
                     onClick={() => {
                       setShowFilterMenu(!showFilterMenu);
                     }}
@@ -409,7 +409,7 @@ export const TransactionHistory: FunctionComponent<Props> = (props) => {
             />
           </>
         )}
-        {activeTab == 'usage' && (
+        {activeTab == "usage" && (
           <div className="mb-20">
             <TransactionGraphs data={userBillingData} />
           </div>

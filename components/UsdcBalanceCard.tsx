@@ -1,17 +1,25 @@
-import USDC from '@/public/usdc-circle.svg';
+"use client";
+import { useSession } from "@/app/contexts/SessionContext";
+import { useWalletBalance } from "@/app/hooks/useWalletBalance";
+import USDC from "@/public/usdc-circle.svg";
 
-import { Card, CardContent } from './ui/card';
+import { Card, CardContent } from "./ui/card";
 
 interface UsdcBalanceCardProps {
-  direction: 'row' | 'column';
+  direction: "row" | "column";
 }
 
 export default function UsdcBalanceCard({ direction }: UsdcBalanceCardProps) {
-  const balance = 0;
+  const session = useSession();
+  const { balance, loading } = useWalletBalance(
+    session.wallet_id,
+    session.circle_wallet_id,
+  );
+
   return (
     <Card className="w-full h-fit bg-white border-[#eaeaec]">
       <CardContent
-        className={`flex p-5 ${direction === 'column' && 'flex-col'}`}
+        className={`flex p-5 ${direction === "column" && "flex-col"}`}
       >
         <img src={USDC.src} className="w-12 h-12 mr-4" alt="USDC Icon" />
         <div className="overflow-hidden">

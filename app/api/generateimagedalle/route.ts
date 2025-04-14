@@ -1,52 +1,49 @@
-import { NextResponse } from 'next/server';
-import Replicate from 'replicate';
-import { v4 as uuidv4 } from 'uuid';
+import { createServerClient } from '@supabase/ssr';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import Replicate from "replicate";
+import { v4 as uuidv4 } from "uuid";
 
-import { checkDemoLimit } from '@/app/utils/demoLimit';
-import { IMAGE_MODEL_PRICING } from '@/utils/constants';
-import { createClient } from '@/utils/supabase/client';
+import { checkDemoLimit } from "@/app/utils/demoLimit";
+import { IMAGE_MODEL_PRICING } from "@/utils/constants";
+import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client'; // Keep browser client for storage uploads
+import { createClient } from "@/utils/supabase/server";
 
-const supabase = createClient();
-
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const token = req.headers.get('Authorization');
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const supabase = await createClient();
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token.split(' ')[1]);
+    } = await supabase.auth.getUser();
     if (error || !user) {
-      console.error('Unauthorized', error);
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.error("Unauthorized", error);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { canGenerate, remaining } = await checkDemoLimit(user.id);
-
     if (!canGenerate) {
       return NextResponse.json(
-        { error: 'Demo limit reached. Please upgrade to continue.' },
-        { status: 429 },
+        { error: "Demo limit reached", remaining },
+        { status: 403 },
       );
     }
 
-    const { prompt, aspect_ratio, output_quality } = await req.json();
+    const { prompt, aspect_ratio, output_quality } = await request.json();
 
     const replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,
     });
 
-    const model = 'black-forest-labs/flux-schnell';
+    const model = "black-forest-labs/flux-schnell";
 
     const input = {
       prompt,
       go_fast: true,
-      megapixels: '1',
+      megapixels: "1",
       num_outputs: 1,
       aspect_ratio: aspect_ratio,
-      output_format: 'webp',
+      output_format: "webp",
       output_quality: output_quality,
       num_inference_steps: 4,
     };
@@ -55,7 +52,7 @@ export async function POST(req: Request) {
     const imageUrl = output[0];
     if (!imageUrl) {
       throw new Error(
-        'No image URL returned from Replicate. Please try again later.',
+        "No image URL returned from Replicate. Please try again later.",
       );
     }
 
@@ -69,33 +66,32 @@ export async function POST(req: Request) {
 
     const fileName = `${uuidv4()}.webp`;
     const { error: storageError } = await supabase.storage
-      .from('user-images')
-      .upload(fileName, imageBlob, {
-        contentType: 'image/webp',
+      .from("user-images") // Ensure this bucket exists and policies are correct
+      .upload(fileName, imageBlob, { 
+        contentType: "image/webp",
       });
 
     if (storageError) {
-      throw new Error(
-        `Error uploading image to Supabase: ${storageError.message}`,
-      );
+      console.error("Storage error:", storageError);
+      return NextResponse.json({ error: "Failed to upload image" }, { status: 500 });
     }
 
     const { data: publicURLData } = supabase.storage
-      .from('user-images')
+      .from("user-images") // Use same bucket name
       .getPublicUrl(fileName);
 
     if (!publicURLData.publicUrl) {
-      throw new Error('Failed to retrieve public URL for image');
+      throw new Error("Failed to retrieve public URL for image");
     }
 
     const storedImageUrl = publicURLData.publicUrl;
 
-    const { error: dbError } = await supabase.from('image_generations').insert([
+    const { error: dbError } = await supabase.from("image_generations").insert([
       {
         prompt,
         user_id: user.id,
         url: storedImageUrl,
-        provider: 'Replicate',
+        provider: "Replicate",
         replicate_billed_amount: IMAGE_MODEL_PRICING.replicatePrice,
         user_billed_amount: IMAGE_MODEL_PRICING.userBilledPrice,
       },
@@ -109,9 +105,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ imageUrl: storedImageUrl });
   } catch (error) {
-    console.error('Generation error:', error);
+    console.error("Generation error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Generation failed' },
+      { error: error instanceof Error ? error.message : "Generation failed" },
       { status: 500 },
     );
   }

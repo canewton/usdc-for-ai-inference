@@ -1,25 +1,27 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
-import { useSession } from '@/app/contexts/SessionContext';
-import { useDemoLimit } from '@/app/hooks/useDemoLimit';
-import AiHistoryPortal from '@/components/AiHistoryPortal';
-import { ChatSidebar } from '@/components/ChatSidebar';
-import MainAiSection from '@/components/MainAiSection';
-import PromptSuggestions from '@/components/PromptSuggestions';
-import RightAiSidebar from '@/components/RightAiSidebar';
-import { TextInput } from '@/components/TextInput';
-import { Card, CardContent } from '@/components/ui/card';
-import Blurs from '@/public/blurs.svg';
-import WalletIcon from '@/public/digital-wallet.svg';
-import SparkIcon from '@/public/spark.svg';
-import TrustIcon from '@/public/trust.svg';
-import UsdcIcon from '@/public/usdc.svg';
-import USDC from '@/public/usdc-circle.svg';
+import { useSession } from "@/app/contexts/SessionContext";
+import { useDemoLimit } from "@/app/hooks/useDemoLimit";
+import AiHistoryPortal from "@/components/AiHistoryPortal";
+import { ChatSidebar } from "@/components/ChatSidebar";
+import MainAiSection from "@/components/MainAiSection";
+import PromptSuggestions from "@/components/PromptSuggestions";
+import RightAiSidebar from "@/components/RightAiSidebar";
+import { TextInput } from "@/components/TextInput";
+import Blurs from "@/public/blurs.svg";
+import WalletIcon from "@/public/digital-wallet.svg";
+import SparkIcon from "@/public/spark.svg";
+import TrustIcon from "@/public/trust.svg";
+import UsdcIcon from "@/public/usdc.svg";
+import { aiModel } from "@/types/ai.types";
+import { IMAGE_MODEL_PRICING } from "@/utils/constants";
+
+import type { WalletTransferRequest } from "../server/circleWalletTransfer";
 
 interface ConversationItem {
-  type: 'prompt' | 'response';
+  type: "prompt" | "response";
   content: string;
 }
 
@@ -31,29 +33,29 @@ interface ImageHistoryItem {
 }
 
 const promptSuggestions = [
-  { title: 'A global-themed USDC card', icon: WalletIcon },
-  { title: 'Floating USDC coins', icon: UsdcIcon },
-  { title: 'Surprise me', icon: SparkIcon },
+  { title: "A global-themed USDC card", icon: WalletIcon },
+  { title: "Floating USDC coins", icon: UsdcIcon },
+  { title: "Surprise me", icon: SparkIcon },
 ];
 
 export default function Page() {
   const { remaining, loading: demoLimitLoading } = useDemoLimit();
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState("");
   const [conversation, setConversation] = useState<ConversationItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showTryAgain, setShowTryAgain] = useState(false);
   const [showLimitError, setShowLimitError] = useState(false);
 
   const [history, setHistory] = useState<ImageHistoryItem[]>([]);
-  const [currentImageId, setCurrentImageId] = useState('');
+  const [currentImageId, setCurrentImageId] = useState("");
 
-  const [aspectRatio, setAspectRatio] = useState('1:1');
+  const [aspectRatio, setAspectRatio] = useState("1:1");
   const [quality, setQuality] = useState(80);
-  const [model, setModel] = useState('flux-schnell');
+  const [model, setModel] = useState("flux-schnell");
   const [totalBilledAmount, setTotalBilledAmount] = useState(0);
 
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
-  const wordsPerToken = 'Indicative cost or info...';
+  const wordsPerToken = "Indicative cost or info...";
 
   const session = useSession();
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -72,9 +74,9 @@ export default function Page() {
     if (!session) return;
     try {
       const response = await fetch(
-        '/api/gettotalbilledamount?table=image_generations',
+        "/api/gettotalbilledamount?table=image_generations",
         {
-          method: 'GET',
+          method: "GET",
           headers: { Authorization: `Bearer ${session.access_token}` },
         },
       );
@@ -82,28 +84,28 @@ export default function Page() {
       if (response.ok) {
         setTotalBilledAmount(data.totalBilledAmount);
       } else {
-        console.error('Error fetching billed amount:', data.error);
+        console.error("Error fetching billed amount:", data.error);
       }
     } catch (error) {
-      console.error('Error fetching billed amount:', error);
+      console.error("Error fetching billed amount:", error);
     }
   };
 
   const fetchImages = async () => {
     if (!session) return;
     try {
-      const response = await fetch('/api/getgeneratedimages', {
-        method: 'GET',
+      const response = await fetch("/api/getgeneratedimages", {
+        method: "GET",
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const data = await response.json();
       if (response.ok) {
         setHistory(data.images);
       } else {
-        console.error('Error fetching images:', data.error);
+        console.error("Error fetching images:", data.error);
       }
     } catch (error) {
-      console.error('Error fetching images:', error);
+      console.error("Error fetching images:", error);
     }
   };
 
@@ -124,14 +126,14 @@ export default function Page() {
 
     setConversation((prev) => [
       ...prev,
-      { type: 'prompt', content: promptToSubmit },
+      { type: "prompt", content: promptToSubmit },
     ]);
 
     try {
-      const response = await fetch('/api/generateimagedalle', {
-        method: 'POST',
+      const response = await fetch("/api/generateimagedalle", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
@@ -146,7 +148,7 @@ export default function Page() {
         if (response.status === 429) {
           setShowLimitError(true);
         } else {
-          throw new Error(errorData.error || 'Failed to generate image');
+          throw new Error(errorData.error || "Failed to generate image");
         }
       }
 
@@ -154,7 +156,7 @@ export default function Page() {
       // Add generated image to conversation
       setConversation((prev) => [
         ...prev,
-        { type: 'response', content: imageUrl },
+        { type: "response", content: imageUrl },
       ]);
 
       // Refresh billing info & history
@@ -162,8 +164,31 @@ export default function Page() {
       await fetchImages();
 
       setShowTryAgain(true);
+
+      // Transfer balance
+      const transfer: WalletTransferRequest = {
+        circleWalletId: session.wallet_id ?? "",
+        amount: IMAGE_MODEL_PRICING.userBilledPrice.toString(),
+        projectName: "Hi",
+        aiModel: aiModel.TEXT_TO_IMAGE,
+      };
+
+      const transferResponse = await fetch("/api/wallet/transfer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(transfer),
+      });
+
+      if (!transferResponse.ok) {
+        throw new Error("Transfer failed");
+      }
+
+      const result = await transferResponse.json();
+      console.log("Transfer initiated:", result);
     } catch (error) {
-      console.error('Error generating image:', error);
+      console.error("Error generating image:", error);
     } finally {
       setIsLoading(false);
     }
@@ -173,7 +198,7 @@ export default function Page() {
     e.preventDefault();
     if (prompt.trim() && prompt.length <= 300) {
       await generateImage(prompt);
-      setPrompt('');
+      setPrompt("");
     }
   };
 
@@ -193,7 +218,7 @@ export default function Page() {
   };
 
   const onNewChat = () => {
-    setCurrentImageId('');
+    setCurrentImageId("");
     setConversation([]);
   };
 
@@ -201,9 +226,9 @@ export default function Page() {
     if (!session) return;
     try {
       const response = await fetch(`/api/deleteimage?imageid=${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
       });
@@ -213,19 +238,24 @@ export default function Page() {
         setHistory((prev) => prev.filter((img) => img.id !== id));
         // Clear conversation if we deleted the currently viewed image
         if (id === currentImageId) {
-          setCurrentImageId('');
+          setCurrentImageId("");
           setConversation([]);
         }
       } else {
-        console.error('Error deleting image:', data.error);
+        console.error("Error deleting image:", data.error);
       }
     } catch (error) {
-      console.error('Delete request failed:', error);
+      console.error("Delete request failed:", error);
     }
   };
 
   return (
     <>
+      <div
+        className={`${!session.api_key_status.replicate ? "flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto" : "hidden"}`}
+      >
+        This page is not available during the hosted demo.
+      </div>
       {/* LEFT SIDEBAR (history) */}
       <AiHistoryPortal>
         <ChatSidebar
@@ -254,7 +284,7 @@ export default function Page() {
           />
           <div
             className={`${
-              trustHovered ? 'opacity-100' : 'opacity-0'
+              trustHovered ? "opacity-100" : "opacity-0"
             } cursor-default flex w-fit border border-gray-200 rounded-3xl h-10 justify-center items-center p-4 shadow-md text-body transition-opacity duration-300`}
           >
             {wordsPerToken}
@@ -262,7 +292,7 @@ export default function Page() {
           {!demoLimitLoading && remaining !== null && (
             <div className="text-sm text-gray-500">
               {remaining === 0
-                ? 'Demo limit reached'
+                ? "Demo limit reached"
                 : `${remaining} generations remaining`}
             </div>
           )}
@@ -292,7 +322,7 @@ export default function Page() {
               className="h-full overflow-y-auto space-y-4 pr-2"
             >
               {conversation.map((item, index) => {
-                if (item.type === 'prompt') {
+                if (item.type === "prompt") {
                   return (
                     <div key={index} className="flex justify-end">
                       <div className="bg-blue-500 text-white px-4 py-3 rounded-lg max-w-[70%]">
@@ -362,21 +392,8 @@ export default function Page() {
       </MainAiSection>
 
       {/* RIGHT SIDEBAR */}
-      <RightAiSidebar isImageInput={true}>
-        <div className="space-y-6">
-          <Card className="w-full h-20 bg-white border-[#eaeaec]">
-            <CardContent className="flex items-center p-5">
-              <img src={USDC.src} className="w-12 h-12 mr-4" alt="USDC Icon" />
-              <div className="overflow-hidden">
-                <h3 className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-900 text-xl tracking-[-0.22px] leading-[30px] truncate">
-                  ${totalBilledAmount.toFixed(2)}
-                </h3>
-                <p className="[font-family:'SF_Pro-Regular',Helvetica] font-normal text-gray-500 text-sm tracking-[-0.15px] leading-[21px] truncate">
-                  USDC Balance
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+      <RightAiSidebar isImageInput={false}>
+        <div className="space-y-[20px] mt-4 w-full">
           <div className="flex flex-col space-x-2">
             <div className="text-sub mb-1">Aspect Ratio</div>
             <select

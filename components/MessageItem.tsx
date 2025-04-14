@@ -1,20 +1,20 @@
-import { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import ChainIcon from '@/public/chain-icon.svg';
-import CloseIcon from '@/public/close.svg';
-import EditHoveredIcon from '@/public/edit-hovered.svg';
-import EditIcon from '@/public/edit-icon.svg';
-import SendIcon from '@/public/plane.svg';
-import UsdcIcon from '@/public/usdc-circle.svg';
-import { TEXT_MODEL_PRICING } from '@/utils/constants';
-import type { Message } from '@/utils/types';
+} from "@/components/ui/tooltip";
+import ChainIcon from "@/public/chain-icon.svg";
+import CloseIcon from "@/public/close.svg";
+import EditHoveredIcon from "@/public/edit-hovered.svg";
+import EditIcon from "@/public/edit-icon.svg";
+import SendIcon from "@/public/plane.svg";
+import UsdcIcon from "@/public/usdc-circle.svg";
+import { TEXT_MODEL_PRICING } from "@/utils/constants";
+import type { Message } from "@/utils/types";
 
 interface MessageItemProps {
   message: Message;
@@ -49,17 +49,17 @@ export function MessageItem({
     try {
       await navigator.clipboard.writeText(textToCopy);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
     }
   };
 
   return (
     <div
       key={message.id}
-      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} w-full`}
+      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} w-full`}
     >
       <div
-        className={`flex flex-col ${editingMessageId === message.id && 'w-full'}`}
+        className={`flex flex-col ${editingMessageId === message.id && "w-full"}`}
       >
         {editingMessageId === message.id ? (
           <div className="border-gray-200 rounded-xl shadow-md w-full">
@@ -85,20 +85,20 @@ export function MessageItem({
           <div
             className="flex flex-col"
             onMouseEnter={() =>
-              message.role === 'user' && setHoveredMessageId(message.id)
+              message.role === "user" && setHoveredMessageId(message.id)
             }
             onMouseLeave={() => setHoveredMessageId(null)}
           >
             <div
-              className={`${message.role !== 'user' && 'border-none'} p-2 rounded-3xl bg-white border border-blue-200 px-4 py-2`}
+              className={`${message.role !== "user" && "border-none"} p-2 rounded-3xl bg-white border border-blue-200 px-4 py-2`}
             >
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
             {/* Edit Message */}
             <div
-              className={`${message.role === 'user' && 'h-6'} flex justify-end ${hoveredMessageId === message.id ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+              className={`${message.role === "user" && "h-6"} flex justify-end ${hoveredMessageId === message.id ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
             >
-              {message.role === 'user' && hoveredMessageId === message.id && (
+              {message.role === "user" && hoveredMessageId === message.id && (
                 <div className="flex flex-row space-x-1">
                   <button onClick={() => handleCopy(message.content)}>
                     <img
@@ -125,7 +125,7 @@ export function MessageItem({
         )}
 
         {/* Cost tool tip */}
-        {message.role === 'assistant' && (
+        {message.role === "assistant" && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

@@ -1,10 +1,10 @@
-import React from 'react';
+import React from "react";
 
-import { USDCIcon } from '@/app/icons/USDCIcon';
+import { USDCIcon } from "@/app/icons/USDCIcon";
 
-import { InsightBox } from './insight-box';
-import type { StackedInsightsBarChartData } from './stacked-insights-bar-chart';
-import { StackedInsightsBarChart } from './stacked-insights-bar-chart';
+import { InsightBox } from "./insight-box";
+import type { StackedInsightsBarChartData } from "./stacked-insights-bar-chart";
+import { StackedInsightsBarChart } from "./stacked-insights-bar-chart";
 
 interface SpendingCardProps {
   title: string;
@@ -21,7 +21,7 @@ export const SpendingCard: React.FC<SpendingCardProps> = ({
   title,
   amount,
   data,
-  className = '',
+  className = "",
   colors,
   stacked = false,
   icon,

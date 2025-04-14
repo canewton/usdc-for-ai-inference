@@ -1,24 +1,19 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from "@/utils/supabase/server";
 
-const supabase = createClient();
-
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    // Get authenticated user
-    const token = req.headers.get('Authorization');
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const supabase = await createClient();
+    
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser(token.split(' ')[1]);
+    } = await supabase.auth.getUser();
     if (authError || !user) {
-      console.error('Unauthorized', authError);
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.error("Unauthorized", authError);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Parse body
@@ -29,11 +24,11 @@ export async function POST(req: NextRequest) {
       chat_id,
       prompt_tokens,
       completion_tokens,
-    } = await req.json();
+    } = await request.json();
 
     // Post text generation
     const { data, error: dbError } = await supabase
-      .from('chat_generations')
+      .from("chat_generations")
       .insert([
         {
           user_id: user.id,
@@ -45,19 +40,19 @@ export async function POST(req: NextRequest) {
           completion_tokens: completion_tokens,
         },
       ])
-      .select('id');
+      .select("id");
 
     if (dbError) {
       throw new Error(`Error posting chat: ${dbError.message}`);
     }
     return NextResponse.json({
-      response: 'Chat generation posted successfully',
+      response: "Chat generation posted successfully",
       id: data[0].id,
     });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 },
     );
   }

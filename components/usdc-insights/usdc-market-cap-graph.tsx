@@ -1,6 +1,6 @@
-import { format, fromUnixTime } from 'date-fns';
-import { Loader2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { format, fromUnixTime } from "date-fns";
+import { Loader2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -9,13 +9,13 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts';
+} from "recharts";
 
-import { USDCIcon } from '@/app/icons/USDCIcon';
+import { USDCIcon } from "@/app/icons/USDCIcon";
 
-import { InsightBox } from './insight-box';
-import type { TimePeriod } from './time-period-options';
-import { TimePeriodOptions } from './time-period-options';
+import { InsightBox } from "./insight-box";
+import type { TimePeriod } from "./time-period-options";
+import { TimePeriodOptions } from "./time-period-options";
 
 interface MarketData {
   date: string;
@@ -38,20 +38,20 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export const USDCMarketCapGraph = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('1M');
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>("1M");
   const [marketData, setMarketData] = useState<
     Record<TimePeriod, MarketData[]>
   >({} as Record<TimePeriod, MarketData[]>);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const periods: TimePeriod[] = ['1D', '7D', '1M', '3M', '1Y'];
+  const periods: TimePeriod[] = ["1D", "7D", "1M", "3M", "1Y"];
   const daysMap: Record<TimePeriod, number> = {
-    '1D': 1,
-    '7D': 7,
-    '1M': 30,
-    '3M': 90,
-    '1Y': 365,
+    "1D": 1,
+    "7D": 7,
+    "1M": 30,
+    "3M": 90,
+    "1Y": 365,
   } as const;
 
   useEffect(() => {
@@ -59,12 +59,12 @@ export const USDCMarketCapGraph = () => {
       setLoading(true);
       setError(null);
       try {
-        const endpoint = `https://api.coingecko.com/api/v3/coins/usd-coin/market_chart?vs_currency=usd&days=${daysMap[selectedPeriod]}${daysMap[selectedPeriod] === 1 ? '' : '&interval=daily'}`;
+        const endpoint = `https://api.coingecko.com/api/v3/coins/usd-coin/market_chart?vs_currency=usd&days=${daysMap[selectedPeriod]}${daysMap[selectedPeriod] === 1 ? "" : "&interval=daily"}`;
 
         const response = await fetch(endpoint);
 
         if (!response.ok) {
-          throw new Error('Failed to fetch market data');
+          throw new Error("Failed to fetch market data");
         }
 
         const data = await response.json();
@@ -72,15 +72,15 @@ export const USDCMarketCapGraph = () => {
           ([timestamp, value]: [number, number]) => ({
             date: format(
               fromUnixTime(timestamp / 1000),
-              selectedPeriod === '1D'
-                ? 'HH:mm'
-                : selectedPeriod === '7D'
-                  ? 'dd MMM'
-                  : selectedPeriod === '1M'
-                    ? 'dd MMM'
-                    : selectedPeriod === '3M'
-                      ? 'dd MMM'
-                      : 'MMM yy',
+              selectedPeriod === "1D"
+                ? "HH:mm"
+                : selectedPeriod === "7D"
+                  ? "dd MMM"
+                  : selectedPeriod === "1M"
+                    ? "dd MMM"
+                    : selectedPeriod === "3M"
+                      ? "dd MMM"
+                      : "MMM yy",
             ),
             value,
           }),
@@ -91,7 +91,7 @@ export const USDCMarketCapGraph = () => {
           [selectedPeriod]: formattedData,
         }));
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setLoading(false);
       }
@@ -111,7 +111,7 @@ export const USDCMarketCapGraph = () => {
   }
 
   const getYAxisDomain = () => {
-    if (!marketData[selectedPeriod]) return ['dataMin', 'dataMax'];
+    if (!marketData[selectedPeriod]) return ["dataMin", "dataMax"];
     const values = marketData[selectedPeriod].map((d) => d.value);
     const minValue = Math.min(...values);
     const maxValue = Math.max(...values);
@@ -174,12 +174,12 @@ export const USDCMarketCapGraph = () => {
                 dataKey="date"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 12, fill: '#666' }}
+                tick={{ fontSize: 12, fill: "#666" }}
               />
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 12, fill: '#666' }}
+                tick={{ fontSize: 12, fill: "#666" }}
                 tickFormatter={(value) => `${(value / 1e9).toFixed(0)}B`}
                 domain={getYAxisDomain()}
                 ticks={generateTicks()}

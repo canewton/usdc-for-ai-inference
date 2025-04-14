@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
-import { Image3DIcon } from '@/app/icons/Image3DIcon';
-import { ImageIcon } from '@/app/icons/ImageIcon';
-import { TextIcon } from '@/app/icons/TextIcon';
-import { USDCIcon } from '@/app/icons/USDCIcon';
-import { VideoIcon } from '@/app/icons/VideoIcon';
-import { aiModel } from '@/types/ai.types';
+import { Image3DIcon } from "@/app/icons/Image3DIcon";
+import { ImageIcon } from "@/app/icons/ImageIcon";
+import { TextIcon } from "@/app/icons/TextIcon";
+import { USDCIcon } from "@/app/icons/USDCIcon";
+import { VideoIcon } from "@/app/icons/VideoIcon";
+import { aiModel } from "@/types/ai.types";
 
-import { InsightBox } from './insight-box';
-import { SpendingCard } from './spending-card';
-import { StackedInsightsBarChart } from './stacked-insights-bar-chart';
+import { InsightBox } from "./insight-box";
+import { SpendingCard } from "./spending-card";
+import { StackedInsightsBarChart } from "./stacked-insights-bar-chart";
 
 interface BillingTransaction {
   id: string;
@@ -26,25 +26,25 @@ interface BillingTransaction {
 }
 
 const months = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const MODEL_COLORS = {
-  [aiModel.TEXT_TO_TEXT]: '#8B5CF6', // Purple
-  [aiModel.TEXT_TO_IMAGE]: '#F59E0B', // Amber
-  [aiModel.IMAGE_TO_3D]: '#10B981', // Emerald
-  [aiModel.IMAGE_TO_VIDEO]: '#3B82F6', // Blue
+  [aiModel.TEXT_TO_TEXT]: "#8B5CF6", // Purple
+  [aiModel.TEXT_TO_IMAGE]: "#F59E0B", // Amber
+  [aiModel.IMAGE_TO_3D]: "#10B981", // Emerald
+  [aiModel.IMAGE_TO_VIDEO]: "#3B82F6", // Blue
 };
 
 function getDaysInMonth(year: number, month: number): number {
@@ -62,7 +62,7 @@ function generateDateRange(monthIndex: number): string[] {
   for (let day = 1; day <= lastDay; day++) {
     const date = new Date(year, monthIndex, day);
     dates.push(
-      `${String(date.getDate()).padStart(2, '0')} ${months[date.getMonth()].substring(0, 3)}`,
+      `${String(date.getDate()).padStart(2, "0")} ${months[date.getMonth()].substring(0, 3)}`,
     );
   }
   return dates;
@@ -82,7 +82,7 @@ function processTransactionsForMonth(
     const dayTransactions = filteredTransactions.filter((t) => {
       const tDate = new Date(t.created_at);
       return (
-        `${String(tDate.getDate()).padStart(2, '0')} ${months[tDate.getMonth()].substring(0, 3)}` ===
+        `${String(tDate.getDate()).padStart(2, "0")} ${months[tDate.getMonth()].substring(0, 3)}` ===
         date
       );
     });
@@ -120,7 +120,7 @@ function processTransactionsByType(
     const dayTransactions = filteredTransactions.filter((t) => {
       const tDate = new Date(t.created_at);
       return (
-        `${String(tDate.getDate()).padStart(2, '0')} ${months[tDate.getMonth()].substring(0, 3)}` ===
+        `${String(tDate.getDate()).padStart(2, "0")} ${months[tDate.getMonth()].substring(0, 3)}` ===
         date
       );
     });
