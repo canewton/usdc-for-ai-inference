@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useRef, useState } from 'react';
 
@@ -194,7 +195,16 @@ export default function Home() {
       <div
         className={`${!session.api_key_status.video ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
-        This page is not available during the hosted demo.
+        <div className="flex flex-col items-center">
+          <div className="mb-4">
+            This page is not available during the hosted demo.
+          </div>
+          <Link href="/dashboard">
+            <button className="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-md text-zinc-300 border-[0.5px] border-zinc-600 transition-colors">
+              Go Back
+            </button>
+          </Link>
+        </div>
       </div>
       */}
       {/* Left history section */}
