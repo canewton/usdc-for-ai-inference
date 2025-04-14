@@ -71,7 +71,11 @@ export const Transactions: FunctionComponent<Props> = ({
   }, [data, currentPage]);
 
   if (data.length == 0 && loading) {
-    return <Skeleton className="w-[206px] h-[28px] rounded-full" />;
+    return (
+      <div className="w-full flex">
+        <Skeleton className="w-[206px] h-[28px] rounded-full" />
+      </div>
+    );
   }
 
   if (data && data.length < 1) {

@@ -64,10 +64,12 @@ export default async function Dashboard() {
           {process.env.NODE_ENV === 'development' && (
             <RequestUsdcButton walletAddress={wallet?.wallet_address} />
           )}
-          <TransferUSDCButton
-            className="flex-1"
-            walletId={wallet?.circle_wallet_id}
-          />
+          {process.env.NODE_ENV === 'development' && (
+            <TransferUSDCButton
+              className="flex-1"
+              walletId={wallet?.circle_wallet_id}
+            />
+          )}
           <USDCButton
             className="flex-1"
             mode="BUY"
