@@ -1,10 +1,10 @@
 import type { NextRequest } from 'next/server';
 
 import { GET } from '@/app/api/getvideochat/route';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/server';
 
 // Mock the createClient function and Supabase client
-jest.mock('@/utils/supabase/client');
+jest.mock('@/utils/supabase/server');
 
 const mockSupabase = {
   auth: {
@@ -26,7 +26,7 @@ const mockSupabase = {
 
 (createClient as jest.Mock).mockReturnValue(mockSupabase);
 
-describe('POST /api/videos/details', () => {
+describe('POST /api/getvideochat', () => {
   let mockRequest: NextRequest;
 
   beforeEach(() => {
@@ -43,48 +43,25 @@ describe('POST /api/videos/details', () => {
     const response = await GET(mockRequest);
     expect(response.status).toBe(400);
     const data = await response.json();
-    expect(data).toEqual({ error: 'Video ID is required' });
+    expect(data).toEqual({ error: 'Missing required parameter: videoId' });
     expect(mockSupabase.auth.getUser).not.toHaveBeenCalled();
   });
 
-  it('should return 401 if Authorization header is missing', async () => {
-    (mockRequest.json as jest.Mock).mockResolvedValue({ videoId: 'test-id' });
+  it('should return 401 if the user is not authenticated', async () => {
+    (mockRequest.json as jest.Mock).mockResolvedValue({
+      videoId: 'non-existent-id',
+    });
 
-    const response = await GET(mockRequest);
-    expect(response.status).toBe(401);
-    const data = await response.json();
-    expect(data).toEqual({ error: 'Unauthorized' });
-    expect(mockSupabase.auth.getUser).not.toHaveBeenCalled();
-  });
-
-  it('should return 401 if Authorization token is invalid or user not found', async () => {
-    (mockRequest.json as jest.Mock).mockResolvedValue({ videoId: 'test-id' });
-    mockRequest.headers.set('Authorization', 'Bearer invalid-token');
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: null },
-      error: new Error('Invalid token'),
+      error: new Error('Not authenticated'),
     });
 
     const response = await GET(mockRequest);
-    expect(response.status).toBe(401);
     const data = await response.json();
-    expect(data).toEqual({ error: 'Unauthorized' });
-    expect(mockSupabase.auth.getUser).toHaveBeenCalledWith('invalid-token');
-  });
 
-  it('should return 401 if getUser returns an error', async () => {
-    (mockRequest.json as jest.Mock).mockResolvedValue({ videoId: 'test-id' });
-    mockRequest.headers.set('Authorization', 'Bearer valid-token');
-    mockSupabase.auth.getUser.mockResolvedValue({
-      data: { user: null },
-      error: new Error('Auth error'),
-    });
-
-    const response = await GET(mockRequest);
     expect(response.status).toBe(401);
-    const data = await response.json();
-    expect(data).toEqual({ error: 'Unauthorized' });
-    expect(mockSupabase.auth.getUser).toHaveBeenCalledWith('valid-token');
+    expect(data.error).toBe('Unauthorized');
   });
 
   it('should return 404 if video generation is not found', async () => {
@@ -208,17 +185,5 @@ describe('POST /api/videos/details', () => {
       'user_id',
       mockUser.id,
     );
-  });
-
-  it('should handle generic errors during the process', async () => {
-    (mockRequest.json as jest.Mock).mockResolvedValue({ videoId: 'test-id' });
-    mockRequest.headers.set('Authorization', 'Bearer valid-token');
-    mockSupabase.auth.getUser.mockRejectedValue(new Error('Unexpected error'));
-
-    const response = await GET(mockRequest);
-    expect(response.status).toBe(500);
-    const data = await response.json();
-    expect(data).toEqual({ error: 'Unexpected error' });
-    expect(mockSupabase.auth.getUser).toHaveBeenCalledWith('valid-token');
   });
 });

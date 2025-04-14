@@ -16,7 +16,7 @@ const mockNextRequest = (body: any): NextRequest =>
     json: () => Promise.resolve(body),
   }) as any;
 
-describe('PUT /api/wallet-sets', () => {
+describe('PUT /api/wallet-set', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

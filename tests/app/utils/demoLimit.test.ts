@@ -1,7 +1,7 @@
 import { checkDemoLimit } from '@/app/utils/demoLimit';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/server';
 
-jest.mock('@/utils/supabase/client');
+jest.mock('@/utils/supabase/server');
 
 const mockSupabase = {
   auth: {

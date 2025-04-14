@@ -1,9 +1,9 @@
 import type { NextRequest } from 'next/server';
 
 import { GET } from '@/app/api/getchats/route';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/server';
 
-jest.mock('@/utils/supabase/client');
+jest.mock('@/utils/supabase/server');
 
 const mockSupabase = {
   auth: {
@@ -37,7 +37,7 @@ describe('GET /api/getchats', () => {
 
   it('should return 401 if the user is not authenticated', async () => {
     mockSupabase.auth.getUser.mockResolvedValue({
-      data: null,
+      data: { user: null },
       error: new Error('Not authenticated'),
     });
 
