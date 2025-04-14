@@ -64,24 +64,10 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Define protected routes
-  const protectedRoutes = [
-    '/dashboard',
-    '/admin',
-    '/chat',
-    '/image-generator',
-    '/3d',
-    '/video',
-  ];
+  const protectedRoutes = ['/dashboard', '/admin', '/chat', '/3d', '/video'];
   const adminRoutes = ['/admin'];
   const authRoutes = ['/sign-in', '/sign-up', '/forgot-password'];
-  const userOnlyRoutes = [
-    '/dashboard',
-    '/3d',
-    '/chat',
-    '/image',
-    '/video',
-    '/image-generator',
-  ];
+  const userOnlyRoutes = ['/dashboard', '/3d', '/chat', '/image', '/video'];
 
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route),
