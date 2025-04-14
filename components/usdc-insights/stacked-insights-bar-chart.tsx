@@ -1,5 +1,5 @@
-import React from "react";
-import type { TooltipProps } from "recharts";
+import React from 'react';
+import type { TooltipProps } from 'recharts';
 import {
   Bar,
   BarChart,
@@ -8,12 +8,12 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from "recharts";
-import type { NameType } from "recharts/types/component/DefaultTooltipContent";
-import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
-import type { ContentType } from "recharts/types/component/Tooltip";
+} from 'recharts';
+import type { NameType } from 'recharts/types/component/DefaultTooltipContent';
+import type { ValueType } from 'recharts/types/component/DefaultTooltipContent';
+import type { ContentType } from 'recharts/types/component/Tooltip';
 
-import { aiModel } from "@/types/ai.types";
+import { aiModel } from '@/types/ai.types';
 
 export interface StackedInsightsBarChartData {
   date: string;
@@ -24,10 +24,10 @@ export interface StackedInsightsBarChartData {
 }
 
 const MODEL_COLORS = {
-  [aiModel.TEXT_TO_TEXT]: "#8B5CF6", // Purple
-  [aiModel.TEXT_TO_IMAGE]: "#F59E0B", // Amber
-  [aiModel.IMAGE_TO_3D]: "#10B981", // Emerald
-  [aiModel.IMAGE_TO_VIDEO]: "#3B82F6", // Blue
+  [aiModel.TEXT_TO_TEXT]: '#8B5CF6', // Purple
+  [aiModel.TEXT_TO_IMAGE]: '#F59E0B', // Amber
+  [aiModel.IMAGE_TO_3D]: '#10B981', // Emerald
+  [aiModel.IMAGE_TO_VIDEO]: '#3B82F6', // Blue
 };
 
 interface Props {
@@ -97,25 +97,25 @@ export const StackedInsightsBarChart = ({
             dataKey="date"
             tickLine={false}
             axisLine={false}
-            tick={{ fontSize: 12, fill: "#666" }}
+            tick={{ fontSize: 12, fill: '#666' }}
           />
           <YAxis
             tickLine={false}
             axisLine={false}
-            tick={{ fontSize: 12, fill: "#666" }}
+            tick={{ fontSize: 12, fill: '#666' }}
             tickFormatter={tickFormatter}
             allowDecimals={false}
           />
           <Tooltip
             content={tooltip != undefined ? tooltip : <CustomTooltip />}
-            cursor={{ fill: "transparent" }}
+            cursor={{ fill: 'transparent' }}
           />
           {data[0]?.value1 !== undefined && (
             <Bar
               dataKey="value1"
               fill={colors[0]}
               radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
-              stackId={stacked ? "stack" : undefined}
+              stackId={stacked ? 'stack' : undefined}
               name="Text to Text"
             />
           )}
@@ -124,7 +124,7 @@ export const StackedInsightsBarChart = ({
               dataKey="value2"
               fill={colors[1]}
               radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
-              stackId={stacked ? "stack" : undefined}
+              stackId={stacked ? 'stack' : undefined}
               name="Text to Image"
             />
           )}
@@ -133,7 +133,7 @@ export const StackedInsightsBarChart = ({
               dataKey="value3"
               fill={colors[2]}
               radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
-              stackId={stacked ? "stack" : undefined}
+              stackId={stacked ? 'stack' : undefined}
               name="2D to 3D"
             />
           )}
@@ -142,7 +142,7 @@ export const StackedInsightsBarChart = ({
               dataKey="value4"
               fill={colors[3]}
               radius={stacked ? [4, 4, 0, 0] : [4, 4, 0, 0]}
-              stackId={stacked ? "stack" : undefined}
+              stackId={stacked ? 'stack' : undefined}
               name="Image to Video"
             />
           )}

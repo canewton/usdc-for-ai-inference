@@ -1,4 +1,4 @@
-import type { TextModelPricing } from "./types";
+import type { TextModelPricing } from './types';
 
 export const IMAGE_MODEL_PRICING = {
   replicatePrice: 0.003,
@@ -11,13 +11,13 @@ export const MODEL_ASSET_PRICING = {
 };
 
 export const TEXT_MODEL_PRICING: Record<string, TextModelPricing> = {
-  "gpt-4o-mini": {
+  'gpt-4o-mini': {
     modelInputPrice: 0.00000015,
     userBilledInputPrice: 0.00001115,
     modelOutputPrice: 0.0000006,
     userBilledOutputPrice: 0.0000116,
   },
-  "gpt-4o": {
+  'gpt-4o': {
     modelInputPrice: 0.0000025,
     userBilledInputPrice: 0.00001125,
     modelOutputPrice: 0.00001,

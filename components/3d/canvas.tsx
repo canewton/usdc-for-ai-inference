@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { OrbitControls, useGLTF } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { OrbitControls, useGLTF } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
-import Blurs from "@/public/blurs.svg";
-import WalletIcon from "@/public/digital-wallet.svg";
-import ModelIcon from "@/public/group.svg";
-import SparkIcon from "@/public/spark.svg";
-import UsdcIcon from "@/public/usdc.svg";
+import Blurs from '@/public/blurs.svg';
+import WalletIcon from '@/public/digital-wallet.svg';
+import ModelIcon from '@/public/group.svg';
+import SparkIcon from '@/public/spark.svg';
+import UsdcIcon from '@/public/usdc.svg';
 
-import MainAiSection from "../MainAiSection";
-import PromptSuggestions from "../PromptSuggestions";
+import MainAiSection from '../MainAiSection';
+import PromptSuggestions from '../PromptSuggestions';
 
 const promptSuggestions = [
-  { title: "Worn leather with subtle creases", icon: WalletIcon },
-  { title: "Aged metal with fine engravings", icon: UsdcIcon },
-  { title: "Surprise me", icon: SparkIcon },
+  { title: 'Worn leather with subtle creases', icon: WalletIcon },
+  { title: 'Aged metal with fine engravings', icon: UsdcIcon },
+  { title: 'Surprise me', icon: SparkIcon },
 ];
 
 interface CanvasAreaProps {
@@ -48,7 +48,7 @@ export default function CanvasArea({
 }: CanvasAreaProps) {
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const modelTooltip =
-    "Rotate the 3D model by clicking and dragging in the canvas.";
+    'Rotate the 3D model by clicking and dragging in the canvas.';
 
   // scene to render 3d model
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -69,13 +69,13 @@ export default function CanvasArea({
 
     try {
       const response = await fetch(modelUrl);
-      if (!response.ok) throw new Error("Failed to fetch model file");
+      if (!response.ok) throw new Error('Failed to fetch model file');
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const filename = modelUrl.split("/").pop() || "3d_model.glb";
+      const filename = modelUrl.split('/').pop() || '3d_model.glb';
 
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = url;
       link.download = filename;
       document.body.appendChild(link);
@@ -85,7 +85,7 @@ export default function CanvasArea({
       setError(null);
     } catch (error) {
       setError(
-        `Download failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   };
@@ -102,7 +102,7 @@ export default function CanvasArea({
         {!demoLimitLoading && remaining !== null && (
           <div className="text-sm text-gray-500 mb-4">
             {remaining === 0
-              ? "Demo limit reached"
+              ? 'Demo limit reached'
               : `${remaining} generations remaining`}
           </div>
         )}
@@ -118,7 +118,7 @@ export default function CanvasArea({
                 onMouseLeave={() => setTrustHovered(false)}
               />
               <div
-                className={`${trustHovered ? "opacity-100" : "opacity-0"} transition-opacity duration-300 cursor-default flex w-fit border border-gray-200 rounded-3xl h-10 justify-center items-center p-4 shadow-md text-body text-xs`}
+                className={`${trustHovered ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 cursor-default flex w-fit border border-gray-200 rounded-3xl h-10 justify-center items-center p-4 shadow-md text-body text-xs`}
               >
                 {modelTooltip}
               </div>
@@ -188,7 +188,7 @@ export default function CanvasArea({
               </div>
               <div className="w-full mt-4">
                 <p
-                  className={`text-center text-sm text-gray-500 ${imageDataUri ? "invisible" : "visible"}`}
+                  className={`text-center text-sm text-gray-500 ${imageDataUri ? 'invisible' : 'visible'}`}
                 >
                   Please upload an image in the control panel first.
                 </p>

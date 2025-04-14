@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useWalletBalance } from "@/app/hooks/useWalletBalance";
+import { useWalletBalance } from '@/app/hooks/useWalletBalance';
 
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from '../ui/skeleton';
 
 interface WalletBalanceProps {
   circleWalletId: string;
@@ -19,9 +19,9 @@ export function WalletBalance({
     return <Skeleton className="w-[103px] h-[28px] rounded-full" />;
   }
 
-  const formattedBalance = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  const formattedBalance = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(balance);

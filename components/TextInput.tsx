@@ -1,9 +1,9 @@
-import type { FormEvent } from "react";
-import React from "react";
+import type { FormEvent } from 'react';
+import React from 'react';
 
-import DisabledSendIcon from "@/public/disabled-plane.svg";
-import PauseIcon from "@/public/pause-gumdrop.svg";
-import SendIcon from "@/public/plane.svg";
+import DisabledSendIcon from '@/public/disabled-plane.svg';
+import PauseIcon from '@/public/pause-gumdrop.svg';
+import SendIcon from '@/public/plane.svg';
 
 interface TextInputProps {
   input: string;
@@ -30,17 +30,17 @@ export function TextInput({
         <div className="flex-1 relative">
           <input
             type="text"
-            value={editingMessage ? "" : input}
+            value={editingMessage ? '' : input}
             onChange={handleInputChange}
             placeholder={
-              isLoading ? "Circle AI is thinking..." : "Message Circle AI"
+              isLoading ? 'Circle AI is thinking...' : 'Message Circle AI'
             }
             className="flex-1 p-4 bg-white rounded-3xl placeholder-transparent outline-none text-body w-full overflow-x-auto whitespace-nowrap"
             style={{
               background:
-                "linear-gradient(to right, #b090F5, #5fbfff, #5fbfff)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
+                'linear-gradient(to right, #b090F5, #5fbfff, #5fbfff)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
             }}
             maxLength={maxLength}
           />

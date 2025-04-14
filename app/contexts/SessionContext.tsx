@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { createContext, useContext } from "react";
+import React from 'react';
+import { createContext, useContext } from 'react';
 
 type SessionContextType = {
   access_token: string;
@@ -11,16 +11,16 @@ type SessionContextType = {
 };
 
 export const SessionContext = createContext<SessionContextType>({
-  access_token: "",
+  access_token: '',
   api_key_status: {},
-  wallet_id: "",
-  circle_wallet_id: "",
+  wallet_id: '',
+  circle_wallet_id: '',
 });
 
 export function useSession() {
   const context = useContext(SessionContext);
   if (context === undefined) {
-    throw new Error("useSession must be used within a SessionProvider");
+    throw new Error('useSession must be used within a SessionProvider');
   }
   return context;
 }

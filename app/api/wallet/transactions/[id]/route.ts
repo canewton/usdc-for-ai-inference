@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { type NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
-import { circleDeveloperSdk } from "@/utils/developer-controlled-wallets-client";
+import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
 
 const ResponseSchema = z.object({
   transaction: z
@@ -37,7 +37,7 @@ export async function GET(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(params.id)) {
       return NextResponse.json(
-        { error: "Invalid transaction ID format" },
+        { error: 'Invalid transaction ID format' },
         { status: 400 },
       );
     }
@@ -50,16 +50,16 @@ export async function GET(
       transaction: response.data?.transaction,
     });
     if (!parseResult.success) {
-      console.error("Response validation failed:", parseResult.error);
+      console.error('Response validation failed:', parseResult.error);
       return NextResponse.json(
-        { error: "Invalid response from Circle API" },
+        { error: 'Invalid response from Circle API' },
         { status: 500 },
       );
     }
 
     if (!response.data || response.data.transaction === undefined) {
       return NextResponse.json(
-        { error: "Transaction not found" },
+        { error: 'Transaction not found' },
         { status: 404 },
       );
     }
@@ -76,17 +76,17 @@ export async function GET(
 
     return NextResponse.json({ transaction });
   } catch (error) {
-    console.error("Error fetching transaction:", error);
+    console.error('Error fetching transaction:', error);
 
-    if (error instanceof Error && error.message.includes("not found")) {
+    if (error instanceof Error && error.message.includes('not found')) {
       return NextResponse.json(
-        { error: "Transaction not found" },
+        { error: 'Transaction not found' },
         { status: 404 },
       );
     }
 
     return NextResponse.json(
-      { error: "Internal server error while fetching transaction" },
+      { error: 'Internal server error while fetching transaction' },
       { status: 500 },
     );
   }

@@ -1,7 +1,7 @@
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-import { circleDeveloperSdk } from "@/utils/developer-controlled-wallets-client";
+import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
 
 export async function PUT(req: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function PUT(req: NextRequest) {
 
     if (!entityName || !entityName.trim()) {
       return NextResponse.json(
-        { error: "entityName is required" },
+        { error: 'entityName is required' },
         { status: 400 },
       );
     }
@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest) {
 
     if (!response.data) {
       return NextResponse.json(
-        "The response did not include a valid wallet set",
+        'The response did not include a valid wallet set',
         { status: 500 },
       );
     }
@@ -29,7 +29,7 @@ export async function PUT(req: NextRequest) {
   } catch (error: any) {
     console.error(`Wallet set creation failed: ${error.message}`);
     return NextResponse.json(
-      { error: "Failed to create wallet set" },
+      { error: 'Failed to create wallet set' },
       { status: 500 },
     );
   }

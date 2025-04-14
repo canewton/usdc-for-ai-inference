@@ -1,4 +1,4 @@
-import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
+import { initiateDeveloperControlledWalletsClient } from '@circle-fin/developer-controlled-wallets';
 
 // Initialize Circle client
 export const circleDeveloperSdk = initiateDeveloperControlledWalletsClient({

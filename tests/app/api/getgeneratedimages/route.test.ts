@@ -1,9 +1,9 @@
-import type { NextRequest } from "next/server";
+import type { NextRequest } from 'next/server';
 
-import { GET } from "@/app/api/getgeneratedimages/route";
-import { createClient } from "@/utils/supabase/server";
+import { GET } from '@/app/api/getgeneratedimages/route';
+import { createClient } from '@/utils/supabase/server';
 
-jest.mock("@/utils/supabase/server");
+jest.mock('@/utils/supabase/server');
 
 const mockSupabase = {
   auth: {
@@ -32,7 +32,7 @@ const mockSupabase = {
 
 (createClient as jest.Mock).mockReturnValue(mockSupabase);
 
-describe("GET /api/getgeneratedimages", () => {
+describe('GET /api/getgeneratedimages', () => {
   let mockRequest: NextRequest;
 
   beforeEach(() => {
@@ -40,34 +40,34 @@ describe("GET /api/getgeneratedimages", () => {
     mockRequest = {
       json: jest.fn(),
       headers: new Headers(),
-      url: "http://localhost/api/getgeneratedimages?imageids=1&imageids=2",
+      url: 'http://localhost/api/getgeneratedimages?imageids=1&imageids=2',
     } as unknown as NextRequest;
   });
 
-  it("should return 401 if the user is not authenticated", async () => {
+  it('should return 401 if the user is not authenticated', async () => {
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: null },
-      error: new Error("Not authenticated"),
+      error: new Error('Not authenticated'),
     });
 
     const response = await GET(mockRequest);
     const data = await response.json();
 
     expect(response.status).toBe(401);
-    expect(data.error).toBe("Unauthorized");
+    expect(data.error).toBe('Unauthorized');
   });
 
-  it("should return 200 with generated images for an authenticated user", async () => {
-    mockRequest.headers.set("Authorization", "Bearer valid-token");
-    const mockUser = { id: "user-id" };
+  it('should return 200 with generated images for an authenticated user', async () => {
+    mockRequest.headers.set('Authorization', 'Bearer valid-token');
+    const mockUser = { id: 'user-id' };
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: mockUser },
       error: null,
     });
 
     const mockGeneratedImages = [
-      { id: "1", name: "Image A", created_at: "2023-04-01T00:00:00Z" },
-      { id: "2", name: "Image B", created_at: "2023-04-02T00:00:00Z" },
+      { id: '1', name: 'Image A', created_at: '2023-04-01T00:00:00Z' },
+      { id: '2', name: 'Image B', created_at: '2023-04-02T00:00:00Z' },
     ];
 
     mockSupabase.from.mockReturnValue({
@@ -87,27 +87,27 @@ describe("GET /api/getgeneratedimages", () => {
 
     expect(response.status).toBe(200);
     expect(data).toEqual({ images: mockGeneratedImages });
-    expect(mockSupabase.from).toHaveBeenCalledWith("image_generations");
+    expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 
-  it("should return 200 with all generated images for an authenticated user if no imageids specified", async () => {
-    const mockUser = { id: "user-id" };
+  it('should return 200 with all generated images for an authenticated user if no imageids specified', async () => {
+    const mockUser = { id: 'user-id' };
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: mockUser },
       error: null,
     });
 
     const mockGeneratedImages = [
-      { id: "1", name: "Image A", created_at: "2023-04-01T00:00:00Z" },
-      { id: "2", name: "Image B", created_at: "2023-04-02T00:00:00Z" },
+      { id: '1', name: 'Image A', created_at: '2023-04-01T00:00:00Z' },
+      { id: '2', name: 'Image B', created_at: '2023-04-02T00:00:00Z' },
     ];
 
     let otherRequest = {
       json: jest.fn(),
       headers: new Headers(),
-      url: "http://localhost/api/getgeneratedimages",
+      url: 'http://localhost/api/getgeneratedimages',
     } as unknown as NextRequest;
-    otherRequest.headers.set("Authorization", "Bearer valid-token");
+    otherRequest.headers.set('Authorization', 'Bearer valid-token');
 
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
@@ -124,12 +124,12 @@ describe("GET /api/getgeneratedimages", () => {
 
     expect(response.status).toBe(200);
     expect(data).toEqual({ images: mockGeneratedImages });
-    expect(mockSupabase.from).toHaveBeenCalledWith("image_generations");
+    expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 
-  it("should return 500 if there is an error fetching generated images", async () => {
-    const mockUser = { id: "user-id" };
-    mockRequest.headers.set("Authorization", "Bearer valid-token");
+  it('should return 500 if there is an error fetching generated images', async () => {
+    const mockUser = { id: 'user-id' };
+    mockRequest.headers.set('Authorization', 'Bearer valid-token');
 
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: mockUser },
@@ -141,7 +141,7 @@ describe("GET /api/getgeneratedimages", () => {
         eq: jest.fn().mockReturnValue({
           in: jest.fn().mockResolvedValue({
             data: null,
-            error: new Error("Database error"),
+            error: new Error('Database error'),
           }),
         }),
       }),
@@ -151,7 +151,7 @@ describe("GET /api/getgeneratedimages", () => {
     const data = await response.json();
 
     expect(response.status).toBe(500);
-    expect(data.error).toBe("Failed to fetch images");
-    expect(mockSupabase.from).toHaveBeenCalledWith("image_generations");
+    expect(data.error).toBe('Failed to fetch images');
+    expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 });

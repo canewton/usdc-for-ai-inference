@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from '@/utils/supabase/server';
 
 export async function checkDemoLimit(
   userId: string,
@@ -11,22 +11,22 @@ export async function checkDemoLimit(
 
   // Count all types of generations
   const { data: chatGenerations, error: chatError } = await supabase
-    .from("chat_generations")
-    .select("id")
-    .eq("user_id", userId);
+    .from('chat_generations')
+    .select('id')
+    .eq('user_id', userId);
 
   const { data: imageGenerations, error: imageError } = await supabase
-    .from("image_generations")
-    .select("id")
-    .eq("user_id", userId);
+    .from('image_generations')
+    .select('id')
+    .eq('user_id', userId);
 
   const { data: modelGenerations, error: modelError } = await supabase
-    .from("3d_generations")
-    .select("id")
-    .eq("user_id", userId);
+    .from('3d_generations')
+    .select('id')
+    .eq('user_id', userId);
 
   if (chatError || imageError || modelError) {
-    console.error("Error checking demo limit:", {
+    console.error('Error checking demo limit:', {
       chatError,
       imageError,
       modelError,

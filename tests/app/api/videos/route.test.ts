@@ -1,10 +1,10 @@
-import type { NextRequest } from "next/server";
+import type { NextRequest } from 'next/server';
 
-import { GET } from "@/app/api/videos/route";
-import { createClient } from "@/utils/supabase/server";
+import { GET } from '@/app/api/videos/route';
+import { createClient } from '@/utils/supabase/server';
 
 // Mock the createClient function and Supabase client
-jest.mock("@/utils/supabase/server");
+jest.mock('@/utils/supabase/server');
 
 const mockSupabase = {
   auth: {
@@ -24,7 +24,7 @@ const mockSupabase = {
 
 (createClient as jest.Mock).mockReturnValue(mockSupabase);
 
-describe("GET /api/videos", () => {
+describe('GET /api/videos', () => {
   let mockReq: NextRequest;
 
   beforeEach(() => {
@@ -35,22 +35,22 @@ describe("GET /api/videos", () => {
     } as NextRequest;
   });
 
-  it("should return 401 if the user is not authenticated", async () => {
+  it('should return 401 if the user is not authenticated', async () => {
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: null },
-      error: new Error("Not authenticated"),
+      error: new Error('Not authenticated'),
     });
 
     const response = await GET(mockReq);
     const data = await response.json();
 
     expect(response.status).toBe(401);
-    expect(data.error).toBe("Unauthorized");
+    expect(data.error).toBe('Unauthorized');
   });
 
-  it("should return 500 if there is an error fetching video generations", async () => {
-    mockReq.headers.set("Authorization", "Bearer valid-token");
-    const mockUser = { id: "user-id" };
+  it('should return 500 if there is an error fetching video generations', async () => {
+    mockReq.headers.set('Authorization', 'Bearer valid-token');
+    const mockUser = { id: 'user-id' };
 
     // Mock the user authentication
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -64,7 +64,7 @@ describe("GET /api/videos", () => {
         eq: jest.fn().mockReturnValue({
           order: jest.fn().mockResolvedValue({
             data: null,
-            error: new Error("Database error"),
+            error: new Error('Database error'),
           }),
         }),
       }),
@@ -75,24 +75,24 @@ describe("GET /api/videos", () => {
 
     // Assertions
     expect(response.status).toBe(500);
-    expect(data).toEqual({ error: "Failed to fetch video generations" });
-    expect(mockSupabase.from).toHaveBeenCalledWith("video_generations");
+    expect(data).toEqual({ error: 'Failed to fetch video generations' });
+    expect(mockSupabase.from).toHaveBeenCalledWith('video_generations');
     expect(mockSupabase.from().select).toHaveBeenCalledWith(
-      "id, prompt, task_id, processing_status, created_at",
+      'id, prompt, task_id, processing_status, created_at',
     );
     expect(mockSupabase.from().select().eq).toHaveBeenCalledWith(
-      "user_id",
+      'user_id',
       mockUser.id,
     );
     expect(mockSupabase.from().select().eq().order).toHaveBeenCalledWith(
-      "created_at",
+      'created_at',
       { ascending: false },
     );
   });
 
-  it("should return 200 with video generations if successful", async () => {
-    mockReq.headers.set("Authorization", "Bearer valid-token");
-    const mockUser = { id: "user-id" };
+  it('should return 200 with video generations if successful', async () => {
+    mockReq.headers.set('Authorization', 'Bearer valid-token');
+    const mockUser = { id: 'user-id' };
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: mockUser },
       error: null,
@@ -100,17 +100,17 @@ describe("GET /api/videos", () => {
     const mockVideoGenerations = [
       {
         id: 1,
-        prompt: "Prompt 1",
-        task_id: "task-1",
-        processing_status: "completed",
-        created_at: "2025-04-12T00:00:00.000Z",
+        prompt: 'Prompt 1',
+        task_id: 'task-1',
+        processing_status: 'completed',
+        created_at: '2025-04-12T00:00:00.000Z',
       },
       {
         id: 2,
-        prompt: "Prompt 2",
-        task_id: "task-2",
-        processing_status: "pending",
-        created_at: "2025-04-11T00:00:00.000Z",
+        prompt: 'Prompt 2',
+        task_id: 'task-2',
+        processing_status: 'pending',
+        created_at: '2025-04-11T00:00:00.000Z',
       },
     ];
     mockSupabase.from.mockReturnValue({
@@ -128,16 +128,16 @@ describe("GET /api/videos", () => {
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data).toEqual({ videoGenerations: mockVideoGenerations });
-    expect(mockSupabase.from).toHaveBeenCalledWith("video_generations");
+    expect(mockSupabase.from).toHaveBeenCalledWith('video_generations');
     expect(mockSupabase.from().select).toHaveBeenCalledWith(
-      "id, prompt, task_id, processing_status, created_at",
+      'id, prompt, task_id, processing_status, created_at',
     );
     expect(mockSupabase.from().select().eq).toHaveBeenCalledWith(
-      "user_id",
+      'user_id',
       mockUser.id,
     );
     expect(mockSupabase.from().select().eq().order).toHaveBeenCalledWith(
-      "created_at",
+      'created_at',
       { ascending: false },
     );
   });

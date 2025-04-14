@@ -1,11 +1,11 @@
-import Link from "next/link";
+import Link from 'next/link';
 
-import { forgotPasswordAction } from "@/app/actions";
-import type { Message } from "@/components/form-message";
-import { FormMessage } from "@/components/form-message";
-import { SubmitButton } from "@/components/submit-button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { forgotPasswordAction } from '@/app/actions';
+import type { Message } from '@/components/form-message';
+import { FormMessage } from '@/components/form-message';
+import { SubmitButton } from '@/components/submit-button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default async function ForgotPassword(props: {
   searchParams: Promise<Message>;
@@ -17,7 +17,7 @@ export default async function ForgotPassword(props: {
         <div>
           <h1 className="text-2xl font-medium">Reset Password</h1>
           <p className="text-sm text-secondary-foreground">
-            Already have an account?{" "}
+            Already have an account?{' '}
             <Link className="text-primary underline" href="/sign-in">
               Sign in
             </Link>

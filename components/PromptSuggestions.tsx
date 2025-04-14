@@ -1,5 +1,5 @@
-"use client";
-import React, { useEffect, useState } from "react";
+'use client';
+import React, { useEffect, useState } from 'react';
 
 interface PromptSuggestionsProps {
   onSelect: (suggestion: { title: string; icon: any }) => void;
@@ -27,8 +27,8 @@ const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({
           key={index}
           className={`bg-white border border-blue-200 px-4 py-2 rounded-3xl shadow-md transition flex flex-row items-center ${
             disabled
-              ? "opacity-50 cursor-not-allowed"
-              : "cursor-pointer hover:bg-blue-50"
+              ? 'opacity-50 cursor-not-allowed'
+              : 'cursor-pointer hover:bg-blue-50'
           }`}
           onClick={() => !disabled && onSelect(suggestion)}
         >

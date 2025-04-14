@@ -1,7 +1,7 @@
-import { checkDemoLimit } from "@/app/utils/demoLimit";
-import { createClient } from "@/utils/supabase/server";
+import { checkDemoLimit } from '@/app/utils/demoLimit';
+import { createClient } from '@/utils/supabase/server';
 
-jest.mock("@/utils/supabase/server");
+jest.mock('@/utils/supabase/server');
 
 const mockSupabase = {
   auth: {
@@ -19,16 +19,16 @@ const mockSupabase = {
 
 (createClient as jest.Mock).mockReturnValue(mockSupabase);
 
-describe("checkDemoLimit", () => {
-  it("should return the ai inference limit", async () => {
+describe('checkDemoLimit', () => {
+  it('should return the ai inference limit', async () => {
     var changeUrlBack = false;
     if (!process.env.NEXT_PUBLIC_VERCEL_URL) {
-      process.env.NEXT_PUBLIC_VERCEL_URL = "test.vercel.app";
+      process.env.NEXT_PUBLIC_VERCEL_URL = 'test.vercel.app';
       changeUrlBack = true;
     }
 
     const mockGeneratedAI = [
-      { id: "1", name: "Chat A", created_at: "2023-04-01T00:00:00Z" },
+      { id: '1', name: 'Chat A', created_at: '2023-04-01T00:00:00Z' },
     ];
 
     mockSupabase.from.mockReturnValue({
@@ -40,19 +40,19 @@ describe("checkDemoLimit", () => {
       }),
     });
 
-    let response = await checkDemoLimit("1");
+    let response = await checkDemoLimit('1');
     expect(response.canGenerate).toBe(true);
     expect(response.remaining).toBe(2);
 
     if (changeUrlBack) {
-      process.env.NEXT_PUBLIC_VERCEL_URL = "";
+      process.env.NEXT_PUBLIC_VERCEL_URL = '';
     }
   });
 
-  it("should handle database errors", async () => {
+  it('should handle database errors', async () => {
     var changeUrlBack = false;
     if (!process.env.NEXT_PUBLIC_VERCEL_URL) {
-      process.env.NEXT_PUBLIC_VERCEL_URL = "test.vercel.app";
+      process.env.NEXT_PUBLIC_VERCEL_URL = 'test.vercel.app';
       changeUrlBack = true;
     }
 
@@ -60,17 +60,17 @@ describe("checkDemoLimit", () => {
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockResolvedValue({
           data: null,
-          error: new Error("Database error"),
+          error: new Error('Database error'),
         }),
       }),
     });
 
-    let response = await checkDemoLimit("1");
+    let response = await checkDemoLimit('1');
     expect(response.canGenerate).toBe(true);
     expect(response.remaining).toBe(5);
 
     if (changeUrlBack) {
-      process.env.NEXT_PUBLIC_VERCEL_URL = "";
+      process.env.NEXT_PUBLIC_VERCEL_URL = '';
     }
   });
 });

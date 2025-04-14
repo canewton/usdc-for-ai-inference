@@ -1,15 +1,15 @@
 // components/Navbar.tsx
-"use client";
+'use client';
 
-import type { User } from "@supabase/supabase-js";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import React, { useEffect, useRef, useState } from "react";
+import type { User } from '@supabase/supabase-js';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
 
-import { signOutAction } from "@/app/actions"; // Assuming actions are in app/actions
-import { NavbarAIDropdown } from "@/components/navbar-ai-dropdown";
-import { Button } from "@/components/ui/button";
-import type { Profile } from "@/types/database.types"; // Assuming types/database.types.ts exists
+import { signOutAction } from '@/app/actions'; // Assuming actions are in app/actions
+import { NavbarAIDropdown } from '@/components/navbar-ai-dropdown';
+import { Button } from '@/components/ui/button';
+import type { Profile } from '@/types/database.types'; // Assuming types/database.types.ts exists
 
 interface NavbarProps {
   user: User | null;
@@ -25,23 +25,23 @@ interface NavTab {
 }
 
 const commonTabs: NavTab[] = [
-  { name: "Manage Wallet", route: "/dashboard" },
+  { name: 'Manage Wallet', route: '/dashboard' },
   {
-    name: "Build with AI",
-    route: "/chat",
+    name: 'Build with AI',
+    route: '/chat',
     dropdown: <NavbarAIDropdown />,
-    dropdownRoutes: ["chat", "3d", "image", "image-generator", "video"],
+    dropdownRoutes: ['chat', '3d', 'image', 'image-generator', 'video'],
   },
 ];
 
 const adminTabs: NavTab[] = [
-  { name: "Website Analytics", route: "/admin" },
-  { name: "Treasury Wallet", route: "/admin/treasury-wallet" },
+  { name: 'Website Analytics', route: '/admin' },
+  { name: 'Treasury Wallet', route: '/admin/treasury-wallet' },
 ];
 
 export default function Navbar({ user, profile }: NavbarProps) {
   const pathname = usePathname();
-  const [showDropdown, setShowDropdown] = useState("");
+  const [showDropdown, setShowDropdown] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
 
@@ -57,20 +57,20 @@ export default function Navbar({ user, profile }: NavbarProps) {
         navbarRef.current &&
         !navbarRef.current.contains(event.target as Node)
       ) {
-        setShowDropdown("");
+        setShowDropdown('');
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
   // Function to determine if a tab is active
   const isTabActive = (tabRoute: string, tabDropdownRoutes?: string[]) => {
     // Exact match or base path match
-    if (pathname === tabRoute || pathname.startsWith(tabRoute + "/")) {
+    if (pathname === tabRoute || pathname.startsWith(tabRoute + '/')) {
       return true;
     }
     // Check dropdown routes if provided
@@ -84,13 +84,13 @@ export default function Navbar({ user, profile }: NavbarProps) {
 
   return (
     <div className="mb-16">
-      {" "}
+      {' '}
       {/* Added margin-bottom to prevent content overlap */}
       <div className="fixed top-0 left-0 right-0 min-h-16 bg-white border-b border-gray-200 flex items-center justify-between shadow-lg px-6 md:px-20 z-50">
         {/* Logo */}
         <Link
           href={
-            user ? (profile?.is_admin ? "/admin" : "/dashboard") : "/sign-in"
+            user ? (profile?.is_admin ? '/admin' : '/dashboard') : '/sign-in'
           }
           className="flex items-center"
         >
@@ -114,15 +114,15 @@ export default function Navbar({ user, profile }: NavbarProps) {
                     href={tab.route}
                     className={`text-sm font-medium transition-colors ${
                       isTabActive(tab.route, tab.dropdownRoutes)
-                        ? "text-blue-500"
-                        : "text-gray-600 hover:text-blue-500"
+                        ? 'text-blue-500'
+                        : 'text-gray-600 hover:text-blue-500'
                     }`}
                     onMouseEnter={() => {
                       if (tab.dropdown) {
                         setShowDropdown(tab.name);
                       }
                     }}
-                    onClick={() => setShowDropdown("")} // Close dropdown on click
+                    onClick={() => setShowDropdown('')} // Close dropdown on click
                   >
                     {tab.name}
                   </Link>
@@ -130,7 +130,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
                     <div
                       ref={dropdownRef}
                       className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]" // Increased z-index
-                      onMouseLeave={() => setShowDropdown("")}
+                      onMouseLeave={() => setShowDropdown('')}
                     >
                       {tab.dropdown}
                     </div>
@@ -150,7 +150,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
               </div>
               {/* Simple Profile Initial Circle */}
               <div className="bg-indigo-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
-                {user.email ? user.email[0].toUpperCase() : "?"}
+                {user.email ? user.email[0].toUpperCase() : '?'}
               </div>
               <form action={signOutAction}>
                 <Button type="submit" variant="outline" size="sm">
@@ -160,8 +160,8 @@ export default function Navbar({ user, profile }: NavbarProps) {
             </>
           ) : (
             // Show Sign In/Sign Up buttons if not logged in and not on auth pages
-            !pathname.startsWith("/sign-in") &&
-            !pathname.startsWith("/sign-up") && (
+            !pathname.startsWith('/sign-in') &&
+            !pathname.startsWith('/sign-up') && (
               <>
                 <Button asChild size="sm" variant="ghost">
                   <Link href="/sign-in">Sign In</Link>
