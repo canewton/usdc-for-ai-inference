@@ -1,15 +1,15 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-import { checkDemoLimit } from '@/app/utils/demoLimit';
-import { MODEL_ASSET_PRICING } from '@/utils/constants';
-import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client'; // Keep browser client for storage uploads if needed
-import { createClient } from '@/utils/supabase/server';
+import { checkDemoLimit } from "@/app/utils/demoLimit";
+import { MODEL_ASSET_PRICING } from "@/utils/constants";
+import { createClient as createSupabaseBrowserClient } from "@/utils/supabase/client"; // Keep browser client for storage uploads if needed
+import { createClient } from "@/utils/supabase/server";
 
 // -------------------------------------------
 // WORKING API KEY - LIMITED NUMBER OF TOKENS
 // -------------------------------------------
-const MESHY_API_URL = 'https://api.meshy.ai/v2/generate/model';
+const MESHY_API_URL = "https://api.meshy.ai/v2/generate/model";
 const MESHY_API_KEY = process.env.NEXT_PUBLIC_MESHY_API_KEY;
 
 type MeshyResponse = {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       error,
     } = await supabase.auth.getUser();
     if (error || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get info from request body
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            'You have reached the limit of free generations. Please upgrade to continue.',
+            "You have reached the limit of free generations. Please upgrade to continue.",
           remaining,
         },
         { status: 403 },
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     const modelParams = {
       prompt,
       negative_prompt,
-      texture_prompt: texture_prompt !== '' ? texture_prompt : prompt,
+      texture_prompt: texture_prompt !== "" ? texture_prompt : prompt,
       texture_guidance_scale,
       texture_steps,
       geometry_guidance_scale,
@@ -92,10 +92,10 @@ export async function POST(request: NextRequest) {
 
     // Make API call
     const response = await fetch(MESHY_API_URL, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${MESHY_API_KEY}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(modelParams),
     });
@@ -109,32 +109,32 @@ export async function POST(request: NextRequest) {
     // upload .glb (3D model file type) file into supabase storage
     const fileName = `3d-model-${Date.now()}.glb`;
     const { error: uploadError } = await supabase.storage
-      .from('user-3d')
+      .from("user-3d")
       .upload(fileName, modelBlob);
 
     if (uploadError) {
       return NextResponse.json(
         {
-          error: 'Could not upload model',
+          error: "Could not upload model",
         },
         { status: 500 },
       );
     }
 
     const { data: publicURLData } = supabase.storage
-      .from('user-3d') // Ensure this bucket exists and has correct policies
+      .from("user-3d") // Ensure this bucket exists and has correct policies
       .getPublicUrl(fileName);
     const storedModelUrl = publicURLData.publicUrl;
 
     // inserting into DB
-    const { error: dbError } = await supabase.from('3d_generations').insert([
+    const { error: dbError } = await supabase.from("3d_generations").insert([
       {
         image_url: image_file,
         prompt: texture_prompt,
         user_id: user.id,
         url: storedModelUrl,
-        provider: 'Meshy',
-        mode: should_remesh ? 'Refine' : 'Preview',
+        provider: "Meshy",
+        mode: should_remesh ? "Refine" : "Preview",
         replicate_billed_amount: MODEL_ASSET_PRICING.replicatePrice,
         user_billed_amount: MODEL_ASSET_PRICING.userBilledPrice,
       },
@@ -149,9 +149,9 @@ export async function POST(request: NextRequest) {
     // returns model url -> downloads an interactive 3D model
     return NextResponse.json({ modelUrl: storedModelUrl });
   } catch (error: any) {
-    console.error('3D Generation error:', error);
+    console.error("3D Generation error:", error);
     return NextResponse.json(
-      { error: error.message || '3D Generation failed' },
+      { error: error.message || "3D Generation failed" },
       { status: 500 },
     );
   }

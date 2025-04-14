@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { TrendingUp } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { TrendingUp } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from "@/utils/supabase/client";
 
-import { InsightBox } from './insight-box';
-import type { TimePeriod } from './time-period-options';
-import { TimePeriodOptions } from './time-period-options';
+import { InsightBox } from "./insight-box";
+import type { TimePeriod } from "./time-period-options";
+import { TimePeriodOptions } from "./time-period-options";
 
 export const ActiveUsers = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('1D');
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>("1D");
   const supabase = createClient();
 
   const now = new Date();
@@ -27,36 +27,36 @@ export const ActiveUsers = () => {
 
   async function fetchActiveUsers() {
     const { count: activeToday } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .gte('last_active', oneDayAgo.toISOString());
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .gte("last_active", oneDayAgo.toISOString());
 
     const { count: activeThisWeek } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .gte('last_active', oneWeekAgo.toISOString());
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .gte("last_active", oneWeekAgo.toISOString());
 
     const { count: activeThisMonth } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .gte('last_active', oneMonthAgo.toISOString());
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .gte("last_active", oneMonthAgo.toISOString());
 
     const { count: activeLastThreeMonths } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .gte('last_active', threeMonthsAgo.toISOString());
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .gte("last_active", threeMonthsAgo.toISOString());
 
     const { count: activeLastYear } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .gte('last_active', oneYearAgo.toISOString());
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .gte("last_active", oneYearAgo.toISOString());
 
     setActiveUsers({
-      '1D': activeToday,
-      '7D': activeThisWeek,
-      '1M': activeThisMonth,
-      '3M': activeLastThreeMonths,
-      '1Y': activeLastYear,
+      "1D": activeToday,
+      "7D": activeThisWeek,
+      "1M": activeThisMonth,
+      "3M": activeLastThreeMonths,
+      "1Y": activeLastYear,
     });
   }
 

@@ -1,27 +1,27 @@
 // app/layout.tsx
-import './globals.css';
+import "./globals.css";
 
-import { Geist } from 'next/font/google';
-import { ThemeProvider } from 'next-themes';
-import { Toaster } from 'sonner'; // Import Sonner Toaster
+import { Geist } from "next/font/google";
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "sonner"; // Import Sonner Toaster
 
-import Navbar from '@/components/Navbar'; // Corrected path
-import type { Profile } from '@/types/database.types'; // Assuming types/database.types.ts exists
-import { createClient } from '@/utils/supabase/server';
+import Navbar from "@/components/Navbar"; // Corrected path
+import type { Profile } from "@/types/database.types"; // Assuming types/database.types.ts exists
+import { createClient } from "@/utils/supabase/server";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : 'http://localhost:3000';
+  : "http://localhost:3000";
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: 'Codelab Circle AI Billing',
-  description: 'Metered AI Inference Billing with USDC via Circle APIs',
+  title: "Codelab Circle AI Billing",
+  description: "Metered AI Inference Billing with USDC via Circle APIs",
 };
 
 const geistSans = Geist({
-  display: 'swap',
-  subsets: ['latin'],
+  display: "swap",
+  subsets: ["latin"],
 });
 
 export default async function RootLayout({
@@ -40,9 +40,9 @@ export default async function RootLayout({
   let profile: Profile | null = null;
   if (user) {
     const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('auth_user_id', user.id)
+      .from("profiles")
+      .select("*")
+      .eq("auth_user_id", user.id)
       .single();
     profile = profileData;
   }

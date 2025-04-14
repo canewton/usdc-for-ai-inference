@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from "@/utils/supabase/client";
 
-import type { BillingTransaction } from './billing';
-import { WebInsights } from './web-insights';
+import type { BillingTransaction } from "./billing";
+import { WebInsights } from "./web-insights";
 
 export const WebAnalytics = () => {
   const [allBillingData, setAllBillingData] = useState<BillingTransaction[]>(
@@ -51,13 +51,13 @@ export const WebAnalytics = () => {
   const updateBillingTransactions = async () => {
     try {
       const { data: allProjects } = await supabase
-        .from('ai_projects')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .from("ai_projects")
+        .select("*")
+        .order("created_at", { ascending: false });
 
       const { data: allTransactions } = await supabase
-        .from('transactions')
-        .select('*');
+        .from("transactions")
+        .select("*");
 
       const allBillingTransactions: BillingTransaction[] | null =
         createBillingData(allTransactions ?? [], allProjects ?? []);
@@ -66,7 +66,7 @@ export const WebAnalytics = () => {
         setAllBillingData(allBillingTransactions);
       }
     } catch (error) {
-      console.error('Failed to fetch transactions:', error);
+      console.error("Failed to fetch transactions:", error);
     }
   };
 

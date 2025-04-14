@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
-import { createClient } from '@/utils/supabase/server';
+import { circleDeveloperSdk } from "@/utils/developer-controlled-wallets-client";
+import { createClient } from "@/utils/supabase/server";
 
 async function buildTransfer(
   circleWalletId: string,
@@ -13,7 +13,7 @@ async function buildTransfer(
       includeAll: true,
     });
     const parsedTokenId = balanceResponse.data?.tokenBalances?.find(
-      ({ token }: { token: { symbol?: string } }) => token.symbol === 'USDC',
+      ({ token }: { token: { symbol?: string } }) => token.symbol === "USDC",
     )?.token?.id;
 
     const transfer = {
@@ -22,18 +22,18 @@ async function buildTransfer(
       destinationAddress: process.env.NEXT_PUBLIC_TREASURY_WALLET_ADDRESS,
       amounts: [amount],
       fee: {
-        type: 'level',
+        type: "level",
         config: {
-          feeLevel: 'MEDIUM',
+          feeLevel: "MEDIUM",
         },
       },
     };
 
-    console.log('transfer', transfer);
+    console.log("transfer", transfer);
 
     return transfer;
   } catch (error) {
-    console.error('Error building transfer:', error);
+    console.error("Error building transfer:", error);
     return null;
   }
 }
@@ -48,19 +48,19 @@ export interface WalletTransferRequest {
 async function createTransfer(
   transferRequest: WalletTransferRequest,
 ): Promise<any> {
-  console.log('transferRequest', transferRequest);
+  console.log("transferRequest", transferRequest);
   const transfer = await buildTransfer(
     transferRequest.circleWalletId,
     transferRequest.amount,
   );
   if (!transfer) {
-    throw new Error('Transfer failed: Invalid transfer request');
+    throw new Error("Transfer failed: Invalid transfer request");
   }
 
   const response = await circleDeveloperSdk.createTransaction(transfer);
 
   if (!response.data) {
-    throw new Error('Transfer failed: No response received');
+    throw new Error("Transfer failed: No response received");
   }
   return response.data;
 }
@@ -81,8 +81,8 @@ export async function circleWalletTransfer(
     };
     const result = await createTransfer(transferRequest);
     const { data: response, error } = await supabase
-      .schema('public')
-      .from('ai_projects')
+      .schema("public")
+      .from("ai_projects")
       .insert({
         project_name: projectName,
         ai_model: aiModel,
@@ -92,16 +92,16 @@ export async function circleWalletTransfer(
       .select();
 
     if (error) {
-      console.error('Error saving transaction:', error);
+      console.error("Error saving transaction:", error);
       return NextResponse.json(
-        { error: 'Transfer succeeded but could not save transaction' },
+        { error: "Transfer succeeded but could not save transaction" },
         { status: 500 },
       );
     }
 
     return response;
   } catch (error) {
-    console.error('Transfer failed:', error);
+    console.error("Transfer failed:", error);
     return NextResponse.json(
       { error: `Transfer failed with error: ${error}` },
       { status: 500 },

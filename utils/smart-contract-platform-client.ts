@@ -1,4 +1,4 @@
-import { initiateSmartContractPlatformClient } from '@circle-fin/smart-contract-platform';
+import { initiateSmartContractPlatformClient } from "@circle-fin/smart-contract-platform";
 
 // Initialize Circle Smart Contract client
 export const circleContractSdk = initiateSmartContractPlatformClient({

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { Loader2 } from 'lucide-react';
-import { type FunctionComponent, type HTMLProps, useState } from 'react';
+import { Loader2 } from "lucide-react";
+import { type FunctionComponent, type HTMLProps, useState } from "react";
 
-import { USDCIcon } from '@/app/icons/USDCIcon';
-import { Button } from '@/components/ui/button';
+import { USDCIcon } from "@/app/icons/USDCIcon";
+import { Button } from "@/components/ui/button";
 
 interface Props extends HTMLProps<HTMLElement> {
-  mode: 'BUY' | 'SELL' | 'TRANSFER';
+  mode: "BUY" | "SELL" | "TRANSFER";
   walletAddress?: string;
 }
 
@@ -23,7 +23,7 @@ export const USDCButton: FunctionComponent<Props> = ({
       const usdcAccessResponse = await fetch(
         `/api/usdc/${mode.toLowerCase()}`,
         {
-          method: 'POST',
+          method: "POST",
           body: JSON.stringify({
             wallet_address: walletAddress,
           }),
@@ -33,11 +33,11 @@ export const USDCButton: FunctionComponent<Props> = ({
       const parsedUsdcAccessResponse = await usdcAccessResponse.json();
       window.open(
         parsedUsdcAccessResponse.url,
-        'popup',
-        'width=500,height=600',
+        "popup",
+        "width=500,height=600",
       );
     } catch (error) {
-      console.error('Action failed:', error);
+      console.error("Action failed:", error);
     } finally {
       setLoading(false);
     }
@@ -54,13 +54,13 @@ export const USDCButton: FunctionComponent<Props> = ({
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Loading...
         </>
-      ) : mode === 'BUY' ? (
+      ) : mode === "BUY" ? (
         <>
           <USDCIcon />
           <span>Add Funds</span>
         </>
       ) : (
-        'Withdraw'
+        "Withdraw"
       )}
     </Button>
   );

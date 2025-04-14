@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import React, { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
-import { useSession } from '@/app/contexts/SessionContext';
-import { useDemoLimit } from '@/app/hooks/useDemoLimit';
-import CanvasArea from '@/components/3d/canvas';
-import ControlPanel from '@/components/3d/control-panel';
-import type { ModelHistoryItem } from '@/components/3d/types';
-import AiHistoryPortal from '@/components/AiHistoryPortal';
-import { ChatSidebar } from '@/components/ChatSidebar';
-import RightAiSidebar from '@/components/RightAiSidebar';
-import { aiModel } from '@/types/ai.types';
-import { MODEL_ASSET_PRICING } from '@/utils/constants';
+import { useSession } from "@/app/contexts/SessionContext";
+import { useDemoLimit } from "@/app/hooks/useDemoLimit";
+import CanvasArea from "@/components/3d/canvas";
+import ControlPanel from "@/components/3d/control-panel";
+import type { ModelHistoryItem } from "@/components/3d/types";
+import AiHistoryPortal from "@/components/AiHistoryPortal";
+import { ChatSidebar } from "@/components/ChatSidebar";
+import RightAiSidebar from "@/components/RightAiSidebar";
+import { aiModel } from "@/types/ai.types";
+import { MODEL_ASSET_PRICING } from "@/utils/constants";
 
-import type { WalletTransferRequest } from '../server/circleWalletTransfer';
+import type { WalletTransferRequest } from "../server/circleWalletTransfer";
 
 interface Chat {
   id: string;
@@ -24,8 +24,8 @@ interface Chat {
 
 export default function Generate3DModelPage() {
   const { remaining, loading: demoLimitLoading } = useDemoLimit();
-  const [prompt, setPrompt] = useState('');
-  const [imageDataUri, setImageDataUri] = useState('');
+  const [prompt, setPrompt] = useState("");
+  const [imageDataUri, setImageDataUri] = useState("");
   const [mode, setMode] = useState(true); // not currently used -> always on refine mode (true)
   const [isLoading, setIsLoading] = useState(false);
   const [modelUrl, setModelUrl] = useState<string | null>(null);
@@ -36,7 +36,7 @@ export default function Generate3DModelPage() {
 
   useEffect(() => {
     if (!mode) {
-      setPrompt('');
+      setPrompt("");
     }
   }, [mode]);
 
@@ -47,7 +47,7 @@ export default function Generate3DModelPage() {
       const response = await fetch(
         `/api/gettotalbilledamount?table=3d_generations`,
         {
-          method: 'GET',
+          method: "GET",
           headers: {
             Authorization: `Bearer ${sessionToken}`,
           },
@@ -57,23 +57,23 @@ export default function Generate3DModelPage() {
       if (response.ok) {
         setTotalBilledAmount(data.totalBilledAmount);
       } else {
-        console.error('Error fetching billed amount:', data.error);
+        console.error("Error fetching billed amount:", data.error);
       }
     } catch (error) {
-      console.error('Error fetching billed amount:', error);
+      console.error("Error fetching billed amount:", error);
     }
   };
 
   const fetchHistory = async () => {
     if (!session) return;
-    console.log('Fetching history...');
+    console.log("Fetching history...");
     setIsLoading(true);
     const sessionToken = session.access_token;
     try {
       const response = await fetch(
-        'http://localhost:3000/api/getgeneratedmodels',
+        "http://localhost:3000/api/getgeneratedmodels",
         {
-          method: 'GET',
+          method: "GET",
           headers: {
             Authorization: `Bearer ${sessionToken}`,
           },
@@ -86,8 +86,8 @@ export default function Generate3DModelPage() {
           .map(
             (item: any): ModelHistoryItem => ({
               id: item.id || `missing-id-${Math.random()}`,
-              url: item.url || '',
-              prompt: item.prompt || '',
+              url: item.url || "",
+              prompt: item.prompt || "",
               created_at: item.created_at
                 ? new Date(item.created_at).toISOString()
                 : new Date().toISOString(),
@@ -101,15 +101,15 @@ export default function Generate3DModelPage() {
           );
 
         setHistory(formattedHistory);
-        console.log('Fetched and formatted history:', formattedHistory);
+        console.log("Fetched and formatted history:", formattedHistory);
       } else {
-        console.error('Failed to fetch history:', data.error);
-        setError('Failed to load history.');
+        console.error("Failed to fetch history:", data.error);
+        setError("Failed to load history.");
         setHistory([]);
       }
     } catch (err) {
-      console.error('Error fetching history:', err);
-      setError('An error occurred while loading history.');
+      console.error("Error fetching history:", err);
+      setError("An error occurred while loading history.");
       setHistory([]);
     } finally {
       setIsLoading(false);
@@ -125,11 +125,11 @@ export default function Generate3DModelPage() {
 
   const submitPrompt = async (selectedPrompt: string) => {
     if (!session || !imageDataUri) {
-      setError('Session or image data is missing.');
+      setError("Session or image data is missing.");
       return;
     }
     if (remaining === 0) {
-      toast.error('Demo limit reached. Please upgrade to continue.');
+      toast.error("Demo limit reached. Please upgrade to continue.");
       return;
     }
     setIsLoading(true);
@@ -138,11 +138,11 @@ export default function Generate3DModelPage() {
     try {
       const sessionToken = session.access_token;
       const response = await fetch(
-        'http://localhost:3000/api/generate3d-image',
+        "http://localhost:3000/api/generate3d-image",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${sessionToken}`,
           },
           body: JSON.stringify({
@@ -156,49 +156,49 @@ export default function Generate3DModelPage() {
       if (!response.ok) {
         const errorData = await response.json();
         if (response.status === 429) {
-          toast.error('Demo limit reached. Please upgrade to continue.');
+          toast.error("Demo limit reached. Please upgrade to continue.");
         } else {
-          toast.error(errorData.error || 'Failed to generate model');
+          toast.error(errorData.error || "Failed to generate model");
         }
-        throw new Error(errorData.error || 'Failed to generate model');
+        throw new Error(errorData.error || "Failed to generate model");
       }
 
       const data = await response.json();
       if (data.modelUrl) {
         setModelUrl(data.modelUrl);
-        console.log('Generated model URL:', data.modelUrl);
+        console.log("Generated model URL:", data.modelUrl);
         fetchHistory();
         fetchTotalBilledAmount();
       } else {
-        setError(data.error || 'Failed to generate model');
-        console.error('Generation failed:', data);
+        setError(data.error || "Failed to generate model");
+        console.error("Generation failed:", data);
       }
 
       // Transfer balance
       const transfer: WalletTransferRequest = {
-        circleWalletId: session.wallet_id ?? '',
+        circleWalletId: session.wallet_id ?? "",
         amount: MODEL_ASSET_PRICING.userBilledPrice.toString(),
-        projectName: 'Hi',
+        projectName: "Hi",
         aiModel: aiModel.IMAGE_TO_3D,
       };
 
-      const transferResponse = await fetch('/api/wallet/transfer', {
-        method: 'POST',
+      const transferResponse = await fetch("/api/wallet/transfer", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(transfer),
       });
 
       if (!transferResponse.ok) {
-        throw new Error('Transfer failed');
+        throw new Error("Transfer failed");
       }
 
       const result = await transferResponse.json();
-      console.log('Transfer initiated:', result);
+      console.log("Transfer initiated:", result);
     } catch (err: any) {
-      setError(`An error occurred: ${err.message || 'Unknown error'}`);
-      console.error('Generation error:', err);
+      setError(`An error occurred: ${err.message || "Unknown error"}`);
+      console.error("Generation error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -220,8 +220,8 @@ export default function Generate3DModelPage() {
 
   const resetGenerationState = () => {
     setModelUrl(null);
-    setPrompt('');
-    setImageDataUri('');
+    setPrompt("");
+    setImageDataUri("");
     setError(null);
   };
 
@@ -244,7 +244,7 @@ export default function Generate3DModelPage() {
       const response = await fetch(
         `http://localhost:3000/api/deletemodel?modelid=${modelId}`,
         {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
             Authorization: `Bearer ${sessionToken}`,
           },
@@ -253,28 +253,28 @@ export default function Generate3DModelPage() {
 
       const data = await response.json();
       if (response.ok) {
-        console.log('Model deleted successfully:', data.message);
+        console.log("Model deleted successfully:", data.message);
         await fetchHistory();
         if (modelUrl === urlToDelete) {
           setModelUrl(null);
         }
         fetchTotalBilledAmount();
       } else {
-        setError(data.error || 'Failed to delete model');
-        console.error('Deletion failed:', data);
+        setError(data.error || "Failed to delete model");
+        console.error("Deletion failed:", data);
       }
     } catch (err: any) {
       setError(
-        `An error occurred while deleting: ${err.message || 'Unknown error'}`,
+        `An error occurred while deleting: ${err.message || "Unknown error"}`,
       );
-      console.error('Delete error:', err);
+      console.error("Delete error:", err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const chatsDataForSidebar: Chat[] = useMemo(() => {
-    console.log('Transforming history for ChatSidebar:', history);
+    console.log("Transforming history for ChatSidebar:", history);
     return history.map(
       (item): Chat => ({
         id: item.id,
@@ -288,7 +288,7 @@ export default function Generate3DModelPage() {
     if (!modelUrl) return null;
     const currentItem = history.find((item) => item.url === modelUrl);
     console.log(
-      `Derived currentChatId: ${currentItem?.id ?? 'null'} for modelUrl: ${modelUrl}`,
+      `Derived currentChatId: ${currentItem?.id ?? "null"} for modelUrl: ${modelUrl}`,
     );
     return currentItem ? currentItem.id : null;
   }, [modelUrl, history]);
@@ -296,7 +296,7 @@ export default function Generate3DModelPage() {
   return (
     <>
       <div
-        className={`${!session.api_key_status.meshy ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.api_key_status.meshy ? "flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto" : "hidden"}`}
       >
         This page is not available during the hosted demo.
       </div>
