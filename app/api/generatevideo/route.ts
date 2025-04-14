@@ -109,6 +109,10 @@ export async function POST(request: NextRequest) {
       processing_status: 'pending',
     });
 
+    if (generationError) {
+      throw new Error('Failed to store video generation');
+    }
+
     return NextResponse.json({ task_id });
   } catch (error) {
     console.error('Generation error:', error);
