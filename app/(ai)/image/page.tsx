@@ -251,11 +251,13 @@ export default function Page() {
 
   return (
     <>
+      {/* Temporarily commented out overlay
       <div
         className={`${!session.api_key_status.replicate ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         This page is not available during the hosted demo.
       </div>
+      */}
       {/* LEFT SIDEBAR (history) */}
       <AiHistoryPortal>
         <ChatSidebar

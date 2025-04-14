@@ -295,11 +295,13 @@ export default function Generate3DModelPage() {
 
   return (
     <>
+      {/* Temporarily commented out overlaywell 
       <div
         className={`${!session.api_key_status.meshy ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         This page is not available during the hosted demo.
       </div>
+      */}
       {/* --- Sidebar Area --- */}
       <AiHistoryPortal>
         <ChatSidebar
