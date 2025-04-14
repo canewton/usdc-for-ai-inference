@@ -41,7 +41,7 @@ export default function VideoChatPage() {
         setLoading(true);
         setError(null);
         const response = await fetch('/api/getvideochat', {
-          method: 'POST',
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${sessionToken}`,
