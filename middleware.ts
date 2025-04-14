@@ -48,18 +48,31 @@ export const middleware = async (request: NextRequest) => {
       .single();
 
     if (profileError || !profile) {
-      // Handle profile fetch error
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
 
-    // Redirect non-admins trying to access admin pages
     if (request.nextUrl.pathname.startsWith('/admin') && !profile.is_admin) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
-    // Redirect logged-in non-admins from home to dashboard
     if (request.nextUrl.pathname === '/' && !profile.is_admin) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    if (request.nextUrl.pathname === '/' && profile.is_admin) {
+      return NextResponse.redirect(new URL('/admin', request.url));
+    }
+
+    if (
+      profile.is_admin &&
+      (request.nextUrl.pathname === '/dashboard' ||
+        request.nextUrl.pathname === '/3d' ||
+        request.nextUrl.pathname === '/chat' ||
+        request.nextUrl.pathname === '/image' ||
+        request.nextUrl.pathname === '/video' ||
+        request.nextUrl.pathname === '/image-generator')
+    ) {
+      return NextResponse.redirect(new URL('/admin', request.url));
     }
 
     return response;
