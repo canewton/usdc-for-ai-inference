@@ -68,7 +68,6 @@ export async function middleware(request: NextRequest) {
     '/dashboard',
     '/admin',
     '/chat',
-    '/image-generator',
     '/3d',
     '/video',
   ];
@@ -80,7 +79,6 @@ export async function middleware(request: NextRequest) {
     '/chat',
     '/image',
     '/video',
-    '/image-generator',
   ];
 
   const isProtectedRoute = protectedRoutes.some((route) =>

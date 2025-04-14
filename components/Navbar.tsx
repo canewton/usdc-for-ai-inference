@@ -30,7 +30,7 @@ const commonTabs: NavTab[] = [
     name: 'Build with AI',
     route: '/chat',
     dropdown: <NavbarAIDropdown />,
-    dropdownRoutes: ['chat', '3d', 'image', 'image-generator', 'video'],
+    dropdownRoutes: ['chat', '3d', 'image', 'video'],
   },
 ];
 
