@@ -1,32 +1,47 @@
-"use client";
+// components/Navbar.tsx
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import React, { useEffect, useRef, useState } from "react";
+import type { User } from '@supabase/supabase-js';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
 
-interface Props {
-  tabs: string[];
-  routes: string[];
-  email: string;
-  dropdowns?: {
-    [tabKey: string]: React.JSX.Element;
-  };
-  dropdownRoutes?: {
-    [tabKey: string]: string[];
-  };
+import { signOutAction } from '@/app/actions'; // Assuming actions are in app/actions
+import { NavbarAIDropdown } from '@/components/navbar-ai-dropdown';
+import { Button } from '@/components/ui/button';
+import type { Profile } from '@/types/database.types'; // Assuming types/database.types.ts exists
+
+interface NavbarProps {
+  user: User | null;
+  profile: Profile | null;
 }
 
-export default function Navbar({
-  tabs,
-  routes,
-  email,
-  dropdowns,
-  dropdownRoutes,
-}: Props) {
+// Define Tab configurations
+interface NavTab {
+  name: string;
+  route: string;
+  dropdown?: React.ReactNode;
+  dropdownRoutes?: string[];
+}
+
+const commonTabs: NavTab[] = [
+  { name: 'Manage Wallet', route: '/dashboard' },
+  { name: 'Build with AI', route: '/chat', dropdown: <NavbarAIDropdown />, dropdownRoutes: ['chat', '3d', 'image', 'image-generator', 'video'] },
+];
+
+const adminTabs: NavTab[] = [
+  { name: 'Website Analytics', route: '/admin' },
+  { name: 'Treasury Wallet', route: '/admin/treasury-wallet' },
+];
+
+export default function Navbar({ user, profile }: NavbarProps) {
   const pathname = usePathname();
-  const [showDropdown, setShowDropdown] = useState("");
+  const [showDropdown, setShowDropdown] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
+
+  // Determine which tabs to display
+  const tabsToDisplay = profile?.is_admin ? adminTabs : commonTabs;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -37,80 +52,109 @@ export default function Navbar({
         navbarRef.current &&
         !navbarRef.current.contains(event.target as Node)
       ) {
-        setShowDropdown("");
+        setShowDropdown('');
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
-  const currentRoute = pathname.substring(
-    pathname.indexOf("/") + 1,
-    pathname.length,
-  );
+  // Function to determine if a tab is active
+  const isTabActive = (tabRoute: string, tabDropdownRoutes?: string[]) => {
+    // Exact match or base path match
+     if (pathname === tabRoute || pathname.startsWith(tabRoute + '/')) {
+        return true;
+     }
+     // Check dropdown routes if provided
+     if (tabDropdownRoutes) {
+        return tabDropdownRoutes.some(dropdownRoute => pathname.startsWith(`/${dropdownRoute}`));
+     }
+     return false;
+  };
 
-  const currentTabIndex = routes.indexOf(currentRoute);
-  const selectedTab = currentTabIndex >= 0 ? tabs[currentTabIndex] : "";
-
-  function tabContainsDropdownRoute(tab: string): boolean {
-    if (!dropdownRoutes || !dropdownRoutes[tab]) return false;
-
-    return dropdownRoutes[tab].some(
-      (route) => currentRoute.startsWith(route) || currentRoute === route,
-    );
-  }
 
   return (
-    <div className="mb-16">
-      <div className="fixed top-0 left-0 right-0 min-h-16 bg-white border-b border-gray-200 flex items-center justify-between shadow-lg px-20 z-50">
-        <div className="flex items-center">
-          <img
-            src={`${
-              process.env.VERCEL_URL
-                ? `${process.env.VERCEL_URL}`
-                : "localhost:3000"
-            }/circle-logo-1.png`}
+    <div className="mb-16"> {/* Added margin-bottom to prevent content overlap */}
+      <div className="fixed top-0 left-0 right-0 min-h-16 bg-white border-b border-gray-200 flex items-center justify-between shadow-lg px-6 md:px-20 z-50">
+        {/* Logo */}
+        <Link href={user ? (profile?.is_admin ? '/admin' : '/dashboard') : '/sign-in'} className="flex items-center">
+           <img
+            src="/circle-logo-1.png" // Assumes logo is in public folder
             alt="Circle Logo"
-            className="h-8"
+            className="h-8 w-auto" // Use w-auto for proper scaling
           />
-          <div className="ml-10 space-x-4 flex items-center" ref={navbarRef}>
-            {tabs.map((tab, index) => (
-              <div key={tab} className="relative">
-                <Link
-                  className={`text-sm font-medium ${
-                    selectedTab === tab || tabContainsDropdownRoute(tab)
-                      ? "text-blue-500"
-                      : ""
-                  }`}
-                  href={`/${routes[index]}`}
-                  onMouseEnter={() => {
-                    if (dropdowns?.[tab]) {
-                      setShowDropdown(tab);
-                    }
-                  }}
-                >
-                  {tab}
-                </Link>
-                {showDropdown === tab && dropdowns?.[tab] && (
-                  <div
-                    ref={dropdownRef}
-                    className="absolute left-0 mt-6 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-72"
-                    onMouseLeave={() => setShowDropdown("")}
+        </Link>
+
+        {/* Navigation Tabs (Only if user is logged in) */}
+        {user && (
+          <div className="flex-grow flex justify-center items-center" ref={navbarRef}>
+            <div className="flex items-center space-x-4 md:space-x-8">
+              {tabsToDisplay.map((tab) => (
+                <div key={tab.name} className="relative">
+                   <Link
+                    href={tab.route}
+                    className={`text-sm font-medium transition-colors ${
+                      isTabActive(tab.route, tab.dropdownRoutes)
+                        ? 'text-blue-500'
+                        : 'text-gray-600 hover:text-blue-500'
+                    }`}
+                    onMouseEnter={() => {
+                      if (tab.dropdown) {
+                        setShowDropdown(tab.name);
+                      }
+                    }}
+                    onClick={() => setShowDropdown('')} // Close dropdown on click
                   >
-                    {dropdowns[tab]}
-                  </div>
-                )}
+                    {tab.name}
+                  </Link>
+                  {showDropdown === tab.name && tab.dropdown && (
+                    <div
+                      ref={dropdownRef}
+                      className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]" // Increased z-index
+                      onMouseLeave={() => setShowDropdown('')}
+                    >
+                      {tab.dropdown}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Auth Section */}
+        <div className="flex items-center space-x-3">
+          {user ? (
+            <>
+              <div className="text-sm text-gray-600 hidden md:block">
+                {user.email}
               </div>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center">
-          <div className="bg-purple-500 text-white w-8 h-8 rounded-full flex items-center justify-center">
-            <span>{email.substring(0, 1).toUpperCase()}</span>
-          </div>
+               {/* Simple Profile Initial Circle */}
+               <div className="bg-indigo-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
+                {user.email ? user.email[0].toUpperCase() : '?'}
+               </div>
+              <form action={signOutAction}>
+                <Button type="submit" variant="outline" size="sm">
+                  Sign Out
+                </Button>
+              </form>
+            </>
+          ) : (
+             // Show Sign In/Sign Up buttons if not logged in and not on auth pages
+             !pathname.startsWith('/sign-in') && !pathname.startsWith('/sign-up') && (
+                <>
+                    <Button asChild size="sm" variant="ghost">
+                    <Link href="/sign-in">Sign In</Link>
+                    </Button>
+                    <Button asChild size="sm" variant="default">
+                    <Link href="/sign-up">Sign Up</Link>
+                    </Button>
+                </>
+            )
+          )}
         </div>
       </div>
     </div>

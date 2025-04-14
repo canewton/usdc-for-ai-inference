@@ -1,103 +1,35 @@
+// app/(ai)/layout.tsx
 "use client";
-import { redirect } from "next/navigation";
-import { useEffect, useState } from "react";
+// Removed all client-side auth logic
 
-import AiTabs from "@/components/AiTabs";
-import { createClient } from "@/utils/supabase/client";
-
-import { Spinner } from "../../components/Spinner";
-import { SessionProvider } from "../contexts/SessionContext";
+import AiTabs from "@/components/AiTabs"; // Corrected path
+import { RefreshProvider } from '../contexts/RefreshContext'; // Assuming RefreshContext is needed
 
 export default function AILayout({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [apiKeyStatus, setApiKeyStatus] = useState({});
-  const [walletId, setWalletId] = useState("");
-  const [circleWalletId, setCircleWalletId] = useState("");
+  // No more session fetching here. Middleware handles protection.
+  // SessionProvider might still be useful if you specifically need to pass
+  // the access token or other *derived* session data down via context,
+  // but the primary auth check is done.
+  // For now, let's remove SessionProvider unless explicitly needed later.
 
-  useEffect(() => {
-    const getSession = async () => {
-      const supabase = await createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session) {
-        setSession(session.access_token);
-      } else {
-        setSession("");
-      }
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        return redirect("/sign-in");
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("auth_user_id", user.id)
-        .single();
-
-      const { data: userWallet } = await supabase
-        .schema("public")
-        .from("wallets")
-        .select()
-        .eq("profile_id", profile?.id)
-        .single();
-      setWalletId(userWallet?.id);
-      setCircleWalletId(userWallet?.circle_wallet_id);
-      setLoading(false);
-    };
-    getSession();
-  }, []);
-
-  useEffect(() => {
-    const fetchAPIStatus = async () => {
-      try {
-        const response = await fetch("/api/check-api-keys");
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch API status");
-        }
-
-        const data = await response.json();
-        setApiKeyStatus(data.apiKeyStatus);
-      } catch (err) {
-        console.error("Error fetching API status:", err);
-      }
-    };
-    fetchAPIStatus();
-  }, []);
-
-  if (loading) {
-    return <Spinner />;
-  }
-
+  // Assuming RefreshProvider is still needed for AI components
   return (
-    <SessionProvider
-      access_token={session}
-      api_key_status={apiKeyStatus}
-      wallet_id={walletId}
-      circle_wallet_id={circleWalletId}
-    >
-      <div className="ai-layout flex flex-col h-full pt-5">
+    <RefreshProvider>
+      <div className="ai-layout flex flex-col h-full pt-5"> {/* Ensure pt-5 doesn't cause overlap */}
         <div className="flex flex-row h-full w-full">
           {/* Left side bar with tabs and history */}
-          <aside className="w-[300px] h-full flex flex-col">
+          <aside className="w-[300px] h-full flex flex-col flex-shrink-0"> {/* Added flex-shrink-0 */}
             <AiTabs />
-            {/* History section to be changed by tool */}
-            <div id="ai-history" className="overflow-hidden" />
+            {/* History section portal target */}
+            <div id="ai-history" className="flex-grow overflow-y-auto overflow-x-hidden" /> {/* Allow growth and scrolling */}
           </aside>
 
-          {/* Middle and right sections  */}
-          <div className="flex flex-row w-full h-full overflow-auto bg-white justify-between space-x-2 ">
+          {/* Middle and right sections */}
+          <div className="flex flex-row flex-grow h-full overflow-hidden bg-white justify-between space-x-2"> {/* Use flex-grow and overflow-hidden */}
             {children}
           </div>
         </div>
       </div>
-    </SessionProvider>
+    </RefreshProvider>
   );
 }
