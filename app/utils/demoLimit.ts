@@ -1,11 +1,11 @@
 import { createClient } from '@/utils/supabase/client';
 
-const supabase = createClient();
-
 export async function checkDemoLimit(
   userId: string,
 ): Promise<{ canGenerate: boolean; remaining: number }> {
-  if (process.env.HOSTED_DEMO !== 'true') {
+  const supabase = createClient();
+
+  if (!process.env.NEXT_PUBLIC_VERCEL_URL) {
     return { canGenerate: true, remaining: Infinity };
   }
 
