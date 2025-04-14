@@ -1,137 +1,135 @@
+import type { NextRequest } from 'next/server';
 import { NextResponse } from "next/server";
 
 import { checkDemoLimit } from "@/app/utils/demoLimit";
 import { MODEL_ASSET_PRICING } from "@/utils/constants";
-import { createClient } from "@/utils/supabase/client";
-
-const supabase = createClient();
+import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client'; // Keep browser client for storage uploads if needed
+import { createClient } from "@/utils/supabase/server";
 
 // -------------------------------------------
 // WORKING API KEY - LIMITED NUMBER OF TOKENS
 // -------------------------------------------
-const MESHY_API_KEY = process.env.MESHY_API!;
-const MESHY_API_URL =
-  process.env.MESHY_BASE_URL || "https://api.meshy.ai/openapi/v1/image-to-3d";
+const MESHY_API_URL = "https://api.meshy.ai/v2/generate/model";
+const MESHY_API_KEY = process.env.NEXT_PUBLIC_MESHY_API_KEY;
 
-const HEADERS = {
-  Authorization: `Bearer ${MESHY_API_KEY}`,
-  "Content-Type": "application/json",
+type MeshyResponse = {
+  id: string;
+  done: boolean;
+  model_urls: {
+    glb: string;
+    usdz: string;
+  };
+  images: string[];
 };
 
-interface MeshyResponse {
-  result: string;
-}
-
-interface TaskStatusResponse {
-  status: string;
-  progress: number;
-  model_urls?: { glb: string };
+interface WebhookResponse {
+  id: string;
+  model_urls: {
+    glb: string;
+    usdz: string;
+  };
 }
 
 // returns model url
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const token = req.headers.get("Authorization");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const supabase = await createClient();
+    
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token.split(" ")[1]);
+    } = await supabase.auth.getUser();
     if (error || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    /**
-     * INPUT PARAMETERS:
-     *
-     * image_url         : string
-     *    Public image URL or a base64 data URI. (Required)
-     *
-     * enable_pbr        : boolean (default: false)
-     *    Indicates whether to generate Physically Based Rendering (PBR) maps in addition to the base color.
-     *
-     * should_remesh     : boolean (default: true)
-     *    Determines whether to disregard existing topology and target polycount during remeshing.
-     *
-     * should_texture    : boolean (default: true)
-     *    Specifies whether to add texturing to the 3D model.
-     *    - false: incurs a cost of 5 tokens.
-     *    - true: incurs a cost of 15 tokens.
-     *
-     * texture_prompt    : string
-     *    Descriptive prompt detailing the desired model texture. (Required)
-     */
+    // Get info from request body
     const {
-      image_url,
-      enable_pbr,
+      prompt,
+      mode,
+      negative_prompt,
+      image_file,
+      style_id,
+      mesh_type,
+      mask_file,
+      geometry_guidance_scale,
+      geometry_steps,
+      texture_guidance_scale,
+      texture_steps,
       should_remesh,
       should_texture,
       texture_prompt,
-    } = await req.json();
+    } = await request.json();
 
     const { canGenerate, remaining } = await checkDemoLimit(user.id);
     if (!canGenerate) {
       return NextResponse.json(
-        { error: "Demo limit reached. Please upgrade to continue." },
-        { status: 429 },
+        {
+          error:
+            "You have reached the limit of free generations. Please upgrade to continue.",
+          remaining,
+        },
+        { status: 403 },
       );
     }
 
-    const generatePreviewResponse = await fetch(MESHY_API_URL, {
+    // Create parameters for API request
+    const modelParams = {
+      prompt,
+      negative_prompt,
+      texture_prompt: texture_prompt !== "" ? texture_prompt : prompt,
+      texture_guidance_scale,
+      texture_steps,
+      geometry_guidance_scale,
+      geometry_steps,
+      width: 512,
+      height: 512,
+      should_remesh,
+      should_texture,
+      mesh_type,
+      style_id,
+    };
+
+    // Make API call
+    const response = await fetch(MESHY_API_URL, {
       method: "POST",
-      headers: HEADERS,
-      body: JSON.stringify({
-        image_url,
-        enable_pbr,
-        should_remesh,
-        should_texture,
-        texture_prompt,
-      }),
+      headers: {
+        Authorization: `Bearer ${MESHY_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(modelParams),
     });
 
-    if (!generatePreviewResponse.ok) {
-      throw new Error("Failed to create preview model.");
-    }
-
-    const data: MeshyResponse = await generatePreviewResponse.json();
-    const taskId: string = data.result;
-    console.log("Preview task created. Task ID:", taskId);
-
-    // poll preview task to keep track of generation progress
-    const task = await pollTaskStatus(taskId);
-
-    if (!task.model_urls?.glb) {
-      throw new Error("model URL missing.");
-    }
+    const task = (await response.json()) as MeshyResponse;
     let modelUrl: string = task.model_urls.glb;
     let modelResponse = await fetch(modelUrl);
     let modelBlob = await modelResponse.blob();
+    const supabaseStorageClient = createSupabaseBrowserClient(); // Use browser client for storage upload
 
     // upload .glb (3D model file type) file into supabase storage
     const fileName = `3d-model-${Date.now()}.glb`;
-    const { error: storageError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from("user-3d")
-      .upload(fileName, modelBlob, {
-        contentType: "model/gltf-binary",
-      });
+      .upload(fileName, modelBlob);
 
-    if (storageError) {
-      throw new Error(
-        `Error uploading model to Supabase: ${storageError.message}`,
+    if (uploadError) {
+      return NextResponse.json(
+        {
+          error: "Could not upload model",
+        },
+        { status: 500 },
       );
     }
 
     const { data: publicURLData } = supabase.storage
-      .from("user-3d")
+      .from("user-3d") // Ensure this bucket exists and has correct policies
       .getPublicUrl(fileName);
     const storedModelUrl = publicURLData.publicUrl;
 
     // inserting into DB
     const { error: dbError } = await supabase.from("3d_generations").insert([
       {
-        image_url,
+        image_url: image_file,
         prompt: texture_prompt,
         user_id: user.id,
         url: storedModelUrl,
@@ -156,32 +154,5 @@ export async function POST(req: Request) {
       { error: error.message || "3D Generation failed" },
       { status: 500 },
     );
-  }
-}
-
-// helper to incrementally generate task statuses
-async function pollTaskStatus(taskId: string): Promise<TaskStatusResponse> {
-  while (true) {
-    const response = await fetch(`${MESHY_API_URL}/${taskId}`, {
-      method: "GET",
-      headers: HEADERS,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch task status: ${response.statusText}`);
-    }
-
-    const taskData: TaskStatusResponse = await response.json();
-    console.log(
-      `Task status: ${taskData.status}, Progress: ${taskData.progress}`,
-    );
-
-    if (taskData.status === "SUCCEEDED") {
-      return taskData;
-    } else if (taskData.status === "FAILED") {
-      throw new Error("Meshy AI task failed.");
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 }

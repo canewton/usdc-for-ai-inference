@@ -1,24 +1,21 @@
+import type { NextRequest } from 'next/server';
 import { NextResponse } from "next/server";
 
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/server";
 
-const supabase = createClient();
-
-export async function GET(req: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const token = req.headers.get("Authorization");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const supabase = await createClient();
+    
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token.split(" ")[1]);
+    } = await supabase.auth.getUser();
     if (error || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const url = new URL(req.url);
+    const url = new URL(request.url);
     const modelids = url.searchParams.get("modelids");
 
     if (modelids) {
