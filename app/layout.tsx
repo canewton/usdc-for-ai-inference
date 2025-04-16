@@ -67,7 +67,7 @@ export default async function RootLayout({
         <SessionProvider
           wallet_id={wallet?.id ?? null}
           circle_wallet_id={wallet?.circle_wallet_id ?? null}
-          api_keys={{
+          api_keys_status={{
             text: process.env.OPENAI_API_KEY ? true : false,
             image: process.env.REPLICATE_API_TOKEN ? true : false,
             model: process.env.MESHY_API_URL ? true : false,
