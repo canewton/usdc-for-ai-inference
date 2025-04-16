@@ -42,6 +42,11 @@ export default async function RootLayout({
   let profile: Profile | null = null;
   let wallet: Wallet | null = null;
   if (user) {
+    await supabase
+      .from('profiles')
+      .update({ last_active: new Date().toISOString() })
+      .eq('auth_user_id', user.id);
+
     const { data: profileData } = await supabase
       .from('profiles')
       .select('*')

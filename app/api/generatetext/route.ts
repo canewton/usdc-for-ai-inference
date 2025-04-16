@@ -35,10 +35,32 @@ export async function POST(request: NextRequest) {
     // Parse req body
     const { messages, model, maxTokens } = await request.json();
 
+    let profile: any = null;
+    let wallet: any = null;
+    if (user) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .single();
+      profile = profileData;
+    }
+
+    if (profile) {
+      // Get wallet
+      const { data: walletData } = await supabase
+        .schema('public')
+        .from('wallets')
+        .select()
+        .eq('profile_id', profile.id)
+        .single();
+      wallet = walletData;
+    }
+
     await circleWalletTransfer(
-      'text',
-      aiModel.TEXT_TO_TEXT,
-      process.env.NEXT_PUBLIC_AGENT_WALLET_ID,
+      '3d',
+      aiModel.IMAGE_TO_3D,
+      wallet.circle_wallet_id,
       '0.03',
     );
 
