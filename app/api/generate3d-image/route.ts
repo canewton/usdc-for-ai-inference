@@ -1,7 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
+import { aiModel } from '@/types/ai.types';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
 import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client'; // Keep browser client for storage uploads if needed
 import { createClient } from '@/utils/supabase/server';
@@ -72,6 +74,35 @@ export async function POST(request: NextRequest) {
         { status: 403 },
       );
     }
+
+    let profile: any = null;
+    let wallet: any = null;
+    if (user) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .single();
+      profile = profileData;
+    }
+
+    if (profile) {
+      // Get wallet
+      const { data: walletData } = await supabase
+        .schema('public')
+        .from('wallets')
+        .select()
+        .eq('profile_id', profile.id)
+        .single();
+      wallet = walletData;
+    }
+
+    await circleWalletTransfer(
+      '3d',
+      aiModel.IMAGE_TO_3D,
+      wallet.circle_wallet_id,
+      '0.03',
+    );
 
     // Create parameters for API request
     const modelParams = {

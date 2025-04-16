@@ -3,7 +3,6 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { useSession } from '@/app/contexts/SessionContext';
 import { Spinner } from '@/components/Spinner';
 
 export default function ImagePage() {
@@ -17,22 +16,14 @@ export default function ImagePage() {
   }>({ id: '', url: '', prompt: '', created_at: '' });
   const [isDownloading, setIsDownloading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const session = useSession();
 
   useEffect(() => {
     const getImage = async () => {
-      if (!session) return;
-      const sessionToken = session.access_token;
       setIsLoading(true);
       try {
         const response = await fetch(
           `/api/getgeneratedimages?imageids=${encodeURIComponent(JSON.stringify([imageid]))}`,
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${sessionToken}`,
-            },
-          },
+          { method: 'GET' },
         );
         const data = await response.json();
 

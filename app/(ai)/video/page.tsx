@@ -1,7 +1,7 @@
 'use client';
 
+import { Link } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useRef, useState } from 'react';
 
@@ -11,7 +11,6 @@ import MainAiSection from '@/components/MainAiSection';
 import RightAiSidebar from '@/components/RightAiSidebar';
 import VideoHistory from '@/components/VideoHistory';
 import Blurs from '@/public/blurs.svg';
-import { createClient } from '@/utils/supabase/client';
 
 export default function Home() {
   const [image, setImage] = useState<File | null>(null);
@@ -26,8 +25,6 @@ export default function Home() {
 
   const router = useRouter();
   const session = useSession();
-
-  const sessionToken = session?.access_token;
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,71 +64,6 @@ export default function Home() {
     setImagePreview(null);
   };
 
-  const processPayment = async (modelName: string) => {
-    try {
-      // Determine payment amount based on model
-      const amount = modelName === 'SVD-XT' ? '0.20' : '0.15';
-
-      // Get user's wallet ID
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Get profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (!profile) {
-        throw new Error('Profile not found');
-      }
-
-      // Get wallet
-      const { data: wallet } = await supabase
-        .schema('public')
-        .from('wallets')
-        .select('circle_wallet_id')
-        .eq('profile_id', profile.id)
-        .single();
-
-      if (!wallet || !wallet.circle_wallet_id) {
-        throw new Error('Wallet not found');
-      }
-
-      // Call payment API
-      const response = await fetch('/api/wallet/transfer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionToken}`,
-        },
-        body: JSON.stringify({
-          circleWalletId: wallet.circle_wallet_id,
-          amount,
-          projectName: 'Video Generation',
-          aiModel: modelName,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Payment failed');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Payment error:', error);
-      throw error;
-    }
-  };
-
   const handleGenerateVideo = async () => {
     if (!image) {
       alert('Please upload an image.');
@@ -142,10 +74,6 @@ export default function Home() {
     setError(null);
 
     try {
-      // Process payment first
-      await processPayment(model);
-
-      // Then generate video
       const reader = new FileReader();
       reader.readAsDataURL(image);
       reader.onloadend = async () => {
@@ -155,7 +83,6 @@ export default function Home() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${sessionToken}`,
           },
           body: JSON.stringify({
             model_name: model,
@@ -191,9 +118,8 @@ export default function Home() {
 
   return (
     <>
-      {/* Temporarily commented out overlay
       <div
-        className={`${!session.api_key_status.video ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.api_keys_status.video ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         <div className="flex flex-col items-center">
           <div className="mb-4">
@@ -206,7 +132,7 @@ export default function Home() {
           </Link>
         </div>
       </div>
-      */}
+
       {/* Left history section */}
       <AiHistoryPortal>
         <VideoHistory />

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
@@ -16,10 +16,6 @@ import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
-import { aiModel } from '@/types/ai.types';
-import { IMAGE_MODEL_PRICING } from '@/utils/constants';
-
-import type { WalletTransferRequest } from '../server/circleWalletTransfer';
 
 interface ConversationItem {
   type: 'prompt' | 'response';
@@ -53,7 +49,6 @@ export default function Page() {
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [quality, setQuality] = useState(80);
   const [model, setModel] = useState('flux-schnell');
-  const [totalBilledAmount, setTotalBilledAmount] = useState(0);
 
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const wordsPerToken = 'Indicative cost or info...';
@@ -71,33 +66,10 @@ export default function Page() {
     return () => clearTimeout(timer);
   }, [conversation]);
 
-  const fetchTotalBilledAmount = async () => {
-    if (!session) return;
-    try {
-      const response = await fetch(
-        '/api/gettotalbilledamount?table=image_generations',
-        {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        },
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setTotalBilledAmount(data.totalBilledAmount);
-      } else {
-        console.error('Error fetching billed amount:', data.error);
-      }
-    } catch (error) {
-      console.error('Error fetching billed amount:', error);
-    }
-  };
-
   const fetchImages = async () => {
-    if (!session) return;
     try {
       const response = await fetch('/api/getgeneratedimages', {
         method: 'GET',
-        headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const data = await response.json();
       if (response.ok) {
@@ -112,11 +84,10 @@ export default function Page() {
 
   useEffect(() => {
     fetchImages();
-    fetchTotalBilledAmount();
-  }, [session]);
+  }, []);
 
   const generateImage = async (promptToSubmit: string) => {
-    if (!promptToSubmit.trim() || !session) return;
+    if (!promptToSubmit.trim()) return;
     if (remaining === 0) {
       setShowLimitError(true);
       return;
@@ -135,7 +106,6 @@ export default function Page() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           prompt: promptToSubmit,
@@ -161,33 +131,8 @@ export default function Page() {
       ]);
 
       // Refresh billing info & history
-      await fetchTotalBilledAmount();
       await fetchImages();
-
       setShowTryAgain(true);
-
-      // Transfer balance
-      const transfer: WalletTransferRequest = {
-        circleWalletId: session.wallet_id ?? '',
-        amount: IMAGE_MODEL_PRICING.userBilledPrice.toString(),
-        projectName: 'Hi',
-        aiModel: aiModel.TEXT_TO_IMAGE,
-      };
-
-      const transferResponse = await fetch('/api/wallet/transfer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(transfer),
-      });
-
-      if (!transferResponse.ok) {
-        throw new Error('Transfer failed');
-      }
-
-      const result = await transferResponse.json();
-      console.log('Transfer initiated:', result);
     } catch (error) {
       console.error('Error generating image:', error);
     } finally {
@@ -224,13 +169,11 @@ export default function Page() {
   };
 
   const onDeleteChat = async (id: string) => {
-    if (!session) return;
     try {
       const response = await fetch(`/api/deleteimage?imageid=${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
         },
       });
       const data = await response.json();
@@ -252,9 +195,8 @@ export default function Page() {
 
   return (
     <>
-      {/* Temporarily commented out overlay
       <div
-        className={`${!session?.api_key_status?.image ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.api_keys_status.image ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         <div className="flex flex-col items-center">
           <div className="mb-4">
@@ -267,7 +209,7 @@ export default function Page() {
           </Link>
         </div>
       </div>
-      */}
+
       {/* LEFT SIDEBAR (history) */}
       <AiHistoryPortal>
         <ChatSidebar

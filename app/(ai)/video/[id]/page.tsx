@@ -3,7 +3,6 @@
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
-import { useSession } from '@/app/contexts/SessionContext';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import MainAiSection from '@/components/MainAiSection';
 import RightAiSidebar from '@/components/RightAiSidebar';
@@ -22,8 +21,6 @@ interface VideoData {
 export default function VideoChatPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
-  const session = useSession();
-  const sessionToken = session?.access_token;
 
   const [videoData, setVideoData] = useState<VideoData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +32,6 @@ export default function VideoChatPage() {
   const [seed, setSeed] = useState('-1');
 
   useEffect(() => {
-    if (!sessionToken) return;
     const fetchVideoData = async () => {
       try {
         setLoading(true);
@@ -44,7 +40,6 @@ export default function VideoChatPage() {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${sessionToken}`,
           },
           body: JSON.stringify({ videoId: id }),
         });
@@ -66,10 +61,10 @@ export default function VideoChatPage() {
       }
     };
     fetchVideoData();
-  }, [id, sessionToken]);
+  }, [id]);
 
   useEffect(() => {
-    if (!videoData || !sessionToken) return;
+    if (!videoData) return;
     if (videoData.processing_status !== 'TASK_STATUS_PROCESSING') return;
     const pollStatus = async () => {
       try {
@@ -77,7 +72,6 @@ export default function VideoChatPage() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${sessionToken}`,
           },
           body: JSON.stringify({ task_id: videoData.task_id }),
         });
@@ -110,7 +104,7 @@ export default function VideoChatPage() {
       }
     };
     pollStatus();
-  }, [videoData, sessionToken]);
+  }, [videoData]);
 
   return (
     <>

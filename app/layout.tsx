@@ -6,8 +6,10 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner'; // Import Sonner Toaster
 
 import Navbar from '@/components/Navbar'; // Corrected path
-import type { Profile } from '@/types/database.types'; // Assuming types/database.types.ts exists
+import type { Profile, Wallet } from '@/types/database.types'; // Assuming types/database.types.ts exists
 import { createClient } from '@/utils/supabase/server';
+
+import { SessionProvider } from './contexts/SessionContext';
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -38,6 +40,7 @@ export default async function RootLayout({
 
   // Fetch profile data only if user exists
   let profile: Profile | null = null;
+  let wallet: Wallet | null = null;
   if (user) {
     const { data: profileData } = await supabase
       .from('profiles')
@@ -47,23 +50,45 @@ export default async function RootLayout({
     profile = profileData;
   }
 
+  if (profile) {
+    // Get wallet
+    const { data: walletData } = await supabase
+      .schema('public')
+      .from('wallets')
+      .select()
+      .eq('profile_id', profile.id)
+      .single();
+    wallet = walletData;
+  }
+
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light" // Defaulting to light theme as per original
-          enableSystem={false} // Explicitly disable system theme if you want light/dark only
-          disableTransitionOnChange
+        <SessionProvider
+          wallet_id={wallet?.id ?? null}
+          circle_wallet_id={wallet?.circle_wallet_id ?? null}
+          api_keys_status={{
+            text: process.env.OPENAI_API_KEY ? true : false,
+            image: process.env.REPLICATE_API_TOKEN ? true : false,
+            model: process.env.MESHY_API_URL ? true : false,
+            video: process.env.NEXT_PUBLIC_NOVITA_API_KEY ? true : false,
+          }}
         >
-          <main className="h-screen flex flex-col overflow-auto">
-            {/* Pass user and profile (which can be null) to Navbar */}
-            <Navbar user={user} profile={profile} />
-            <div className="flex flex-col flex-1">{children}</div>
-          </main>
-          {/* Add Sonner Toaster for notifications */}
-          <Toaster richColors position="top-right" />
-        </ThemeProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light" // Defaulting to light theme as per original
+            enableSystem={false} // Explicitly disable system theme if you want light/dark only
+            disableTransitionOnChange
+          >
+            <main className="h-screen flex flex-col overflow-auto">
+              {/* Pass user and profile (which can be null) to Navbar */}
+              <Navbar user={user} profile={profile} />
+              <div className="flex flex-col flex-1">{children}</div>
+            </main>
+            {/* Add Sonner Toaster for notifications */}
+            <Toaster richColors position="top-right" />
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );
