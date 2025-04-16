@@ -1,5 +1,6 @@
 'use client';
 
+import { Link } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useRef, useState } from 'react';
@@ -184,9 +185,8 @@ export default function Home() {
 
   return (
     <>
-      {/* Temporarily commented out overlay
       <div
-        className={`${!session.api_key_status.video ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!process.env.NEXT_PUBLIC_NOVITA_API_KEY ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         <div className="flex flex-col items-center">
           <div className="mb-4">
@@ -199,7 +199,7 @@ export default function Home() {
           </Link>
         </div>
       </div>
-      */}
+
       {/* Left history section */}
       <AiHistoryPortal>
         <VideoHistory />

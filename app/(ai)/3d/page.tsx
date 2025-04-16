@@ -1,8 +1,10 @@
 'use client';
 
+import { Link } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useSession } from '@/app/contexts/SessionContext';
 import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import CanvasArea from '@/components/3d/canvas';
 import ControlPanel from '@/components/3d/control-panel';
@@ -14,7 +16,6 @@ import { aiModel } from '@/types/ai.types';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
 
 import type { WalletTransferRequest } from '../server/circleWalletTransfer';
-import { useSession } from '@/app/contexts/SessionContext';
 
 interface Chat {
   id: string;
@@ -245,9 +246,8 @@ export default function Generate3DModelPage() {
 
   return (
     <>
-      {/* Temporarily commented out overlaywell 
       <div
-        className={`${!session.api_key_status.meshy ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!process.env.MESHY_API ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         <div className="flex flex-col items-center">
           <div className="mb-4">
@@ -260,7 +260,7 @@ export default function Generate3DModelPage() {
           </Link>
         </div>
       </div>
-      */}
+
       {/* --- Sidebar Area --- */}
       <AiHistoryPortal>
         <ChatSidebar

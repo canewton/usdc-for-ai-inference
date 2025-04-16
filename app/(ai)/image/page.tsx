@@ -1,5 +1,6 @@
 'use client';
 
+import { Link } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
@@ -222,9 +223,8 @@ export default function Page() {
 
   return (
     <>
-      {/* Temporarily commented out overlay
       <div
-        className={`${!session?.api_key_status?.image ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!process.env.REPLICATE_API_TOKEN ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         <div className="flex flex-col items-center">
           <div className="mb-4">
@@ -237,7 +237,7 @@ export default function Page() {
           </Link>
         </div>
       </div>
-      */}
+
       {/* LEFT SIDEBAR (history) */}
       <AiHistoryPortal>
         <ChatSidebar
