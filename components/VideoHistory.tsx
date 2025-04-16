@@ -1,8 +1,6 @@
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
-import { useSession } from '@/app/contexts/SessionContext';
-
 interface VideoHistoryItem {
   id: string;
   task_id: string;
@@ -13,36 +11,30 @@ const VideoHistory = () => {
   const [videoHistory, setVideoHistory] = useState<VideoHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const session = useSession();
 
   useEffect(() => {
     const fetchHistory = async () => {
-      if (session?.access_token) {
-        try {
-          setIsLoading(true);
-          const response = await fetch('/api/videos', {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          });
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/videos', {
+          method: 'GET',
+        });
 
-          if (!response.ok) {
-            throw new Error('Failed to fetch history');
-          }
-
-          const data = await response.json();
-          setVideoHistory(data.videoGenerations || []);
-        } catch (error) {
-          console.error('Error fetching video history:', error);
-        } finally {
-          setIsLoading(false);
+        if (!response.ok) {
+          throw new Error('Failed to fetch history');
         }
+
+        const data = await response.json();
+        setVideoHistory(data.videoGenerations || []);
+      } catch (error) {
+        console.error('Error fetching video history:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchHistory();
-  }, [session]);
+  }, []);
 
   const navigateToVideo = (taskId: string): void => {
     router.push(`/video/${taskId}`);

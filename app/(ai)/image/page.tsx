@@ -70,11 +70,9 @@ export default function Page() {
   }, [conversation]);
 
   const fetchImages = async () => {
-    if (!session) return;
     try {
       const response = await fetch('/api/getgeneratedimages', {
         method: 'GET',
-        headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const data = await response.json();
       if (response.ok) {
@@ -89,10 +87,10 @@ export default function Page() {
 
   useEffect(() => {
     fetchImages();
-  }, [session]);
+  }, []);
 
   const generateImage = async (promptToSubmit: string) => {
-    if (!promptToSubmit.trim() || !session) return;
+    if (!promptToSubmit.trim()) return;
     if (remaining === 0) {
       setShowLimitError(true);
       return;
@@ -111,7 +109,6 @@ export default function Page() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           prompt: promptToSubmit,
@@ -199,13 +196,11 @@ export default function Page() {
   };
 
   const onDeleteChat = async (id: string) => {
-    if (!session) return;
     try {
       const response = await fetch(`/api/deleteimage?imageid=${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
         },
       });
       const data = await response.json();

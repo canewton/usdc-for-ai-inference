@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { useSession } from '@/app/contexts/SessionContext';
 import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import CanvasArea from '@/components/3d/canvas';
 import ControlPanel from '@/components/3d/control-panel';
@@ -15,6 +14,7 @@ import { aiModel } from '@/types/ai.types';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
 
 import type { WalletTransferRequest } from '../server/circleWalletTransfer';
+import { useSession } from '@/app/contexts/SessionContext';
 
 interface Chat {
   id: string;
@@ -31,6 +31,7 @@ export default function Generate3DModelPage() {
   const [modelUrl, setModelUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ModelHistoryItem[]>([]);
+
   const session = useSession();
 
   useEffect(() => {
@@ -40,16 +41,11 @@ export default function Generate3DModelPage() {
   }, [mode]);
 
   const fetchHistory = async () => {
-    if (!session) return;
     console.log('Fetching history...');
     setIsLoading(true);
-    const sessionToken = session.access_token;
     try {
       const response = await fetch('/api/getgeneratedmodels', {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${sessionToken}`,
-        },
       });
 
       const data = await response.json();
@@ -89,13 +85,11 @@ export default function Generate3DModelPage() {
   };
 
   useEffect(() => {
-    if (session) {
-      fetchHistory();
-    }
-  }, [session]);
+    fetchHistory();
+  }, []);
 
   const submitPrompt = async (selectedPrompt: string) => {
-    if (!session || !imageDataUri) {
+    if (!imageDataUri) {
       setError('Session or image data is missing.');
       return;
     }
@@ -107,12 +101,10 @@ export default function Generate3DModelPage() {
     setError(null);
 
     try {
-      const sessionToken = session.access_token;
       const response = await fetch('/api/generate3d-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionToken}`,
         },
         body: JSON.stringify({
           image_url: imageDataUri,
@@ -197,7 +189,6 @@ export default function Generate3DModelPage() {
   };
 
   const handleDelete = async (modelId: string) => {
-    if (!session) return;
     console.log(`Attempting to delete model via ChatSidebar: ${modelId}`);
 
     const itemToDelete = history.find((item) => item.id === modelId);
@@ -207,12 +198,8 @@ export default function Generate3DModelPage() {
     setError(null);
 
     try {
-      const sessionToken = session.access_token;
       const response = await fetch('/api/deletemodel?modelid=${modelId}', {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${sessionToken}`,
-        },
       });
 
       const data = await response.json();

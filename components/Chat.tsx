@@ -64,9 +64,6 @@ export function Chat({ currChat }: ChatProps) {
     setInput,
   } = useChat({
     api: '/api/generatetext',
-    headers: {
-      Authorization: session.access_token,
-    },
     body: {
       model: model,
       maxTokens: maxTokens,
@@ -130,7 +127,6 @@ export function Chat({ currChat }: ChatProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           user_text: input,
@@ -207,7 +203,6 @@ export function Chat({ currChat }: ChatProps) {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
           },
         });
 
@@ -243,13 +238,9 @@ export function Chat({ currChat }: ChatProps) {
   };
 
   const fetchChats = async () => {
-    if (!session) return;
     try {
       const response = await fetch(`/api/getchats`, {
         method: 'GET',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
       });
       const data = await response.json();
       // Check if the response is successful
@@ -270,7 +261,6 @@ export function Chat({ currChat }: ChatProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           title: title,
@@ -289,7 +279,6 @@ export function Chat({ currChat }: ChatProps) {
 
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input.trim() || !session) return;
     if (remaining === 0) {
       setShowLimitError(true);
       return;
@@ -376,7 +365,6 @@ export function Chat({ currChat }: ChatProps) {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
           },
         },
       );
@@ -423,7 +411,7 @@ export function Chat({ currChat }: ChatProps) {
   useEffect(() => {
     // Get all user's chats
     fetchChats();
-  }, [session]);
+  }, []);
 
   useEffect(() => {
     // Get messages if chat changes

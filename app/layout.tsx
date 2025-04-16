@@ -50,6 +50,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
+        {/* <SessionProvider> */}
         <ThemeProvider
           attribute="class"
           defaultTheme="light" // Defaulting to light theme as per original
@@ -64,6 +65,7 @@ export default async function RootLayout({
           {/* Add Sonner Toaster for notifications */}
           <Toaster richColors position="top-right" />
         </ThemeProvider>
+        {/* </SessionProvider> */}
       </body>
     </html>
   );
