@@ -4,13 +4,15 @@ import React from 'react';
 import { createContext, useContext } from 'react';
 
 type SessionContextType = {
-  wallet_id: string;
-  circle_wallet_id: string;
+  wallet_id: string | null;
+  circle_wallet_id: string | null;
+  api_keys: any;
 };
 
 export const SessionContext = createContext<SessionContextType>({
-  wallet_id: '',
-  circle_wallet_id: '',
+  wallet_id: null,
+  circle_wallet_id: null,
+  api_keys: null,
 });
 
 export function useSession() {
@@ -23,17 +25,17 @@ export function useSession() {
 
 export function SessionProvider({
   children,
-  access_token,
   wallet_id,
   circle_wallet_id,
+  api_keys,
 }: {
   children: React.ReactNode;
-  access_token: string;
-  wallet_id: string;
-  circle_wallet_id: string;
+  wallet_id: string | null;
+  circle_wallet_id: string | null;
+  api_keys: any;
 }) {
   return (
-    <SessionContext.Provider value={{ wallet_id, circle_wallet_id }}>
+    <SessionContext.Provider value={{ wallet_id, circle_wallet_id, api_keys }}>
       {children}
     </SessionContext.Provider>
   );

@@ -5,7 +5,6 @@ import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import type { WalletTransferRequest } from '@/app/(ai)/server/circleWalletTransfer';
 import { useSession } from '@/app/contexts/SessionContext';
 import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
@@ -21,7 +20,6 @@ import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
-import { aiModel } from '@/types/ai.types';
 import { TEXT_MODEL_PRICING } from '@/utils/constants';
 
 const promptSuggestions = [
@@ -90,33 +88,6 @@ export function Chat({ currChat }: ChatProps) {
             provider: model,
           },
         ]);
-
-        const transfer: WalletTransferRequest = {
-          circleWalletId: session.wallet_id ?? '',
-          amount: (
-            usage.promptTokens *
-              TEXT_MODEL_PRICING[model].userBilledInputPrice +
-            usage.completionTokens *
-              TEXT_MODEL_PRICING[model].userBilledOutputPrice
-          ).toString(),
-          projectName: 'Hi',
-          aiModel: aiModel.TEXT_TO_TEXT,
-        };
-
-        const response = await fetch('/api/wallet/transfer', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(transfer),
-        });
-
-        if (!response.ok) {
-          throw new Error('Transfer failed');
-        }
-
-        const result = await response.json();
-        console.log('Transfer initiated:', result);
       }
     },
   });
@@ -418,7 +389,7 @@ export function Chat({ currChat }: ChatProps) {
   return (
     <>
       <div
-        className={`${!process.env.OPENAI_API_KEY ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.api_keys.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         This page is not available during the hosted demo.
       </div>

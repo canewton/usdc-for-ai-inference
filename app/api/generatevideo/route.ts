@@ -2,6 +2,8 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
+import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
+import { aiModel } from '@/types/ai.types';
 import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client'; // Keep browser client for storage uploads
 import { createClient } from '@/utils/supabase/server';
 
@@ -25,6 +27,35 @@ export async function POST(request: NextRequest) {
     const requestBody = await request.json();
 
     const { model_name, image_file, seed, prompt } = requestBody;
+
+    let profile: any = null;
+    let wallet: any = null;
+    if (user) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .single();
+      profile = profileData;
+    }
+
+    if (profile) {
+      // Get wallet
+      const { data: walletData } = await supabase
+        .schema('public')
+        .from('wallets')
+        .select()
+        .eq('profile_id', profile.id)
+        .single();
+      wallet = walletData;
+    }
+
+    await circleWalletTransfer(
+      'video',
+      aiModel.IMAGE_TO_VIDEO,
+      wallet.circle_wallet_id,
+      model_name === 'SVD-XT' ? '0.20' : '0.15',
+    );
 
     // Generate a unique file name with uuid
     const fileName = `${uuidv4()}.webp`;

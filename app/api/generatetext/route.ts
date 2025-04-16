@@ -3,11 +3,13 @@ import { streamText } from 'ai';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
+import { aiModel } from '@/types/ai.types';
 import { createClient } from '@/utils/supabase/server';
 
 // Allow streaming responses up to 30 seconds
-export const maxDuration = 30;
+// export const maxDuration = 30;
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,6 +34,13 @@ export async function POST(request: NextRequest) {
 
     // Parse req body
     const { messages, model, maxTokens } = await request.json();
+
+    await circleWalletTransfer(
+      'text',
+      aiModel.TEXT_TO_TEXT,
+      process.env.NEXT_PUBLIC_AGENT_WALLET_ID,
+      '0.03',
+    );
 
     // Get result
     const result = streamText({

@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 import Replicate from 'replicate';
 import { v4 as uuidv4 } from 'uuid';
 
+import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
+import { aiModel } from '@/types/ai.types';
 import { IMAGE_MODEL_PRICING } from '@/utils/constants';
 // Keep browser client for storage uploads
 import { createClient } from '@/utils/supabase/server';
@@ -29,6 +31,35 @@ export async function POST(request: NextRequest) {
     }
 
     const { prompt, aspect_ratio, output_quality } = await request.json();
+
+    let profile: any = null;
+    let wallet: any = null;
+    if (user) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .single();
+      profile = profileData;
+    }
+
+    if (profile) {
+      // Get wallet
+      const { data: walletData } = await supabase
+        .schema('public')
+        .from('wallets')
+        .select()
+        .eq('profile_id', profile.id)
+        .single();
+      wallet = walletData;
+    }
+
+    await circleWalletTransfer(
+      'image',
+      aiModel.TEXT_TO_IMAGE,
+      wallet.circle_wallet_id,
+      '0.03',
+    );
 
     const replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,

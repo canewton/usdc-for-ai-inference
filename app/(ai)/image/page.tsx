@@ -16,10 +16,6 @@ import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
-import { aiModel } from '@/types/ai.types';
-import { IMAGE_MODEL_PRICING } from '@/utils/constants';
-
-import type { WalletTransferRequest } from '../server/circleWalletTransfer';
 
 interface ConversationItem {
   type: 'prompt' | 'response';
@@ -136,31 +132,7 @@ export default function Page() {
 
       // Refresh billing info & history
       await fetchImages();
-
       setShowTryAgain(true);
-
-      // Transfer balance
-      const transfer: WalletTransferRequest = {
-        circleWalletId: session.wallet_id ?? '',
-        amount: IMAGE_MODEL_PRICING.userBilledPrice.toString(),
-        projectName: 'Hi',
-        aiModel: aiModel.TEXT_TO_IMAGE,
-      };
-
-      const transferResponse = await fetch('/api/wallet/transfer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(transfer),
-      });
-
-      if (!transferResponse.ok) {
-        throw new Error('Transfer failed');
-      }
-
-      const result = await transferResponse.json();
-      console.log('Transfer initiated:', result);
     } catch (error) {
       console.error('Error generating image:', error);
     } finally {
@@ -224,7 +196,7 @@ export default function Page() {
   return (
     <>
       <div
-        className={`${!process.env.REPLICATE_API_TOKEN ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.api_keys.image ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         <div className="flex flex-col items-center">
           <div className="mb-4">

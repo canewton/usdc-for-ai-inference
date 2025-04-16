@@ -35,13 +35,6 @@ export default async function Dashboard() {
     .eq('profile_id', profile?.id)
     .single();
 
-  const { data: treasuryWallet } = await supabase
-    .schema('public')
-    .from('wallets')
-    .select()
-    .eq('circle_wallet_id', process.env.NEXT_PUBLIC_TREASURY_WALLET_ID)
-    .single();
-
   return (
     <div className="px-20 pt-20">
       {/* Wallet Card */}

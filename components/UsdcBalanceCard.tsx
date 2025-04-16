@@ -12,8 +12,8 @@ interface UsdcBalanceCardProps {
 export default function UsdcBalanceCard({ direction }: UsdcBalanceCardProps) {
   const session = useSession();
   const { balance, loading } = useWalletBalance(
-    session.wallet_id,
-    session.circle_wallet_id,
+    session.wallet_id ?? '',
+    session.circle_wallet_id ?? '',
   );
 
   return (

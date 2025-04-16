@@ -12,10 +12,6 @@ import type { ModelHistoryItem } from '@/components/3d/types';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatSidebar } from '@/components/ChatSidebar';
 import RightAiSidebar from '@/components/RightAiSidebar';
-import { aiModel } from '@/types/ai.types';
-import { MODEL_ASSET_PRICING } from '@/utils/constants';
-
-import type { WalletTransferRequest } from '../server/circleWalletTransfer';
 
 interface Chat {
   id: string;
@@ -133,29 +129,6 @@ export default function Generate3DModelPage() {
         setError(data.error || 'Failed to generate model');
         console.error('Generation failed:', data);
       }
-
-      // Transfer balance
-      const transfer: WalletTransferRequest = {
-        circleWalletId: session.wallet_id ?? '',
-        amount: MODEL_ASSET_PRICING.userBilledPrice.toString(),
-        projectName: 'Hi',
-        aiModel: aiModel.IMAGE_TO_3D,
-      };
-
-      const transferResponse = await fetch('/api/wallet/transfer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(transfer),
-      });
-
-      if (!transferResponse.ok) {
-        throw new Error('Transfer failed');
-      }
-
-      const result = await transferResponse.json();
-      console.log('Transfer initiated:', result);
     } catch (err: any) {
       setError(`An error occurred: ${err.message || 'Unknown error'}`);
       console.error('Generation error:', err);
@@ -247,7 +220,7 @@ export default function Generate3DModelPage() {
   return (
     <>
       <div
-        className={`${!process.env.MESHY_API ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.api_keys.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         <div className="flex flex-col items-center">
           <div className="mb-4">
