@@ -39,6 +39,9 @@ export async function checkDemoLimit(
     (imageGenerations?.length || 0) +
     (modelGenerations?.length || 0);
 
-  const remaining = Math.max(0, 5 - totalGenerations);
+  const remaining = Math.max(
+    0,
+    parseInt(process.env.USER_AI_GENERATION_LIMIT ?? '5') - totalGenerations,
+  );
   return { canGenerate: remaining > 0, remaining };
 }

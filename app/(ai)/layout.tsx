@@ -1,5 +1,4 @@
 // app/(ai)/layout.tsx
-'use client';
 
 import AiTabs from '@/components/AiTabs'; // Corrected path
 

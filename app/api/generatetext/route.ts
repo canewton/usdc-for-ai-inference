@@ -8,8 +8,8 @@ import { checkDemoLimit } from '@/app/utils/demoLimit';
 import { aiModel } from '@/types/ai.types';
 import { createClient } from '@/utils/supabase/server';
 
-// Allow streaming responses up to 30 seconds
-// export const maxDuration = 30;
+// Allow streaming responses up to 120 seconds
+export const maxDuration = 120;
 
 export async function POST(request: NextRequest) {
   try {
