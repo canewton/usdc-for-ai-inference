@@ -89,7 +89,8 @@ export async function circleWalletTransfer(
         circle_wallet_id: circleWalletId,
         circle_transaction_id: result.id,
       })
-      .select();
+      .select()
+      .single();
 
     if (error) {
       console.error('Error saving transaction:', error);

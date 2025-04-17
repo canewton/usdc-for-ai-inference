@@ -54,11 +54,11 @@ export async function POST(request: NextRequest) {
       wallet = walletData;
     }
 
-    await circleWalletTransfer(
+    const aiProject = await circleWalletTransfer(
       'image',
       aiModel.TEXT_TO_IMAGE,
       wallet.circle_wallet_id,
-      '0.03',
+      `${IMAGE_MODEL_PRICING.userBilledPrice}`,
     );
 
     const replicate = new Replicate({
@@ -125,8 +125,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         url: storedImageUrl,
         provider: 'Replicate',
-        replicate_billed_amount: IMAGE_MODEL_PRICING.replicatePrice,
-        user_billed_amount: IMAGE_MODEL_PRICING.userBilledPrice,
+        circle_transaction_id: aiProject.circle_transaction_id,
       },
     ]);
 
