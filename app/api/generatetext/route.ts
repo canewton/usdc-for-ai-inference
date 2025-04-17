@@ -3,9 +3,7 @@ import { streamText } from 'ai';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
-import { aiModel } from '@/types/ai.types';
 import { createClient } from '@/utils/supabase/server';
 
 // Allow streaming responses up to 120 seconds
@@ -34,35 +32,6 @@ export async function POST(request: NextRequest) {
 
     // Parse req body
     const { messages, model, maxTokens } = await request.json();
-
-    let profile: any = null;
-    let wallet: any = null;
-    if (user) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('auth_user_id', user.id)
-        .single();
-      profile = profileData;
-    }
-
-    if (profile) {
-      // Get wallet
-      const { data: walletData } = await supabase
-        .schema('public')
-        .from('wallets')
-        .select()
-        .eq('profile_id', profile.id)
-        .single();
-      wallet = walletData;
-    }
-
-    await circleWalletTransfer(
-      '3d',
-      aiModel.IMAGE_TO_3D,
-      wallet.circle_wallet_id,
-      '0.03',
-    );
 
     // Get result
     const result = streamText({
