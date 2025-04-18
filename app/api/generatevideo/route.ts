@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     await circleWalletTransfer(
-      'video',
+      prompt,
       aiModel.IMAGE_TO_VIDEO,
       wallet.circle_wallet_id,
       model_name === 'SVD-XT' ? '0.20' : '0.15',

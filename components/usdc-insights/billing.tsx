@@ -98,6 +98,22 @@ export const Billing: FunctionComponent<Props> = ({
 
   const blockchain = process.env.CIRCLE_BLOCKCHAIN ?? 'ARB-SEPOLIA';
 
+  function truncateString(text: string): string {
+    console.log(text.length, text);
+    if (text.length <= 40) {
+      return text;
+    }
+
+    const truncated = text.substring(0, 40);
+    const lastSpace = truncated.lastIndexOf(' ');
+
+    if (lastSpace === -1) {
+      return truncated + '...';
+    }
+
+    return truncated.substring(0, lastSpace) + '...';
+  }
+
   return (
     <>
       <div className="rounded-lg border border-gray-200 overflow-hidden mb-4">
@@ -144,7 +160,9 @@ export const Billing: FunctionComponent<Props> = ({
                       {transaction.created_at}
                     </div>
                   </TableCell>
-                  <TableCell>{transaction.project_name}</TableCell>
+                  <TableCell>
+                    {truncateString(transaction.project_name)}
+                  </TableCell>
                   <TableCell>{transaction.ai_model}</TableCell>
                   {transaction.transaction_type === 'INBOUND' && (
                     <TableCell className="text-green-600">

@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     const aiProject = await circleWalletTransfer(
-      'image',
+      prompt,
       aiModel.TEXT_TO_IMAGE,
       wallet.circle_wallet_id,
       `${IMAGE_MODEL_PRICING.userBilledPrice}`,

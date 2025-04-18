@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
     }
 
     await circleWalletTransfer(
-      'text',
+      user_text,
       aiModel.TEXT_TO_TEXT,
       wallet.circle_wallet_id,
-      `${Math.min(prompt_tokens * TEXT_MODEL_PRICING[provider].userBilledInputPrice + completion_tokens * TEXT_MODEL_PRICING[provider].userBilledOutputPrice, 0.01).toFixed(2)}`,
+      `${Math.max(prompt_tokens * TEXT_MODEL_PRICING[provider].userBilledInputPrice + completion_tokens * TEXT_MODEL_PRICING[provider].userBilledOutputPrice, 0.01).toFixed(2)}`,
     );
 
     // Post text generation
