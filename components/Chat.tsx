@@ -35,7 +35,7 @@ interface ChatProps {
 export function Chat({ currChat }: ChatProps) {
   const { remaining, loading: demoLimitLoading } = useDemoLimit();
   const [model, setModel] = useState('gpt-4o-mini');
-  const [maxTokens, setMaxTokens] = useState(200);
+  const [maxTokens, setMaxTokens] = useState(2000);
   const [chatId, setChatId] = useState(currChat || '');
   const [chats, setChats] = useState<
     { id: string; title: string; created_at: string }[]
@@ -487,16 +487,17 @@ export function Chat({ currChat }: ChatProps) {
             <div className="flex w-full h-8 border border-gray-200 items-center justify-center rounded-3xl p-2">
               <Slider
                 defaultValue={[maxTokens]}
-                max={2000}
-                step={1}
+                min={200}
+                max={10000}
+                step={100}
                 onValueChange={(val) => setMaxTokens(val[0])}
               />
             </div>
             <div className="text-sub mr-auto w-full text-end">
-              2k ≡ $
-              {(2000 * TEXT_MODEL_PRICING[model].userBilledOutputPrice).toFixed(
-                2,
-              )}
+              {maxTokens} tokens ≡ $
+              {(
+                maxTokens * TEXT_MODEL_PRICING[model].userBilledOutputPrice
+              ).toFixed(2)}
             </div>
           </div>
 

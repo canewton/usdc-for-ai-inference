@@ -2,12 +2,12 @@ import type { TextModelPricing } from './types';
 
 export const IMAGE_MODEL_PRICING = {
   replicatePrice: 0.003,
-  userBilledPrice: 0.004,
+  userBilledPrice: 0.01,
 };
 
 export const MODEL_ASSET_PRICING = {
   replicatePrice: 0.01,
-  userBilledPrice: 0.015,
+  userBilledPrice: 0.02,
 };
 
 export const TEXT_MODEL_PRICING: Record<string, TextModelPricing> = {

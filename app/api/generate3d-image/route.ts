@@ -5,12 +5,8 @@ import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
 import { aiModel } from '@/types/ai.types';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
-import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client'; // Keep browser client for storage uploads if needed
 import { createClient } from '@/utils/supabase/server';
 
-// -------------------------------------------
-// WORKING API KEY - LIMITED NUMBER OF TOKENS
-// -------------------------------------------
 const MESHY_API_URL = 'https://api.meshy.ai/v2/generate/model';
 const MESHY_API_KEY = process.env.NEXT_PUBLIC_MESHY_API_KEY;
 
@@ -97,11 +93,11 @@ export async function POST(request: NextRequest) {
       wallet = walletData;
     }
 
-    await circleWalletTransfer(
-      '3d',
+    const aiProject = await circleWalletTransfer(
+      prompt,
       aiModel.IMAGE_TO_3D,
       wallet.circle_wallet_id,
-      '0.03',
+      `${MODEL_ASSET_PRICING.userBilledPrice}`,
     );
 
     // Create parameters for API request
@@ -135,7 +131,6 @@ export async function POST(request: NextRequest) {
     let modelUrl: string = task.model_urls.glb;
     let modelResponse = await fetch(modelUrl);
     let modelBlob = await modelResponse.blob();
-    const supabaseStorageClient = createSupabaseBrowserClient(); // Use browser client for storage upload
 
     // upload .glb (3D model file type) file into supabase storage
     const fileName = `3d-model-${Date.now()}.glb`;
@@ -166,8 +161,7 @@ export async function POST(request: NextRequest) {
         url: storedModelUrl,
         provider: 'Meshy',
         mode: should_remesh ? 'Refine' : 'Preview',
-        replicate_billed_amount: MODEL_ASSET_PRICING.replicatePrice,
-        user_billed_amount: MODEL_ASSET_PRICING.userBilledPrice,
+        circle_transaction_id: aiProject.circle_transaction_id,
       },
     ]);
 

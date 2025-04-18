@@ -28,7 +28,7 @@ export const ScanToPayDialog: FunctionComponent<Props> = (props) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Scan to Pay</DialogTitle>
+          <DialogTitle>Scan to Fund</DialogTitle>
         </DialogHeader>
         <div className="grid py-4">
           <p className="text-center text-muted-foreground mb-4">
