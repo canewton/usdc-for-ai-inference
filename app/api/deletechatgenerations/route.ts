@@ -46,9 +46,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
 
-    return NextResponse.json({
-      message: 'Chat generations deleted successfully',
-    });
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

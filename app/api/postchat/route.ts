@@ -28,17 +28,13 @@ export async function POST(request: NextRequest) {
           title: title,
         },
       ])
-      .select('id, created_at');
+      .select('*')
+      .single();
 
     if (dbError) {
       throw new Error(`Error posting chat: ${dbError.message}`);
     }
-    return NextResponse.json({
-      response: 'Chat posted successfully',
-      id: data[0].id,
-      title: title,
-      created_at: data[0].created_at,
-    });
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

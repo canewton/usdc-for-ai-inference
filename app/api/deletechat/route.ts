@@ -23,7 +23,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     }
 
-    const { error: dbError } = await supabase
+    const { data, error: dbError } = await supabase
       .from('chats')
       .delete()
       .eq('id', id)
@@ -33,7 +33,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ message: 'Chat deleted successfully' });
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

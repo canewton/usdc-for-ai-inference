@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
     const { data: chats, error } = await supabase
       .from('chats')
-      .select('id, title, created_at')
+      .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ chats: chats }, { status: 200 });
+    return NextResponse.json(chats, { status: 200 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

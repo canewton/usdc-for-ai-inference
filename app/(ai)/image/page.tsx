@@ -330,10 +330,10 @@ export default function Page() {
             />
             {showLimitError && (
               <p className="text-red-500 text-sm mt-2 text-center">
-                Demo limit reached. Please upgrade to continue.
+                Demo limit reached.
               </p>
             )}
-            {showTryAgain && (
+            {!showLimitError && showTryAgain && (
               <div
                 onClick={handleTryAgain}
                 className="mt-3 text-center text-xs text-gray-700 hover:underline cursor-pointer"

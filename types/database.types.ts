@@ -33,6 +33,35 @@ export interface Transaction {
   circle_contact_address: string;
 }
 
+export interface Chat {
+  id: string;
+  user_id: string;
+  created_at: string;
+  title: string;
+}
+
+export interface ChatGeneration {
+  id: string;
+  created_at: string;
+  user_id: string;
+  user_text: string;
+  ai_text: string;
+  chat_id: string;
+  provider: string;
+  prompt_tokens: number;
+  completion_tokens: number;
+}
+
+export interface ImageGeneration {
+  id: string;
+  created_at: string;
+  prompt: string;
+  url: string;
+  provider: string;
+  user_id: string;
+  circle_transaction_id: string;
+}
+
 export type Database = {
   public: {
     Tables: {

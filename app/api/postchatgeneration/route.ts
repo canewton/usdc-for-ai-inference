@@ -72,15 +72,13 @@ export async function POST(request: NextRequest) {
           completion_tokens: completion_tokens,
         },
       ])
-      .select('id');
+      .select('id')
+      .single();
 
     if (dbError) {
       throw new Error(`Error posting chat: ${dbError.message}`);
     }
-    return NextResponse.json({
-      response: 'Chat generation posted successfully',
-      id: data[0].id,
-    });
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

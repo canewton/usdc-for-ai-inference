@@ -22,9 +22,7 @@ export async function GET(request: NextRequest) {
     if (chat_id) {
       const { data: chats, error } = await supabase
         .from('chat_generations')
-        .select(
-          'id, user_text, ai_text, created_at, prompt_tokens, completion_tokens, provider',
-        )
+        .select('*')
         .eq('user_id', user.id)
         .eq('chat_id', chat_id)
         .order('created_at', { ascending: true });
@@ -36,7 +34,7 @@ export async function GET(request: NextRequest) {
           { status: 500 },
         );
       }
-      return NextResponse.json({ chats: chats }, { status: 200 });
+      return NextResponse.json(chats, { status: 200 });
     } else {
       return NextResponse.json(
         { error: 'Missing id parameter' },
