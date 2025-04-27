@@ -7,7 +7,6 @@ import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
 import { aiModel } from '@/types/ai.types';
 import { IMAGE_MODEL_PRICING } from '@/utils/constants';
-// Keep browser client for storage uploads
 import { createClient } from '@/utils/supabase/server';
 
 export async function POST(request: NextRequest) {
@@ -30,7 +29,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { prompt, aspect_ratio, output_quality } = await request.json();
+    const { prompt, aspect_ratio, output_quality, chat_id, provider } =
+      await request.json();
 
     let profile: any = null;
     let wallet: any = null;
@@ -119,15 +119,18 @@ export async function POST(request: NextRequest) {
 
     const storedImageUrl = publicURLData.publicUrl;
 
-    const { error: dbError } = await supabase.from('image_generations').insert([
-      {
-        prompt,
-        user_id: user.id,
-        url: storedImageUrl,
-        provider: 'Replicate',
-        circle_transaction_id: aiProject.circle_transaction_id,
-      },
-    ]);
+    const { data, error: dbError } = await supabase
+      .from('image_generations')
+      .insert([
+        {
+          prompt,
+          user_id: user.id,
+          url: storedImageUrl,
+          provider: provider,
+          circle_transaction_id: aiProject.circle_transaction_id,
+          chat_id: chat_id,
+        },
+      ]);
 
     if (dbError) {
       throw new Error(
@@ -135,7 +138,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ imageUrl: storedImageUrl });
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error('Generation error:', error);
     return NextResponse.json(

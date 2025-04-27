@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       const ids = JSON.parse(imageids);
       const { data: images, error } = await supabase
         .from('image_generations')
-        .select('id, url, prompt, created_at')
+        .select('*')
         .eq('user_id', user.id)
         .in('id', ids);
 
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      return NextResponse.json({ images: images }, { status: 200 });
+      return NextResponse.json(images, { status: 200 });
     } else {
       // Fetch all of user's images
       const { data: images, error } = await supabase
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      return NextResponse.json({ images: images }, { status: 200 });
+      return NextResponse.json(images, { status: 200 });
     }
   } catch (error) {
     console.error('Unexpected error:', error);

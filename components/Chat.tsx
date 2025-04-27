@@ -1,9 +1,11 @@
 'use client';
 
+import type { Message } from 'ai';
 import { useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
-import { useChatHistory } from '@/app/hooks/useChatHistory';
+import { ChatGenerationController } from '@/app/controllers/chat-generation.controller';
+import { useChatFunctionality } from '@/app/hooks/useChatFunctionality';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatMessages } from '@/components/ChatMessages';
 import { ChatSidebar } from '@/components/ChatSidebar';
@@ -17,6 +19,7 @@ import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
+import type { ChatGeneration } from '@/types/database.types';
 import { TEXT_MODEL_PRICING } from '@/utils/constants';
 
 const promptSuggestions = [
@@ -42,9 +45,9 @@ export function Chat({ currChat }: ChatProps) {
     handleMessageSubmit,
     handlePromptSelect,
     stopGeneration,
-    isLoading,
+    isAiInferenceLoading,
     messages,
-    input,
+    chatInput,
     handleInputChange,
     handleEditMessage,
     submitEditedMessage,
@@ -52,9 +55,54 @@ export function Chat({ currChat }: ChatProps) {
     editingMessageId,
     editedContent,
     setEditedContent,
-  } = useChatHistory('/api/generatetext', currChat, model, {
-    maxTokens: maxTokens,
+  } = useChatFunctionality<ChatGeneration, Message>({
+    api: '/api/generatetext',
+    pageBaseUrl: '/chat',
+    currChat,
+    model,
+    modelParams: {
+      maxTokens: maxTokens,
+    },
+    createGeneration: async (
+      message: any,
+      chatInput: string,
+      chatId: string,
+      usage: any,
+    ) => {
+      return await ChatGenerationController.getInstance().create(
+        JSON.stringify({
+          user_text: chatInput,
+          ai_text: message.content,
+          provider: model,
+          chat_id: chatId,
+          prompt_tokens: usage.promptTokens,
+          completion_tokens: usage.completionTokens,
+        }),
+      );
+    },
+    fetchGeneration: ChatGenerationController.getInstance().fetch,
+    generationToMessages: (chatGenerations: ChatGeneration) => {
+      return [
+        {
+          id: chatGenerations.id + 'user',
+          role: 'user',
+          content: chatGenerations.user_text,
+          promptTokens: chatGenerations.prompt_tokens,
+          completionTokens: chatGenerations.completion_tokens,
+          provider: chatGenerations.provider,
+        },
+        {
+          id: chatGenerations.id + 'ai',
+          role: 'assistant',
+          content: chatGenerations.ai_text,
+          promptTokens: chatGenerations.prompt_tokens,
+          completionTokens: chatGenerations.completion_tokens,
+          provider: chatGenerations.provider,
+        },
+      ];
+    },
   });
+
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const session = useSession();
 
@@ -102,7 +150,7 @@ export function Chat({ currChat }: ChatProps) {
               <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full mt-[30px]">
                 <ChatMessages
                   messages={messages}
-                  isLoading={isLoading}
+                  isLoading={isAiInferenceLoading}
                   editingMessageId={editingMessageId}
                   editedContent={editedContent}
                   setEditedContent={setEditedContent}
@@ -136,10 +184,10 @@ export function Chat({ currChat }: ChatProps) {
               suggestions={promptSuggestions}
             />
             <TextInput
-              input={input}
+              input={chatInput}
               handleInputChange={handleInputChange}
               handleSubmit={handleMessageSubmit}
-              isLoading={isLoading}
+              isLoading={isAiInferenceLoading}
               onStopGeneration={stopGeneration}
               editingMessage={editingMessageId !== null}
               maxLength={1000}

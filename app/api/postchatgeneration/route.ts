@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
           completion_tokens: completion_tokens,
         },
       ])
-      .select('id')
+      .select('*')
       .single();
 
     if (dbError) {

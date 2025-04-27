@@ -1,17 +1,17 @@
 import type { ChatGeneration } from '@/types/database.types';
 
-export class ChatGenerationController {
-  private static instance: ChatGenerationController;
-  static getInstance(): ChatGenerationController {
-    if (!ChatGenerationController.instance) {
-      ChatGenerationController.instance = new ChatGenerationController();
+export class ImageGenerationController {
+  private static instance: ImageGenerationController;
+  static getInstance(): ImageGenerationController {
+    if (!ImageGenerationController.instance) {
+      ImageGenerationController.instance = new ImageGenerationController();
     }
-    return ChatGenerationController.instance;
+    return ImageGenerationController.instance;
   }
 
   async create(body: string): Promise<ChatGeneration | null> {
     try {
-      const response = await fetch('/api/postchatgeneration', {
+      const response = await fetch('/api/generateimage', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ export class ChatGenerationController {
   async fetch(id: string): Promise<ChatGeneration[] | null> {
     if (!id.trim()) return null;
     try {
-      const response = await fetch(`/api/getchatgenerations?id=${id}`, {
+      const response = await fetch(`/api/generatedimages?imageids=${id}`, {
         method: 'GET',
       });
       const data = await response.json();
@@ -46,7 +46,7 @@ export class ChatGenerationController {
 
   async delete(id: string): Promise<ChatGeneration | null> {
     try {
-      const response = await fetch(`/api/deletechatgenerations?id=${id}`, {
+      const response = await fetch(`/api/deleteimage?imageid=${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
