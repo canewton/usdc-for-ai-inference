@@ -23,8 +23,8 @@ import { IMAGE_MODEL_PRICING } from '@/utils/constants';
 import type { ImageMessage } from '@/utils/types';
 
 const promptSuggestions = [
-  { title: 'Explain how to load my wallet', icon: WalletIcon },
-  { title: 'Tell me about USDC security', icon: UsdcIcon },
+  { title: 'A global-themed USDC card', icon: WalletIcon },
+  { title: 'Floating USDC coins', icon: UsdcIcon },
   { title: 'Surprise me', icon: SparkIcon },
 ];
 
@@ -57,8 +57,6 @@ export function ImageChat({ currChat }: ImageChatProps) {
     },
     onFinish: async (generation: ImageGeneration) => {
       if (chatIdRef.current || currChat) {
-        var messagesTemp = messages;
-        console.log('messages temp', messagesTemp);
         const generateChatData =
           await ImageGenerationController.getInstance().create(
             JSON.stringify({
@@ -73,17 +71,6 @@ export function ImageChat({ currChat }: ImageChatProps) {
           console.error('Failed to save chat generation');
           return;
         }
-
-        console.log('messages finished', [
-          ...messages,
-          {
-            id: generateChatData.id + 'ai',
-            role: 'assistant',
-            content: generateChatData.url,
-            cost: 0.01,
-            provider: generateChatData.provider,
-          },
-        ]);
 
         setMessages([
           ...messages,
@@ -236,7 +223,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
               </div>
             </div>
           )}
-          <div>
+          <div className="w-full max-w-[800px]">
             <PromptSuggestions
               onSelect={({ title }) => setInput(title)}
               suggestions={promptSuggestions}

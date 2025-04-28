@@ -223,7 +223,7 @@ export function Chat({ currChat }: ChatProps) {
               </div>
             </div>
           )}
-          <div>
+          <div className="w-full max-w-[800px]">
             <PromptSuggestions
               onSelect={({ title }) => setInput(title)}
               suggestions={promptSuggestions}

@@ -17,7 +17,7 @@ export function useAiGeneration<G, M>({
 
   const stop = () => {};
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
   };
 
