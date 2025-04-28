@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/tooltip';
 import ChainIcon from '@/public/chain-icon.svg';
 import CloseIcon from '@/public/close.svg';
+import DownloadIcon from '@/public/download.svg';
 import EditHoveredIcon from '@/public/edit-hovered.svg';
 import EditIcon from '@/public/edit-icon.svg';
 import SendIcon from '@/public/plane.svg';
@@ -53,8 +54,6 @@ export function MessageItem<M extends BaseMessage>({
     }
   };
 
-  console.log('MessageItem', message);
-
   function isMessage(item: unknown) {
     return (
       typeof item === 'object' &&
@@ -65,12 +64,26 @@ export function MessageItem<M extends BaseMessage>({
     );
   }
 
-  console.log('MessageItem', message);
-
   if (!isMessage(message)) {
     console.error('Invalid message object:', message);
     return <div />;
   }
+
+  const handleDownload = (url: string, fileName: string) => {
+    fetch(url)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      })
+      .catch((error) => console.error('Error downloading image:', error));
+  };
 
   return (
     <div
@@ -155,64 +168,78 @@ export function MessageItem<M extends BaseMessage>({
         )}
 
         {/* Cost tool tip */}
-        {message.role === 'assistant' && message.content && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="mr-auto border border-blue-200 mt-2 pl-2 pr-3 py-1 rounded-3xl flex flex-row items-center text-sm">
-                  <img
-                    src={UsdcIcon.src}
-                    alt="USDC symbol"
-                    className="h-6 w-6 mr-1"
-                  />
-                  {!message.provider ? (
-                    <p className="text-sub">Calculating...</p>
-                  ) : (
-                    <>
-                      {message.promptTokens && message.completionTokens && (
-                        <>
-                          - $
-                          {Math.max(
-                            message.promptTokens *
-                              TEXT_MODEL_PRICING[message.provider]
-                                .userBilledInputPrice +
-                              message.completionTokens *
+        <div className="flex flex-row space-between items-center">
+          {message.role === 'assistant' && message.content && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="mr-auto border border-blue-200 mt-2 pl-2 pr-3 py-1 rounded-3xl flex flex-row items-center text-sm">
+                    <img
+                      src={UsdcIcon.src}
+                      alt="USDC symbol"
+                      className="h-6 w-6 mr-1"
+                    />
+                    {!message.provider ? (
+                      <p className="text-sub">Calculating...</p>
+                    ) : (
+                      <>
+                        {message.promptTokens && message.completionTokens && (
+                          <>
+                            - $
+                            {Math.max(
+                              message.promptTokens *
                                 TEXT_MODEL_PRICING[message.provider]
-                                  .userBilledOutputPrice,
-                            0.01,
-                          ).toFixed(2)}
-                        </>
-                      )}
-                      {message.cost && <>- ${message.cost.toFixed(2)}</>}
-                    </>
+                                  .userBilledInputPrice +
+                                message.completionTokens *
+                                  TEXT_MODEL_PRICING[message.provider]
+                                    .userBilledOutputPrice,
+                              0.01,
+                            ).toFixed(2)}
+                          </>
+                        )}
+                        {message.cost && <>- ${message.cost.toFixed(2)}</>}
+                      </>
+                    )}
+                  </div>
+                </TooltipTrigger>
+                {message.provider &&
+                  message.promptTokens &&
+                  message.completionTokens && (
+                    <TooltipContent side="bottom" align="start">
+                      <p>
+                        {message.promptTokens} prompt tokens ≡ $
+                        {(
+                          message.promptTokens *
+                          TEXT_MODEL_PRICING[message.provider]
+                            .userBilledInputPrice
+                        ).toFixed(4)}
+                      </p>
+                      <p>
+                        {message.completionTokens} completion tokens ≡ $
+                        {(
+                          message.completionTokens *
+                          TEXT_MODEL_PRICING[message.provider]
+                            .userBilledOutputPrice
+                        ).toFixed(4)}
+                      </p>
+                    </TooltipContent>
                   )}
-                </div>
-              </TooltipTrigger>
-              {message.provider &&
-                message.promptTokens &&
-                message.completionTokens && (
-                  <TooltipContent side="bottom" align="start">
-                    <p>
-                      {message.promptTokens} prompt tokens ≡ $
-                      {(
-                        message.promptTokens *
-                        TEXT_MODEL_PRICING[message.provider]
-                          .userBilledInputPrice
-                      ).toFixed(4)}
-                    </p>
-                    <p>
-                      {message.completionTokens} completion tokens ≡ $
-                      {(
-                        message.completionTokens *
-                        TEXT_MODEL_PRICING[message.provider]
-                          .userBilledOutputPrice
-                      ).toFixed(4)}
-                    </p>
-                  </TooltipContent>
-                )}
-            </Tooltip>
-          </TooltipProvider>
-        )}
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {message.downloadable && message.content && (
+            <img
+              src={DownloadIcon.src}
+              alt="Download"
+              className="h-5 w-5 mr-1"
+              onClick={() => {
+                if (message.content) {
+                  handleDownload(message.content, 'generated-image.webp');
+                }
+              }}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

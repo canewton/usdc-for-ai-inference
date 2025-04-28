@@ -4,6 +4,7 @@ export interface ImageMessage {
   content: string;
   cost: number;
   provider: string;
+  downloadable: boolean;
 }
 
 export interface TextModelPricing {
@@ -23,4 +24,5 @@ export interface BaseMessage {
   completionTokens?: number;
   parts?: any[];
   cost?: number;
+  downloadable?: boolean;
 }

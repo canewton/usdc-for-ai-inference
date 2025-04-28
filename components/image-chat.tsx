@@ -80,6 +80,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
             content: generateChatData.prompt,
             cost: 0.01,
             provider: generateChatData.provider,
+            downloadable: false,
           },
           {
             id: generateChatData.id + 'ai',
@@ -87,6 +88,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
             content: generateChatData.url,
             cost: 0.01,
             provider: generateChatData.provider,
+            downloadable: true,
           },
         ]);
       }
@@ -119,6 +121,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
           content: chatGenerations.prompt,
           provider: chatGenerations.provider,
           cost: IMAGE_MODEL_PRICING.userBilledPrice,
+          downloadable: false,
         },
         {
           id: chatGenerations.id + 'ai',
@@ -126,6 +129,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
           content: chatGenerations.url,
           provider: chatGenerations.provider,
           cost: IMAGE_MODEL_PRICING.userBilledPrice,
+          downloadable: true,
         },
       ];
     },
@@ -141,6 +145,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
           content: chatInput,
           cost: 0.01,
           provider: provider,
+          downloadable: false,
         },
       ]);
       await handleSubmit(e);
