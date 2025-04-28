@@ -1,5 +1,6 @@
 import { openai } from '@ai-sdk/openai';
 import { streamText } from 'ai';
+import console from 'console';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -31,11 +32,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse req body
-    const { messages, model, maxTokens } = await request.json();
+    const { messages, provider, maxTokens } = await request.json();
+
+    console.log('Messages:', messages);
 
     // Get result
     const result = streamText({
-      model: openai(model),
+      model: openai(provider),
       messages,
       maxTokens,
     });

@@ -16,12 +16,7 @@ import {
 } from '@/components/ui/tooltip';
 import CancelIcon from '@/public/cancel.svg';
 import RedCancelIcon from '@/public/red-cancel.svg';
-
-interface Chat {
-  id: string;
-  title: string;
-  created_at: string;
-}
+import type { Chat } from '@/types/database.types';
 
 interface ChatSidebarProps {
   chats: Chat[];
@@ -39,9 +34,8 @@ export function ChatSidebar({
   onDeleteChat,
 }: ChatSidebarProps) {
   const [hoveredChatId, setHoveredChatId] = useState<string>('');
-  const [cancelHovered, setCancelHovered] = useState<boolean>(false);
   const [open, setOpen] = useState(false);
-  const [selectedChatTitle, setSelectedChatTitle] = useState<string>('');
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
 
   // Group chats by time period
   const groupChatsByTimePeriod = (chats: Chat[]) => {
@@ -97,10 +91,8 @@ export function ChatSidebar({
                 asChild
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSelectedChatTitle(chat.title);
+                  setSelectedChat(chat);
                 }}
-                onMouseEnter={() => setCancelHovered(true)}
-                onMouseLeave={() => setCancelHovered(false)}
               >
                 {(chat.id === currentChatId || chat.id === hoveredChatId) && (
                   <img
@@ -123,7 +115,7 @@ export function ChatSidebar({
         <DialogContent className="z-50 bg-white">
           <DialogTitle>
             <p className="text-lg">
-              Delete <b>{selectedChatTitle}</b> chat?
+              Delete <b>{selectedChat?.title}</b> chat?
             </p>
           </DialogTitle>
           <DialogDescription>
@@ -139,8 +131,9 @@ export function ChatSidebar({
             </button>
             <button
               onClick={() => {
-                onDeleteChat(chat.id);
+                onDeleteChat(selectedChat?.id || '');
                 setOpen(false);
+                setSelectedChat(null);
               }}
               className="bg-[#D5666E] rounded-[10px] py-3 px-4 text-background"
             >

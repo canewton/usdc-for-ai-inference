@@ -1,7 +1,9 @@
 'use client';
 
-import type { Message } from 'ai';
-import { useState } from 'react';
+import type { Message } from '@ai-sdk/react';
+import { useChat } from '@ai-sdk/react';
+import type { UIMessage } from 'ai';
+import { useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import { ChatGenerationController } from '@/app/controllers/chat-generation.controller';
@@ -33,22 +35,75 @@ interface ChatProps {
 }
 
 export function Chat({ currChat }: ChatProps) {
-  const [model, setModel] = useState('gpt-4o-mini');
+  const [provider, setProvider] = useState('gpt-4o-mini');
   const [maxTokens, setMaxTokens] = useState(2000);
+  const chatIdRef = useRef<string | null>(null);
+
   const {
-    chatId,
+    messages,
+    input: chatInput,
+    handleInputChange,
+    isLoading: isAiInferenceLoading,
+    setMessages,
+    handleSubmit,
+    stop,
+    setInput,
+  } = useChat({
+    api: '/api/generatetext',
+    body: {
+      provider: provider,
+      maxTokens: maxTokens,
+    },
+    onFinish: async (message: any, { usage }: any) => {
+      if (chatIdRef.current || currChat) {
+        const generateChatData =
+          await ChatGenerationController.getInstance().create(
+            JSON.stringify({
+              user_text: chatInput,
+              ai_text: message.content,
+              provider: provider,
+              chat_id: chatIdRef.current ?? currChat,
+              prompt_tokens: usage.promptTokens,
+              completion_tokens: usage.completionTokens,
+            }),
+          );
+
+        if (!generateChatData) {
+          console.error('Failed to save chat generation');
+          return;
+        }
+
+        setMessages((prevMsgs) => [
+          ...prevMsgs.slice(0, -2),
+          {
+            id: generateChatData.id + 'user',
+            role: 'user',
+            content: generateChatData.user_text,
+            promptTokens: generateChatData.prompt_tokens,
+            completionTokens: generateChatData.completion_tokens,
+            provider: generateChatData.provider,
+          },
+          {
+            id: generateChatData.id + 'ai',
+            role: 'assistant',
+            content: generateChatData.ai_text,
+            promptTokens: generateChatData.prompt_tokens,
+            completionTokens: generateChatData.completion_tokens,
+            provider: generateChatData.provider,
+          },
+        ]);
+      }
+    },
+  });
+
+  const {
+    currChatId,
     chats,
     showLimitError,
     onSelectChat,
     onDeleteChat,
     onNewChat,
     handleMessageSubmit,
-    handlePromptSelect,
-    stopGeneration,
-    isAiInferenceLoading,
-    messages,
-    chatInput,
-    handleInputChange,
     handleEditMessage,
     submitEditedMessage,
     cancelEdit,
@@ -56,30 +111,8 @@ export function Chat({ currChat }: ChatProps) {
     editedContent,
     setEditedContent,
   } = useChatFunctionality<ChatGeneration, Message>({
-    api: '/api/generatetext',
     pageBaseUrl: '/chat',
     currChat,
-    model,
-    modelParams: {
-      maxTokens: maxTokens,
-    },
-    createGeneration: async (
-      message: any,
-      chatInput: string,
-      chatId: string,
-      usage: any,
-    ) => {
-      return await ChatGenerationController.getInstance().create(
-        JSON.stringify({
-          user_text: chatInput,
-          ai_text: message.content,
-          provider: model,
-          chat_id: chatId,
-          prompt_tokens: usage.promptTokens,
-          completion_tokens: usage.completionTokens,
-        }),
-      );
-    },
     fetchGeneration: ChatGenerationController.getInstance().fetch,
     generationToMessages: (chatGenerations: ChatGeneration) => {
       return [
@@ -101,12 +134,24 @@ export function Chat({ currChat }: ChatProps) {
         },
       ];
     },
+    messages,
+    chatInput,
+    setMessages,
+    handleSubmit: (e: React.FormEvent<HTMLFormElement>) => {
+      handleSubmit(e, {
+        body: {
+          provider: provider,
+          maxTokens: maxTokens,
+        },
+      });
+    },
+    chatIdRef,
   });
 
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const session = useSession();
 
-  const wordsPerToken = `Each word is around 3 tokens ≡ $${(TEXT_MODEL_PRICING[model].userBilledInputPrice * 3).toFixed(5)}`;
+  const wordsPerToken = `Each word is around 3 tokens ≡ $${(TEXT_MODEL_PRICING[provider].userBilledInputPrice * 3).toFixed(5)}`;
 
   return (
     <>
@@ -119,7 +164,7 @@ export function Chat({ currChat }: ChatProps) {
       <AiHistoryPortal>
         <ChatSidebar
           chats={chats}
-          currentChatId={chatId}
+          currentChatId={currChatId}
           onNewChat={onNewChat}
           onSelectChat={onSelectChat}
           onDeleteChat={onDeleteChat}
@@ -129,7 +174,7 @@ export function Chat({ currChat }: ChatProps) {
       {/* Middle section */}
       <MainAiSection>
         <div className="flex flex-col justify-between h-full py-4 items-center">
-          {chatId ? (
+          {currChatId ? (
             <>
               <div className="flex flex-row w-[800px]">
                 <div className="flex flex-row justify-between space-x-2 w-fit h-fit items-center">
@@ -148,7 +193,7 @@ export function Chat({ currChat }: ChatProps) {
                 </div>
               </div>
               <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full mt-[30px]">
-                <ChatMessages
+                <ChatMessages<UIMessage>
                   messages={messages}
                   isLoading={isAiInferenceLoading}
                   editingMessageId={editingMessageId}
@@ -180,7 +225,7 @@ export function Chat({ currChat }: ChatProps) {
           )}
           <div>
             <PromptSuggestions
-              onSelect={handlePromptSelect}
+              onSelect={({ title }) => setInput(title)}
               suggestions={promptSuggestions}
             />
             <TextInput
@@ -188,7 +233,7 @@ export function Chat({ currChat }: ChatProps) {
               handleInputChange={handleInputChange}
               handleSubmit={handleMessageSubmit}
               isLoading={isAiInferenceLoading}
-              onStopGeneration={stopGeneration}
+              onStopGeneration={stop}
               editingMessage={editingMessageId !== null}
               maxLength={1000}
             />
@@ -218,7 +263,7 @@ export function Chat({ currChat }: ChatProps) {
             <div className="text-sub mr-auto w-full text-end">
               {maxTokens} tokens ≡ $
               {(
-                maxTokens * TEXT_MODEL_PRICING[model].userBilledOutputPrice
+                maxTokens * TEXT_MODEL_PRICING[provider].userBilledOutputPrice
               ).toFixed(2)}
             </div>
           </div>
@@ -226,8 +271,8 @@ export function Chat({ currChat }: ChatProps) {
           <div className="flex flex-col">
             <div className="text-sub mb-1">Model Type</div>
             <select
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
               className="border border-gray-200 rounded-lg p-3 bg-white text-body w-full"
             >
               <option value={'gpt-4o-mini'}>gpt-4o-mini</option>

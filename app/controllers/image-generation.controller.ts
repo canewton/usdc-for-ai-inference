@@ -1,4 +1,4 @@
-import type { ChatGeneration } from '@/types/database.types';
+import type { ImageGeneration } from '@/types/database.types';
 
 export class ImageGenerationController {
   private static instance: ImageGenerationController;
@@ -9,9 +9,9 @@ export class ImageGenerationController {
     return ImageGenerationController.instance;
   }
 
-  async create(body: string): Promise<ChatGeneration | null> {
+  async create(body: string): Promise<ImageGeneration | null> {
     try {
-      const response = await fetch('/api/generateimage', {
+      const response = await fetch('/api/postimagegeneration', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,10 +29,10 @@ export class ImageGenerationController {
     }
   }
 
-  async fetch(id: string): Promise<ChatGeneration[] | null> {
+  async fetch(id: string): Promise<ImageGeneration[] | null> {
     if (!id.trim()) return null;
     try {
-      const response = await fetch(`/api/generatedimages?imageids=${id}`, {
+      const response = await fetch(`/api/getgeneratedimages?imageids=${id}`, {
         method: 'GET',
       });
       const data = await response.json();
@@ -44,7 +44,7 @@ export class ImageGenerationController {
     }
   }
 
-  async delete(id: string): Promise<ChatGeneration | null> {
+  async delete(id: string): Promise<ImageGeneration | null> {
     try {
       const response = await fetch(`/api/deleteimage?imageid=${id}`, {
         method: 'DELETE',

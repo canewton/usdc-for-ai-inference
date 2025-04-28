@@ -1,73 +1,55 @@
-import type { Message } from '@ai-sdk/react';
-import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
 
-interface AiGenerationHook {
+interface AiGenerationHook<G> {
   api: string;
   body: any;
-  onFinish: (message: any, { usage }: any) => Promise<void>;
+  onFinish?: (generation: G) => Promise<void>;
 }
 
-export function useAiGeneration<T>({ api, body, onFinish }: AiGenerationHook) {
-  const {
-    messages: textStreamMessages,
-    input: chatInput,
-    handleInputChange,
-    isLoading: isAiInferenceLoading,
-    setMessages,
-    handleSubmit,
-    stop,
-    setInput,
-  } = useChat({ api, body, onFinish });
+export function useAiGeneration<G, M>({
+  api,
+  body,
+  onFinish,
+}: AiGenerationHook<G>) {
+  const [messages, setMessages] = useState<M[]>([]);
+  const [input, setInput] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [aiMessages, setAiMessagesState] = useState<T[]>([]);
+  const stop = () => {};
 
-  function isMessage(item: unknown): item is Message {
-    return (
-      typeof item === 'object' &&
-      item !== null &&
-      'id' in item &&
-      typeof item.id === 'string' &&
-      'role' in item &&
-      'content' in item &&
-      typeof item.content === 'string' &&
-      'promptTokens' in item &&
-      'completionTokens' in item &&
-      'provider' in item
-    );
-  }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
 
-  function isMessageArray<T>(messages: T[]) {
-    if (messages.length === 0) {
-      return true;
-    }
-    return messages.every(isMessage);
-  }
-
-  const setAiMessages = (messagesInput: T[] | ((prevMsgs: T[]) => T[])) => {
-    if (typeof messagesInput === 'function') {
-      const temp = messagesInput(aiMessages);
-      setAiMessagesState(temp);
-
-      if (isMessageArray(temp)) {
-        setMessages(temp as Message[]);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await fetch(api, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: input, ...body }),
+      });
+      const data: G = await response.json();
+      if (onFinish) {
+        await onFinish(data);
       }
-      return;
-    }
-    setAiMessagesState(messagesInput);
-
-    if (isMessageArray(messagesInput)) {
-      setMessages(messagesInput as Message[]);
+      setInput('');
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
-    textStreamMessages,
-    aiMessages,
-    chatInput,
-    isAiInferenceLoading,
+    messages,
+    input,
+    isLoading,
     handleInputChange,
-    setAiMessages,
+    setMessages,
     handleSubmit,
     stop,
     setInput,

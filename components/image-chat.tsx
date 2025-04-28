@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import { ImageGenerationController } from '@/app/controllers/image-generation.controller';
+import { useAiGeneration } from '@/app/hooks/useAiGeneration';
 import { useChatFunctionality } from '@/app/hooks/useChatFunctionality';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatMessages } from '@/components/ChatMessages';
@@ -17,10 +18,12 @@ import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
+import type { ImageGeneration } from '@/types/database.types';
+import type { ImageMessage } from '@/utils/types';
 
 const promptSuggestions = [
-  { title: 'A global-themed USDC card', icon: WalletIcon },
-  { title: 'Floating USDC coins', icon: UsdcIcon },
+  { title: 'Explain how to load my wallet', icon: WalletIcon },
+  { title: 'Tell me about USDC security', icon: UsdcIcon },
   { title: 'Surprise me', icon: SparkIcon },
 ];
 
@@ -29,51 +32,110 @@ interface ImageChatProps {
 }
 
 export function ImageChat({ currChat }: ImageChatProps) {
-  const [model, setModel] = useState('flux-schnell');
+  const [provider, setProvider] = useState('flux-schnell');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [quality, setQuality] = useState(80);
+  const chatIdRef = useRef<string | null>(null);
+
   const {
-    chatId,
+    messages,
+    input: chatInput,
+    handleInputChange,
+    isLoading: isAiInferenceLoading,
+    setMessages,
+    handleSubmit,
+    stop,
+    setInput,
+  } = useAiGeneration<ImageGeneration, ImageMessage>({
+    api: '/api/generateimage',
+    body: {
+      aspect_ratio: aspectRatio,
+      output_quality: quality,
+      provider,
+      chat_id: chatIdRef.current ?? currChat,
+    },
+    onFinish: async (generation: ImageGeneration) => {
+      if (chatIdRef.current || currChat) {
+        const generateChatData =
+          await ImageGenerationController.getInstance().create(
+            JSON.stringify({
+              prompt: generation.prompt,
+              chat_id: chatIdRef.current ?? currChat,
+              provider: generation.provider,
+              url: generation.url,
+            }),
+          );
+
+        if (!generateChatData) {
+          console.error('Failed to save chat generation');
+          return;
+        }
+
+        setMessages((prevMsgs) => [
+          ...prevMsgs.slice(0, -2),
+          {
+            id: generateChatData.id + 'user',
+            role: 'user',
+            content: generateChatData.prompt,
+            cost: 0.01,
+            provider: generateChatData.provider,
+          },
+          {
+            id: generateChatData.id + 'ai',
+            role: 'assistant',
+            content: generateChatData.url,
+            cost: 0.01,
+            provider: generateChatData.provider,
+          },
+        ]);
+      }
+    },
+  });
+
+  const {
+    currChatId,
     chats,
     showLimitError,
     onSelectChat,
     onDeleteChat,
     onNewChat,
     handleMessageSubmit,
-    handlePromptSelect,
-    stopGeneration,
-    isAiInferenceLoading,
-    messages,
-    chatInput,
-    handleInputChange,
     handleEditMessage,
     submitEditedMessage,
     cancelEdit,
     editingMessageId,
     editedContent,
     setEditedContent,
-  } = useChatFunctionality(
-    '/api/generateimage',
+  } = useChatFunctionality<ImageGeneration, ImageMessage>({
+    pageBaseUrl: '/image',
     currChat,
-    model,
-    {
-      aspect_ratio: aspectRatio,
-      output_quality: quality,
+    fetchGeneration: ImageGenerationController.getInstance().fetch,
+    generationToMessages: (chatGenerations: ImageGeneration) => {
+      return [
+        {
+          id: chatGenerations.id + 'user',
+          role: 'user',
+          content: chatGenerations.prompt,
+          provider: chatGenerations.provider,
+          cost: 0.01,
+        },
+        {
+          id: chatGenerations.id + 'ai',
+          role: 'assistant',
+          content: chatGenerations.url,
+          provider: chatGenerations.provider,
+          cost: 0.01,
+        },
+      ];
     },
-    async (message: any, chatInput: string, chatId: string, usage: any) => {
-      return await ImageGenerationController.getInstance().create(
-        JSON.stringify({
-          prompt: chatInput,
-          ai_text: message.content,
-          provider: model,
-          chat_id: chatId,
-          prompt_tokens: usage.promptTokens,
-          completion_tokens: usage.completionTokens,
-        }),
-      );
+    messages,
+    chatInput,
+    setMessages,
+    handleSubmit: (e: React.FormEvent<HTMLFormElement>) => {
+      handleSubmit(e);
     },
-    ImageGenerationController.getInstance().fetch,
-  );
+    chatIdRef,
+  });
 
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const session = useSession();
@@ -83,7 +145,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
   return (
     <>
       <div
-        className={`${!session.api_keys_status.image ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.api_keys_status.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         This page is not available during the hosted demo.
       </div>
@@ -91,7 +153,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
       <AiHistoryPortal>
         <ChatSidebar
           chats={chats}
-          currentChatId={chatId}
+          currentChatId={currChatId}
           onNewChat={onNewChat}
           onSelectChat={onSelectChat}
           onDeleteChat={onDeleteChat}
@@ -101,7 +163,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
       {/* Middle section */}
       <MainAiSection>
         <div className="flex flex-col justify-between h-full py-4 items-center">
-          {chatId ? (
+          {currChatId ? (
             <>
               <div className="flex flex-row w-[800px]">
                 <div className="flex flex-row justify-between space-x-2 w-fit h-fit items-center">
@@ -152,7 +214,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
           )}
           <div>
             <PromptSuggestions
-              onSelect={handlePromptSelect}
+              onSelect={({ title }) => setInput(title)}
               suggestions={promptSuggestions}
             />
             <TextInput
@@ -160,7 +222,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
               handleInputChange={handleInputChange}
               handleSubmit={handleMessageSubmit}
               isLoading={isAiInferenceLoading}
-              onStopGeneration={stopGeneration}
+              onStopGeneration={stop}
               editingMessage={editingMessageId !== null}
               maxLength={1000}
             />
@@ -205,8 +267,8 @@ export function ImageChat({ currChat }: ImageChatProps) {
           <div className="flex flex-col space-x-2">
             <div className="text-sub mb-1">Model Type</div>
             <select
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
               className="border border-gray-200 rounded-lg p-3 bg-white text-body"
             >
               <option value="flux-schnell">FLUX.1</option>

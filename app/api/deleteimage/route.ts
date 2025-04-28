@@ -27,7 +27,9 @@ export async function DELETE(request: NextRequest) {
       .from('image_generations')
       .delete()
       .eq('id', imageid)
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .select('*')
+      .single();
 
     if (dbError) {
       return NextResponse.json({ error: dbError.message }, { status: 500 });

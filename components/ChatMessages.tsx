@@ -1,10 +1,11 @@
-import type { Message } from 'ai';
 import { useEffect, useRef, useState } from 'react';
+
+import type { BaseMessage } from '@/utils/types';
 
 import { MessageItem } from './MessageItem';
 
-interface ChatMessagesProps {
-  messages: Message[];
+interface ChatMessagesProps<M> {
+  messages: M[];
   isLoading: boolean;
   editingMessageId: string | null;
   editedContent: string;
@@ -15,7 +16,7 @@ interface ChatMessagesProps {
   handleInputChange: any;
 }
 
-export function ChatMessages({
+export function ChatMessages<M extends BaseMessage>({
   messages,
   isLoading,
   editingMessageId,
@@ -25,7 +26,7 @@ export function ChatMessages({
   onCancelEdit,
   onSubmitEdit,
   handleInputChange,
-}: ChatMessagesProps) {
+}: ChatMessagesProps<M>) {
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -36,10 +37,12 @@ export function ChatMessages({
     }
   }, [messages]);
 
+  console.log('ChatMessages', messages);
+
   return (
     <div className="space-y-[30px] flex-col text-headline max-w-[800px]">
       {messages.map((message: any) => (
-        <MessageItem
+        <MessageItem<M>
           message={message}
           editingMessageId={editingMessageId}
           editedContent={editedContent}

@@ -14,10 +14,10 @@ import EditIcon from '@/public/edit-icon.svg';
 import SendIcon from '@/public/plane.svg';
 import UsdcIcon from '@/public/usdc-circle.svg';
 import { TEXT_MODEL_PRICING } from '@/utils/constants';
-import type { Message } from '@/utils/types';
+import type { BaseMessage } from '@/utils/types';
 
-interface MessageItemProps {
-  message: Message;
+interface MessageItemProps<M extends BaseMessage> {
+  message: M;
   isLoading: boolean;
   editingMessageId: string | null;
   editedContent: string;
@@ -30,7 +30,7 @@ interface MessageItemProps {
   setHoveredMessageId: any;
 }
 
-export function MessageItem({
+export function MessageItem<M extends BaseMessage>({
   message,
   isLoading,
   editingMessageId,
@@ -42,7 +42,7 @@ export function MessageItem({
   handleInputChange,
   hoveredMessageId,
   setHoveredMessageId,
-}: MessageItemProps) {
+}: MessageItemProps<M>) {
   const [editHovered, setEditHovered] = useState(false);
 
   const handleCopy = async (textToCopy: string) => {
@@ -52,6 +52,25 @@ export function MessageItem({
       console.error('Failed to copy:', err);
     }
   };
+
+  console.log('MessageItem', message);
+
+  function isMessage(item: unknown) {
+    return (
+      typeof item === 'object' &&
+      item !== null &&
+      'id' in item &&
+      typeof item.id === 'string' &&
+      'role' in item
+    );
+  }
+
+  console.log('MessageItem', message);
+
+  if (!isMessage(message)) {
+    console.error('Invalid message object:', message);
+    return <div />;
+  }
 
   return (
     <div
@@ -89,18 +108,27 @@ export function MessageItem({
             }
             onMouseLeave={() => setHoveredMessageId(null)}
           >
-            <div
-              className={`${message.role !== 'user' && 'border-none'} p-2 rounded-3xl bg-white border border-blue-200 px-4 py-2`}
-            >
-              <ReactMarkdown>{message.content}</ReactMarkdown>
-            </div>
+            {(message.role == 'user' || message.promptTokens) && (
+              <div
+                className={`${message.role !== 'user' && 'border-none'} p-2 rounded-3xl bg-white border border-blue-200 px-4 py-2`}
+              >
+                <ReactMarkdown>{message.content}</ReactMarkdown>
+              </div>
+            )}
+            {message.role == 'assistant' && message.cost && (
+              <img
+                src={message.content}
+                alt="Generated"
+                className="rounded-md shadow-sm max-w-[300px] max-h-[300px] object-contain"
+              />
+            )}
             {/* Edit Message */}
             <div
               className={`${message.role === 'user' && 'h-6'} flex justify-end ${hoveredMessageId === message.id ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
             >
               {message.role === 'user' && hoveredMessageId === message.id && (
                 <div className="flex flex-row space-x-1">
-                  <button onClick={() => handleCopy(message.content)}>
+                  <button onClick={() => handleCopy(message?.content ?? '')}>
                     <img
                       src={ChainIcon.src}
                       alt="Chain icon"
@@ -108,7 +136,9 @@ export function MessageItem({
                     />
                   </button>
                   <button
-                    onClick={() => onEditMessage(message.id, message.content)}
+                    onClick={() =>
+                      onEditMessage(message.id, message?.content ?? '')
+                    }
                     onMouseEnter={() => setEditHovered(true)}
                     onMouseLeave={() => setEditHovered(false)}
                   >
@@ -125,7 +155,7 @@ export function MessageItem({
         )}
 
         {/* Cost tool tip */}
-        {message.role === 'assistant' && (
+        {message.role === 'assistant' && message.content && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -135,31 +165,51 @@ export function MessageItem({
                     alt="USDC symbol"
                     className="h-6 w-6 mr-1"
                   />
-                  {isNaN(message.completionTokens) ? (
+                  {!message.provider ? (
                     <p className="text-sub">Calculating...</p>
                   ) : (
-                    `$ -${Math.max(message.promptTokens * TEXT_MODEL_PRICING[message.provider].userBilledInputPrice + message.completionTokens * TEXT_MODEL_PRICING[message.provider].userBilledOutputPrice, 0.01).toFixed(2)}`
+                    <>
+                      {message.promptTokens && message.completionTokens && (
+                        <>
+                          - $
+                          {Math.max(
+                            message.promptTokens *
+                              TEXT_MODEL_PRICING[message.provider]
+                                .userBilledInputPrice +
+                              message.completionTokens *
+                                TEXT_MODEL_PRICING[message.provider]
+                                  .userBilledOutputPrice,
+                            0.01,
+                          ).toFixed(2)}
+                        </>
+                      )}
+                      {message.cost && <>- ${message.cost.toFixed(2)}</>}
+                    </>
                   )}
                 </div>
               </TooltipTrigger>
-              {message.provider && (
-                <TooltipContent side="bottom" align="start">
-                  <p>
-                    {message.promptTokens} prompt tokens ≡ $
-                    {(
-                      message.promptTokens *
-                      TEXT_MODEL_PRICING[message.provider].userBilledInputPrice
-                    ).toFixed(4)}
-                  </p>
-                  <p>
-                    {message.completionTokens} completion tokens ≡ $
-                    {(
-                      message.completionTokens *
-                      TEXT_MODEL_PRICING[message.provider].userBilledOutputPrice
-                    ).toFixed(4)}
-                  </p>
-                </TooltipContent>
-              )}
+              {message.provider &&
+                message.promptTokens &&
+                message.completionTokens && (
+                  <TooltipContent side="bottom" align="start">
+                    <p>
+                      {message.promptTokens} prompt tokens ≡ $
+                      {(
+                        message.promptTokens *
+                        TEXT_MODEL_PRICING[message.provider]
+                          .userBilledInputPrice
+                      ).toFixed(4)}
+                    </p>
+                    <p>
+                      {message.completionTokens} completion tokens ≡ $
+                      {(
+                        message.completionTokens *
+                        TEXT_MODEL_PRICING[message.provider]
+                          .userBilledOutputPrice
+                      ).toFixed(4)}
+                    </p>
+                  </TooltipContent>
+                )}
             </Tooltip>
           </TooltipProvider>
         )}

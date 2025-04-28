@@ -3,10 +3,7 @@ import { NextResponse } from 'next/server';
 import Replicate from 'replicate';
 import { v4 as uuidv4 } from 'uuid';
 
-import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
-import { aiModel } from '@/types/ai.types';
-import { IMAGE_MODEL_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 
 export async function POST(request: NextRequest) {
@@ -29,37 +26,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { prompt, aspect_ratio, output_quality, chat_id, provider } =
+    const { prompt, aspect_ratio, output_quality, provider, chat_id } =
       await request.json();
-
-    let profile: any = null;
-    let wallet: any = null;
-    if (user) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('auth_user_id', user.id)
-        .single();
-      profile = profileData;
-    }
-
-    if (profile) {
-      // Get wallet
-      const { data: walletData } = await supabase
-        .schema('public')
-        .from('wallets')
-        .select()
-        .eq('profile_id', profile.id)
-        .single();
-      wallet = walletData;
-    }
-
-    const aiProject = await circleWalletTransfer(
-      prompt,
-      aiModel.TEXT_TO_IMAGE,
-      wallet.circle_wallet_id,
-      `${IMAGE_MODEL_PRICING.userBilledPrice}`,
-    );
 
     const replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,
@@ -119,26 +87,15 @@ export async function POST(request: NextRequest) {
 
     const storedImageUrl = publicURLData.publicUrl;
 
-    const { data, error: dbError } = await supabase
-      .from('image_generations')
-      .insert([
-        {
-          prompt,
-          user_id: user.id,
-          url: storedImageUrl,
-          provider: provider,
-          circle_transaction_id: aiProject.circle_transaction_id,
-          chat_id: chat_id,
-        },
-      ]);
-
-    if (dbError) {
-      throw new Error(
-        `Error inserting record into Supabase: ${dbError.message}`,
-      );
-    }
-
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json(
+      {
+        prompt,
+        url: storedImageUrl,
+        provider: provider,
+        chat_id: chat_id,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error('Generation error:', error);
     return NextResponse.json(

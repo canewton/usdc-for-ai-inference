@@ -18,15 +18,18 @@ export async function GET(request: NextRequest) {
 
     // Parse JSON array from query param
     const url = new URL(request.url);
-    const imageids = url.searchParams.get('imageids');
+    const chat_id = url.searchParams.get('imageids');
+
+    console.log('imageids', chat_id);
+
     // Fetch images by id
-    if (imageids) {
-      const ids = JSON.parse(imageids);
+    if (chat_id) {
       const { data: images, error } = await supabase
         .from('image_generations')
         .select('*')
         .eq('user_id', user.id)
-        .in('id', ids);
+        .eq('chat_id', chat_id)
+        .order('created_at', { ascending: true });
 
       if (error) {
         console.error('Database error:', error);
@@ -41,7 +44,7 @@ export async function GET(request: NextRequest) {
       // Fetch all of user's images
       const { data: images, error } = await supabase
         .from('image_generations')
-        .select('id, url, prompt, created_at')
+        .select('*')
         .eq('user_id', user.id);
 
       if (error) {

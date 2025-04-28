@@ -60,6 +60,7 @@ export interface ImageGeneration {
   provider: string;
   user_id: string;
   circle_transaction_id: string;
+  chat_id: string;
 }
 
 export type Database = {
