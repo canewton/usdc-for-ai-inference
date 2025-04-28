@@ -137,8 +137,8 @@ export function Chat({ currChat }: ChatProps) {
     messages,
     chatInput,
     setMessages,
-    handleSubmit: (e: React.FormEvent<HTMLFormElement>) => {
-      handleSubmit(e, {
+    handleSubmit: async (e: React.FormEvent<HTMLFormElement>) => {
+      await handleSubmit(e, {
         body: {
           provider: provider,
           maxTokens: maxTokens,

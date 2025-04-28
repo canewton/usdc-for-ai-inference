@@ -56,6 +56,8 @@ export function ImageChat({ currChat }: ImageChatProps) {
     },
     onFinish: async (generation: ImageGeneration) => {
       if (chatIdRef.current || currChat) {
+        var messagesTemp = messages;
+        console.log('messages temp', messagesTemp);
         const generateChatData =
           await ImageGenerationController.getInstance().create(
             JSON.stringify({
@@ -71,8 +73,19 @@ export function ImageChat({ currChat }: ImageChatProps) {
           return;
         }
 
-        setMessages((prevMsgs) => [
-          ...prevMsgs.slice(0, -2),
+        console.log('messages finished', [
+          ...messages,
+          {
+            id: generateChatData.id + 'ai',
+            role: 'assistant',
+            content: generateChatData.url,
+            cost: 0.01,
+            provider: generateChatData.provider,
+          },
+        ]);
+
+        setMessages([
+          ...messages,
           {
             id: generateChatData.id + 'user',
             role: 'user',
@@ -131,8 +144,18 @@ export function ImageChat({ currChat }: ImageChatProps) {
     messages,
     chatInput,
     setMessages,
-    handleSubmit: (e: React.FormEvent<HTMLFormElement>) => {
-      handleSubmit(e);
+    handleSubmit: async (e: React.FormEvent<HTMLFormElement>) => {
+      setMessages([
+        ...messages,
+        {
+          id: `${messages.length}`,
+          role: 'user',
+          content: chatInput,
+          cost: 0.01,
+          provider: provider,
+        },
+      ]);
+      await handleSubmit(e);
     },
     chatIdRef,
   });

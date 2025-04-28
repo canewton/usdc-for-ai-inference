@@ -1,8 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import type { Dispatch, SetStateAction } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { Chat as AiChat } from '@/types/database.types';
 import type { BaseMessage } from '@/utils/types';
@@ -19,7 +18,7 @@ interface ChatFunctionalityProps<G, M> {
   messages: M[];
   chatInput: string;
   setMessages: (messagesInput: M[] | ((prevMsgs: M[]) => M[])) => void;
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
   chatIdRef: React.RefObject<string | null>;
 }
 
@@ -37,52 +36,12 @@ export function useChatFunctionality<G, M extends BaseMessage>({
   const { remaining } = useDemoLimit();
   const [currChatId, setCurrChatId] = useState(currChat || '');
   const [chats, setChats] = useState<AiChat[]>([]);
-  // const chatIdRef = useRef<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<string>('');
   const [showLimitError, setShowLimitError] = useState(false);
 
   const session = useSession();
   const router = useRouter();
-
-  // const {
-  //   aiMessages,
-  //   textStreamMessages: messages,
-  //   chatInput,
-  //   handleInputChange,
-  //   isAiInferenceLoading,
-  //   setAiMessages: setMessages,
-  //   handleSubmit,
-  //   stop,
-  //   setInput,
-  // } = useAiGeneration<M>({
-  //   api,
-  //   body: {
-  //     provider: provider,
-  //     chat_id: currChatId,
-  //     ...providerParams,
-  //   },
-  //   onFinish: async (message: any, { usage }: any) => {
-  //     if (chatIdRef.current || currChatId) {
-  //       const generateChatData = await createGeneration(
-  //         message,
-  //         chatInput,
-  //         chatIdRef.current || currChatId,
-  //         usage,
-  //       );
-
-  //       if (!generateChatData) {
-  //         console.error('Failed to save chat generation');
-  //         return;
-  //       }
-
-  //       setMessages((prevMsgs: M[]) => [
-  //         ...prevMsgs.slice(0, -2),
-  //         ...generationToMessages(generateChatData),
-  //       ]);
-  //     }
-  //   },
-  // });
 
   const onSelectChat = async (id: string) => {
     const messages = await fetchGeneration(id);
@@ -127,6 +86,9 @@ export function useChatFunctionality<G, M extends BaseMessage>({
       setShowLimitError(true);
       return;
     }
+
+    console.log('messages submitted:', messages);
+
     setShowLimitError(false);
     var chatId = currChatId;
     if (!currChatId) {
@@ -155,7 +117,7 @@ export function useChatFunctionality<G, M extends BaseMessage>({
 
     // Generate text
     try {
-      handleSubmit(e);
+      await handleSubmit(e);
     } catch (error) {
       console.error('Error in message submission:', error);
     }
@@ -205,7 +167,7 @@ export function useChatFunctionality<G, M extends BaseMessage>({
 
   useEffect(() => {
     // Get messages if chat changes
-    if (!currChatId) return;
+    if (!currChatId || messages.length == 1) return;
     fetchGeneration(currChatId).then((messages) => {
       if (!messages) {
         console.error('Failed to fetch chat messages');

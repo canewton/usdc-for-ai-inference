@@ -108,7 +108,7 @@ export function MessageItem<M extends BaseMessage>({
             }
             onMouseLeave={() => setHoveredMessageId(null)}
           >
-            {(message.role == 'user' || message.promptTokens) && (
+            {(message.role == 'user' || !message.cost) && (
               <div
                 className={`${message.role !== 'user' && 'border-none'} p-2 rounded-3xl bg-white border border-blue-200 px-4 py-2`}
               >
