@@ -11,7 +11,7 @@ import { ChatController } from '../controllers/chat.controller';
 import { useDemoLimit } from './useDemoLimit';
 
 interface ChatFunctionalityProps<G, M> {
-  pageBaseUrl: string;
+  pageBaseUrl: 'chat' | '3d' | 'image' | 'video';
   currChat: string;
   fetchGeneration: (id: string) => Promise<G[] | null>;
   generationToMessages: (generation: G) => M[];
@@ -54,7 +54,7 @@ export function useChatFunctionality<G, M extends BaseMessage>({
     setMessages(messages.map((obj: any) => generationToMessages(obj)).flat());
     setCurrChatId(id);
     chatIdRef.current = id;
-    window.history.replaceState(null, '', `${pageBaseUrl}/${id}`);
+    window.history.replaceState(null, '', `/${pageBaseUrl}/${id}`);
   };
 
   const onDeleteChat = (id: string) => {
@@ -69,13 +69,13 @@ export function useChatFunctionality<G, M extends BaseMessage>({
           setChats((prevChats) => prevChats.filter((chat) => chat.id !== id));
           setMessages([]);
           setCurrChatId('');
-          router.push(`${pageBaseUrl}/`);
+          router.push(`/${pageBaseUrl}/`);
         });
     }
   };
 
   const onNewChat = () => {
-    router.push(`${pageBaseUrl}/`);
+    router.push(`/${pageBaseUrl}/`);
     setCurrChatId('');
     setMessages([]);
   };
@@ -93,7 +93,10 @@ export function useChatFunctionality<G, M extends BaseMessage>({
     var chatId = currChatId;
     if (!currChatId) {
       // Post new chat
-      const chatData = await ChatController.getInstance().create(chatInput);
+      const chatData = await ChatController.getInstance().create(
+        chatInput,
+        pageBaseUrl,
+      );
       if (!chatData) {
         console.error('Failed to create new chat');
         return;
@@ -103,9 +106,9 @@ export function useChatFunctionality<G, M extends BaseMessage>({
         chatId = chatData.id;
         setCurrChatId(chatData.id);
         chatIdRef.current = chatData.id;
-        window.history.replaceState(null, '', `${pageBaseUrl}/${chatData.id}`);
+        window.history.replaceState(null, '', `/${pageBaseUrl}/${chatData.id}`);
         // Update chats
-        if (chats[0].id === '') {
+        if (chats.length > 0 && chats[0].id === '') {
           setChats((prevChats) => [chatData, ...prevChats.slice(1)]);
         } else {
           setChats((prevChats) => [chatData, ...prevChats]);
@@ -155,7 +158,7 @@ export function useChatFunctionality<G, M extends BaseMessage>({
   useEffect(() => {
     // Get all user's chats
     ChatController.getInstance()
-      .fetch()
+      .fetch(pageBaseUrl)
       .then((chats) => {
         if (!chats) {
           console.error('Failed to fetch chats');

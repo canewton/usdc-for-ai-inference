@@ -111,7 +111,7 @@ export function Chat({ currChat }: ChatProps) {
     editedContent,
     setEditedContent,
   } = useChatFunctionality<ChatGeneration, Message>({
-    pageBaseUrl: '/chat',
+    pageBaseUrl: 'chat',
     currChat,
     fetchGeneration: ChatGenerationController.getInstance().fetch,
     generationToMessages: (chatGenerations: ChatGeneration) => {
@@ -192,7 +192,7 @@ export function Chat({ currChat }: ChatProps) {
                   </div>
                 </div>
               </div>
-              <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full mt-[30px]">
+              <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full max-w-[800px] mt-[30px]">
                 <ChatMessages<UIMessage>
                   messages={messages}
                   isLoading={isAiInferenceLoading}

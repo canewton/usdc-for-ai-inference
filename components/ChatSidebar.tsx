@@ -26,7 +26,6 @@ export function ChatSidebar({
   // Group chats by time period
   const groupChatsByTimePeriod = (chats: Chat[]) => {
     const today = new Date();
-    const yesterday = subDays(today, 1);
     const oneWeekAgo = subDays(today, 7);
 
     const groups = {

@@ -20,8 +20,6 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const chat_id = url.searchParams.get('imageids');
 
-    console.log('imageids', chat_id);
-
     // Fetch images by id
     if (chat_id) {
       const { data: images, error } = await supabase

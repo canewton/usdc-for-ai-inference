@@ -28,9 +28,11 @@ export class ChatController {
     }
   }
 
-  async fetch(): Promise<Chat[] | null> {
+  async fetch(
+    chatType: 'chat' | 'image' | '3d' | 'video',
+  ): Promise<Chat[] | null> {
     try {
-      const response = await fetch(`/api/getchats`, {
+      const response = await fetch(`/api/getchats?chat_type=${chatType}`, {
         method: 'GET',
       });
       const data = await response.json();
@@ -42,7 +44,10 @@ export class ChatController {
     }
   }
 
-  async create(title: string): Promise<Chat | null> {
+  async create(
+    title: string,
+    chatType: 'chat' | 'image' | '3d' | 'video',
+  ): Promise<Chat | null> {
     try {
       const response = await fetch('/api/postchat', {
         method: 'POST',
@@ -51,6 +56,7 @@ export class ChatController {
         },
         body: JSON.stringify({
           title: title,
+          chat_type: chatType,
         }),
       });
       const data = await response.json();

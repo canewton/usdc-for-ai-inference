@@ -19,6 +19,7 @@ import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
 import type { ImageGeneration } from '@/types/database.types';
+import { IMAGE_MODEL_PRICING } from '@/utils/constants';
 import type { ImageMessage } from '@/utils/types';
 
 const promptSuggestions = [
@@ -120,7 +121,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
     editedContent,
     setEditedContent,
   } = useChatFunctionality<ImageGeneration, ImageMessage>({
-    pageBaseUrl: '/image',
+    pageBaseUrl: 'image',
     currChat,
     fetchGeneration: ImageGenerationController.getInstance().fetch,
     generationToMessages: (chatGenerations: ImageGeneration) => {
@@ -130,14 +131,14 @@ export function ImageChat({ currChat }: ImageChatProps) {
           role: 'user',
           content: chatGenerations.prompt,
           provider: chatGenerations.provider,
-          cost: 0.01,
+          cost: IMAGE_MODEL_PRICING.userBilledPrice,
         },
         {
           id: chatGenerations.id + 'ai',
           role: 'assistant',
           content: chatGenerations.url,
           provider: chatGenerations.provider,
-          cost: 0.01,
+          cost: IMAGE_MODEL_PRICING.userBilledPrice,
         },
       ];
     },
@@ -204,7 +205,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
                   </div>
                 </div>
               </div>
-              <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full mt-[30px]">
+              <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full max-w-[800px] mt-[30px]">
                 <ChatMessages
                   messages={messages}
                   isLoading={isAiInferenceLoading}

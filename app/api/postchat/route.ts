@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse body
-    const { title } = await request.json();
+    const { title, chat_type } = await request.json();
 
     // Post text generation
     const { data, error: dbError } = await supabase
@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
         {
           user_id: user.id,
           title: title,
+          chat_type: chat_type,
         },
       ])
       .select('*')

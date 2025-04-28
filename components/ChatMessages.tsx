@@ -40,7 +40,7 @@ export function ChatMessages<M extends BaseMessage>({
   console.log('ChatMessages', messages);
 
   return (
-    <div className="space-y-[30px] flex-col text-headline max-w-[800px]">
+    <div className="space-y-[30px] flex flex-col text-headline w-full">
       {messages.map((message: any) => (
         <MessageItem<M>
           message={message}
