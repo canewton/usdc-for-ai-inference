@@ -36,8 +36,6 @@ export function useChatFunctionality<G, M extends BaseMessage>({
   const { remaining } = useDemoLimit();
   const [currChatId, setCurrChatId] = useState(currChat || '');
   const [chats, setChats] = useState<AiChat[]>([]);
-  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [editedContent, setEditedContent] = useState<string>('');
   const [showLimitError, setShowLimitError] = useState(false);
 
   const session = useSession();
@@ -87,8 +85,6 @@ export function useChatFunctionality<G, M extends BaseMessage>({
       return;
     }
 
-    console.log('messages submitted:', messages);
-
     setShowLimitError(false);
     var chatId = currChatId;
     if (!currChatId) {
@@ -124,35 +120,6 @@ export function useChatFunctionality<G, M extends BaseMessage>({
     } catch (error) {
       console.error('Error in message submission:', error);
     }
-  };
-
-  const handleEditMessage = (messageId: string, content: string) => {
-    setEditingMessageId(messageId);
-    setEditedContent(content);
-  };
-
-  const submitEditedMessage = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editedContent.trim()) return;
-    // Get original message
-    const originalMessage = messages.find((msg) => msg.id === editingMessageId);
-    if (!originalMessage || originalMessage.role !== 'user') return;
-
-    // Submit the edited message to generate a new response
-    try {
-      handleSubmit(e);
-    } catch (error) {
-      console.error('Error in message submission:', error);
-    }
-
-    // Reset editing state
-    setEditingMessageId(null);
-    setEditedContent('');
-  };
-
-  const cancelEdit = () => {
-    setEditingMessageId(null);
-    setEditedContent('');
   };
 
   useEffect(() => {
@@ -191,11 +158,5 @@ export function useChatFunctionality<G, M extends BaseMessage>({
     handleMessageSubmit,
     messages,
     chatInput,
-    handleEditMessage,
-    submitEditedMessage,
-    cancelEdit,
-    editingMessageId,
-    editedContent,
-    setEditedContent,
   };
 }

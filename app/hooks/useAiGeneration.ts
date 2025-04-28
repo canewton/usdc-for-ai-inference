@@ -25,6 +25,16 @@ export function useAiGeneration<G, M>({
     e.preventDefault();
     setIsLoading(true);
     try {
+      await aiGenerate(input);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const aiGenerate = async (input: string) => {
+    try {
       const response = await fetch(api, {
         method: 'POST',
         headers: {
@@ -39,8 +49,6 @@ export function useAiGeneration<G, M>({
       setInput('');
     } catch (error) {
       console.error('Error:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -51,6 +59,7 @@ export function useAiGeneration<G, M>({
     handleInputChange,
     setMessages,
     handleSubmit,
+    aiGenerate,
     stop,
     setInput,
   };

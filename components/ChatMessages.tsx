@@ -6,29 +6,24 @@ import { MessageItem } from './MessageItem';
 
 interface ChatMessagesProps<M> {
   messages: M[];
-  isLoading: boolean;
-  editingMessageId: string | null;
-  editedContent: string;
-  setEditedContent: (content: string) => void;
-  onEditMessage: (messageId: string, content: string) => void;
-  onCancelEdit: () => void;
-  onSubmitEdit: (e: React.FormEvent<HTMLFormElement>) => void;
   handleInputChange: any;
+  handleSubmit: (e: any) => void;
+  setIsEditing: (isEditing: boolean) => void;
+  aiGenerate?: (input: string) => Promise<void>;
 }
 
 export function ChatMessages<M extends BaseMessage>({
   messages,
-  isLoading,
-  editingMessageId,
-  editedContent,
-  setEditedContent,
-  onEditMessage,
-  onCancelEdit,
-  onSubmitEdit,
   handleInputChange,
+  handleSubmit,
+  setIsEditing,
+  aiGenerate,
 }: ChatMessagesProps<M>) {
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editedContent, setEditedContent] = useState<string>('');
 
   useEffect(() => {
     // Scroll to bottom of messages
@@ -37,7 +32,37 @@ export function ChatMessages<M extends BaseMessage>({
     }
   }, [messages]);
 
-  console.log('ChatMessages', messages);
+  const handleEditMessage = (messageId: string, content: string) => {
+    setIsEditing(true);
+    setEditingMessageId(messageId);
+    setEditedContent(content);
+  };
+
+  const submitEditedMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editedContent.trim()) return;
+    // Get original message
+    const originalMessage = messages.find((msg) => msg.id === editingMessageId);
+    if (!originalMessage || originalMessage.role !== 'user') return;
+
+    // Submit the edited message to generate a new response
+    try {
+      handleSubmit(e);
+    } catch (error) {
+      console.error('Error in message submission:', error);
+    }
+
+    // Reset editing state
+    setEditingMessageId(null);
+    setEditedContent('');
+    setIsEditing(false);
+  };
+
+  const cancelEdit = () => {
+    setEditingMessageId(null);
+    setEditedContent('');
+    setIsEditing(false);
+  };
 
   return (
     <div className="space-y-[30px] flex flex-col text-headline w-full">
@@ -47,14 +72,14 @@ export function ChatMessages<M extends BaseMessage>({
           editingMessageId={editingMessageId}
           editedContent={editedContent}
           setEditedContent={setEditedContent}
-          onEditMessage={onEditMessage}
-          onCancelEdit={onCancelEdit}
-          onSubmitEdit={onSubmitEdit}
+          onEditMessage={handleEditMessage}
+          onCancelEdit={cancelEdit}
+          onSubmitEdit={submitEditedMessage}
           handleInputChange={handleInputChange}
           hoveredMessageId={hoveredMessageId}
           setHoveredMessageId={setHoveredMessageId}
-          isLoading={isLoading}
           key={message.id}
+          aiGenerate={aiGenerate}
         />
       ))}
       <div ref={messagesEndRef} />

@@ -38,6 +38,7 @@ export function Chat({ currChat }: ChatProps) {
   const [provider, setProvider] = useState('gpt-4o-mini');
   const [maxTokens, setMaxTokens] = useState(2000);
   const chatIdRef = useRef<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const {
     messages,
@@ -104,12 +105,6 @@ export function Chat({ currChat }: ChatProps) {
     onDeleteChat,
     onNewChat,
     handleMessageSubmit,
-    handleEditMessage,
-    submitEditedMessage,
-    cancelEdit,
-    editingMessageId,
-    editedContent,
-    setEditedContent,
   } = useChatFunctionality<ChatGeneration, Message>({
     pageBaseUrl: 'chat',
     currChat,
@@ -195,14 +190,9 @@ export function Chat({ currChat }: ChatProps) {
               <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full max-w-[800px] mt-[30px]">
                 <ChatMessages<UIMessage>
                   messages={messages}
-                  isLoading={isAiInferenceLoading}
-                  editingMessageId={editingMessageId}
-                  editedContent={editedContent}
-                  setEditedContent={setEditedContent}
-                  onEditMessage={handleEditMessage}
-                  onCancelEdit={cancelEdit}
-                  onSubmitEdit={submitEditedMessage}
                   handleInputChange={handleInputChange}
+                  setIsEditing={setIsEditing}
+                  handleSubmit={handleSubmit}
                 />
               </div>
             </>
@@ -234,7 +224,7 @@ export function Chat({ currChat }: ChatProps) {
               handleSubmit={handleMessageSubmit}
               isLoading={isAiInferenceLoading}
               onStopGeneration={stop}
-              editingMessage={editingMessageId !== null}
+              editingMessage={isEditing}
               maxLength={1000}
             />
             {showLimitError && (

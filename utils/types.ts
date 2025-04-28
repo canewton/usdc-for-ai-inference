@@ -1,7 +1,8 @@
 export interface ImageMessage {
   id: string;
   role: string;
-  content: string;
+  imageUrl: string;
+  prompt: string;
   cost: number;
   provider: string;
   downloadable: boolean;
@@ -25,4 +26,6 @@ export interface BaseMessage {
   parts?: any[];
   cost?: number;
   downloadable?: boolean;
+  prompt?: string;
+  imageUrl?: string;
 }

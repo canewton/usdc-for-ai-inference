@@ -13,13 +13,13 @@ import DownloadIcon from '@/public/download.svg';
 import EditHoveredIcon from '@/public/edit-hovered.svg';
 import EditIcon from '@/public/edit-icon.svg';
 import SendIcon from '@/public/plane.svg';
+import RefreshIcon from '@/public/refresh.svg';
 import UsdcIcon from '@/public/usdc-circle.svg';
 import { TEXT_MODEL_PRICING } from '@/utils/constants';
 import type { BaseMessage } from '@/utils/types';
 
 interface MessageItemProps<M extends BaseMessage> {
   message: M;
-  isLoading: boolean;
   editingMessageId: string | null;
   editedContent: string;
   setEditedContent: (content: string) => void;
@@ -29,11 +29,11 @@ interface MessageItemProps<M extends BaseMessage> {
   handleInputChange: any;
   hoveredMessageId: string | null;
   setHoveredMessageId: any;
+  aiGenerate?: (input: string) => Promise<void>;
 }
 
 export function MessageItem<M extends BaseMessage>({
   message,
-  isLoading,
   editingMessageId,
   editedContent,
   setEditedContent,
@@ -43,6 +43,7 @@ export function MessageItem<M extends BaseMessage>({
   handleInputChange,
   hoveredMessageId,
   setHoveredMessageId,
+  aiGenerate,
 }: MessageItemProps<M>) {
   const [editHovered, setEditHovered] = useState(false);
 
@@ -121,16 +122,24 @@ export function MessageItem<M extends BaseMessage>({
             }
             onMouseLeave={() => setHoveredMessageId(null)}
           >
-            {(message.role == 'user' || !message.cost) && (
+            {((message.role == 'user' && message.content != undefined) ||
+              message.imageUrl == undefined) && (
               <div
                 className={`${message.role !== 'user' && 'border-none'} p-2 rounded-3xl bg-white border border-blue-200 px-4 py-2`}
               >
                 <ReactMarkdown>{message.content}</ReactMarkdown>
               </div>
             )}
-            {message.role == 'assistant' && message.cost && (
+            {message.role == 'user' && message.prompt && (
+              <div
+                className={`${message.role !== 'user' && 'border-none'} p-2 rounded-3xl bg-white border border-blue-200 px-4 py-2`}
+              >
+                <ReactMarkdown>{message.prompt}</ReactMarkdown>
+              </div>
+            )}
+            {message.role == 'assistant' && message.imageUrl && (
               <img
-                src={message.content}
+                src={message.imageUrl}
                 alt="Generated"
                 className="rounded-md shadow-sm max-w-[300px] max-h-[300px] object-contain"
               />
@@ -150,7 +159,10 @@ export function MessageItem<M extends BaseMessage>({
                   </button>
                   <button
                     onClick={() =>
-                      onEditMessage(message.id, message?.content ?? '')
+                      onEditMessage(
+                        message.id,
+                        message?.content ?? message?.prompt ?? '',
+                      )
                     }
                     onMouseEnter={() => setEditHovered(true)}
                     onMouseLeave={() => setEditHovered(false)}
@@ -169,75 +181,88 @@ export function MessageItem<M extends BaseMessage>({
 
         {/* Cost tool tip */}
         <div className="flex flex-row space-between items-center">
-          {message.role === 'assistant' && message.content && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="mr-auto border border-blue-200 mt-2 pl-2 pr-3 py-1 rounded-3xl flex flex-row items-center text-sm">
-                    <img
-                      src={UsdcIcon.src}
-                      alt="USDC symbol"
-                      className="h-6 w-6 mr-1"
-                    />
-                    {!message.provider ? (
-                      <p className="text-sub">Calculating...</p>
-                    ) : (
-                      <>
-                        {message.promptTokens && message.completionTokens && (
-                          <>
-                            - $
-                            {Math.max(
-                              message.promptTokens *
-                                TEXT_MODEL_PRICING[message.provider]
-                                  .userBilledInputPrice +
-                                message.completionTokens *
+          {message.role === 'assistant' &&
+            (message.content || message.imageUrl) && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="mr-auto border border-blue-200 mt-2 pl-2 pr-3 py-1 rounded-3xl flex flex-row items-center text-sm">
+                      <img
+                        src={UsdcIcon.src}
+                        alt="USDC symbol"
+                        className="h-6 w-6 mr-1"
+                      />
+                      {!message.provider ? (
+                        <p className="text-sub">Calculating...</p>
+                      ) : (
+                        <>
+                          {message.promptTokens && message.completionTokens && (
+                            <>
+                              - $
+                              {Math.max(
+                                message.promptTokens *
                                   TEXT_MODEL_PRICING[message.provider]
-                                    .userBilledOutputPrice,
-                              0.01,
-                            ).toFixed(2)}
-                          </>
-                        )}
-                        {message.cost && <>- ${message.cost.toFixed(2)}</>}
-                      </>
+                                    .userBilledInputPrice +
+                                  message.completionTokens *
+                                    TEXT_MODEL_PRICING[message.provider]
+                                      .userBilledOutputPrice,
+                                0.01,
+                              ).toFixed(2)}
+                            </>
+                          )}
+                          {message.cost && <>- ${message.cost.toFixed(2)}</>}
+                        </>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  {message.provider &&
+                    message.promptTokens &&
+                    message.completionTokens && (
+                      <TooltipContent side="bottom" align="start">
+                        <p>
+                          {message.promptTokens} prompt tokens ≡ $
+                          {(
+                            message.promptTokens *
+                            TEXT_MODEL_PRICING[message.provider]
+                              .userBilledInputPrice
+                          ).toFixed(4)}
+                        </p>
+                        <p>
+                          {message.completionTokens} completion tokens ≡ $
+                          {(
+                            message.completionTokens *
+                            TEXT_MODEL_PRICING[message.provider]
+                              .userBilledOutputPrice
+                          ).toFixed(4)}
+                        </p>
+                      </TooltipContent>
                     )}
-                  </div>
-                </TooltipTrigger>
-                {message.provider &&
-                  message.promptTokens &&
-                  message.completionTokens && (
-                    <TooltipContent side="bottom" align="start">
-                      <p>
-                        {message.promptTokens} prompt tokens ≡ $
-                        {(
-                          message.promptTokens *
-                          TEXT_MODEL_PRICING[message.provider]
-                            .userBilledInputPrice
-                        ).toFixed(4)}
-                      </p>
-                      <p>
-                        {message.completionTokens} completion tokens ≡ $
-                        {(
-                          message.completionTokens *
-                          TEXT_MODEL_PRICING[message.provider]
-                            .userBilledOutputPrice
-                        ).toFixed(4)}
-                      </p>
-                    </TooltipContent>
-                  )}
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          {message.downloadable && message.content && (
-            <img
-              src={DownloadIcon.src}
-              alt="Download"
-              className="h-5 w-5 mr-1"
-              onClick={() => {
-                if (message.content) {
-                  handleDownload(message.content, 'generated-image.webp');
-                }
-              }}
-            />
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          {message.downloadable && message.imageUrl && (
+            <div className="flex flex-row items-center space-x-2">
+              <img
+                src={RefreshIcon.src}
+                alt="Refresh image"
+                className="h-5 w-5 mr-1"
+                onClick={() => {
+                  if (aiGenerate) {
+                    aiGenerate(message.prompt ?? message.content ?? '');
+                  }
+                }}
+              />
+              <img
+                src={DownloadIcon.src}
+                alt="Download"
+                className="h-5 w-5 mr-1"
+                onClick={() => {
+                  if (message.imageUrl) {
+                    handleDownload(message.imageUrl, 'generated-image.webp');
+                  }
+                }}
+              />
+            </div>
           )}
         </div>
       </div>

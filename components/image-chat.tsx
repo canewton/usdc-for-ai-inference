@@ -36,6 +36,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
   const [provider, setProvider] = useState('flux-schnell');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [quality, setQuality] = useState(80);
+  const [isEditing, setIsEditing] = useState(false);
   const chatIdRef = useRef<string | null>(null);
 
   const {
@@ -45,6 +46,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
     isLoading: isAiInferenceLoading,
     setMessages,
     handleSubmit,
+    aiGenerate,
     stop,
     setInput,
   } = useAiGeneration<ImageGeneration, ImageMessage>({
@@ -77,7 +79,8 @@ export function ImageChat({ currChat }: ImageChatProps) {
           {
             id: generateChatData.id + 'user',
             role: 'user',
-            content: generateChatData.prompt,
+            prompt: generateChatData.prompt,
+            imageUrl: generateChatData.url,
             cost: 0.01,
             provider: generateChatData.provider,
             downloadable: false,
@@ -85,7 +88,8 @@ export function ImageChat({ currChat }: ImageChatProps) {
           {
             id: generateChatData.id + 'ai',
             role: 'assistant',
-            content: generateChatData.url,
+            prompt: generateChatData.prompt,
+            imageUrl: generateChatData.url,
             cost: 0.01,
             provider: generateChatData.provider,
             downloadable: true,
@@ -103,12 +107,6 @@ export function ImageChat({ currChat }: ImageChatProps) {
     onDeleteChat,
     onNewChat,
     handleMessageSubmit,
-    handleEditMessage,
-    submitEditedMessage,
-    cancelEdit,
-    editingMessageId,
-    editedContent,
-    setEditedContent,
   } = useChatFunctionality<ImageGeneration, ImageMessage>({
     pageBaseUrl: 'image',
     currChat,
@@ -118,7 +116,8 @@ export function ImageChat({ currChat }: ImageChatProps) {
         {
           id: chatGenerations.id + 'user',
           role: 'user',
-          content: chatGenerations.prompt,
+          prompt: chatGenerations.prompt,
+          imageUrl: chatGenerations.url,
           provider: chatGenerations.provider,
           cost: IMAGE_MODEL_PRICING.userBilledPrice,
           downloadable: false,
@@ -126,7 +125,8 @@ export function ImageChat({ currChat }: ImageChatProps) {
         {
           id: chatGenerations.id + 'ai',
           role: 'assistant',
-          content: chatGenerations.url,
+          prompt: chatGenerations.prompt,
+          imageUrl: chatGenerations.url,
           provider: chatGenerations.provider,
           cost: IMAGE_MODEL_PRICING.userBilledPrice,
           downloadable: true,
@@ -142,7 +142,8 @@ export function ImageChat({ currChat }: ImageChatProps) {
         {
           id: `${messages.length}`,
           role: 'user',
-          content: chatInput,
+          prompt: chatInput,
+          imageUrl: '',
           cost: 0.01,
           provider: provider,
           downloadable: false,
@@ -156,7 +157,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const session = useSession();
 
-  const wordsPerToken = 'Indicative cost or info...';
+  const wordsPerToken = 'Each image costs 0.01 USDC';
 
   return (
     <>
@@ -200,14 +201,10 @@ export function ImageChat({ currChat }: ImageChatProps) {
               <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full max-w-[800px] mt-[30px]">
                 <ChatMessages
                   messages={messages}
-                  isLoading={isAiInferenceLoading}
-                  editingMessageId={editingMessageId}
-                  editedContent={editedContent}
-                  setEditedContent={setEditedContent}
-                  onEditMessage={handleEditMessage}
-                  onCancelEdit={cancelEdit}
-                  onSubmitEdit={submitEditedMessage}
                   handleInputChange={handleInputChange}
+                  handleSubmit={handleSubmit}
+                  setIsEditing={setIsEditing}
+                  aiGenerate={aiGenerate}
                 />
               </div>
             </>
@@ -239,7 +236,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
               handleSubmit={handleMessageSubmit}
               isLoading={isAiInferenceLoading}
               onStopGeneration={stop}
-              editingMessage={editingMessageId !== null}
+              editingMessage={isEditing}
               maxLength={1000}
             />
             {showLimitError && (
