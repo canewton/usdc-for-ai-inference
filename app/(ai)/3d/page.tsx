@@ -12,12 +12,7 @@ import type { ModelHistoryItem } from '@/components/3d/types';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatSidebar } from '@/components/ChatSidebar';
 import RightAiSidebar from '@/components/RightAiSidebar';
-
-interface Chat {
-  id: string;
-  title: string;
-  created_at: string;
-}
+import type { Chat } from '@/types/database.types';
 
 export default function Generate3DModelPage() {
   const { remaining, loading: demoLimitLoading } = useDemoLimit();
@@ -53,6 +48,7 @@ export default function Generate3DModelPage() {
               id: item.id || `missing-id-${Math.random()}`,
               url: item.url || '',
               prompt: item.prompt || '',
+              user_id: item.user_id || '',
               created_at: item.created_at
                 ? new Date(item.created_at).toISOString()
                 : new Date().toISOString(),
@@ -204,6 +200,7 @@ export default function Generate3DModelPage() {
         id: item.id,
         title: item.prompt || `Model ${item.id.substring(0, 6)}`,
         created_at: item.created_at,
+        user_id: item.user_id,
       }),
     );
   }, [history]);
