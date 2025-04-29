@@ -6,11 +6,6 @@ import { aiModel } from '@/types/ai.types';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 
-const supabase = createClient();
-
-// -------------------------------------------
-// WORKING API KEY - LIMITED NUMBER OF TOKENS
-// -------------------------------------------
 const MESHY_API_KEY = process.env.MESHY_API!;
 const MESHY_API_URL =
   process.env.MESHY_BASE_URL || 'https://api.meshy.ai/openapi/v1/image-to-3d';
@@ -123,8 +118,8 @@ export async function POST(req: Request) {
       `${MODEL_ASSET_PRICING.userBilledPrice}`,
     );
 
-    const data: MeshyResponse = await generatePreviewResponse.json();
-    const taskId: string = data.result;
+    const meshyResponse: MeshyResponse = await generatePreviewResponse.json();
+    const taskId: string = meshyResponse.result;
     console.log('Preview task created. Task ID:', taskId);
 
     // poll preview task to keep track of generation progress
@@ -157,21 +152,21 @@ export async function POST(req: Request) {
     const storedModelUrl = publicURLData.publicUrl;
 
     // inserting into DB
-    const { error: dbError } = await supabase.from('3d_generations').insert([
-      {
-        image_url,
-        prompt: texture_prompt,
-        user_id: user.id,
-        url: storedModelUrl,
-        provider: 'Meshy',
-        mode: should_remesh ? 'Refine' : 'Preview',
-        circle_transaction_id: aiProject.circle_transaction_id,
-
-        // can delete
-        replicate_billed_amount: MODEL_ASSET_PRICING.replicatePrice,
-        user_billed_amount: MODEL_ASSET_PRICING.userBilledPrice,
-      },
-    ]);
+    const { data, error: dbError } = await supabase
+      .from('3d_generations')
+      .insert([
+        {
+          image_url,
+          prompt: texture_prompt,
+          user_id: user.id,
+          url: storedModelUrl,
+          provider: 'Meshy',
+          mode: should_remesh ? 'Refine' : 'Preview',
+          circle_transaction_id: aiProject.circle_transaction_id,
+        },
+      ])
+      .select('*')
+      .single();
 
     if (dbError) {
       throw new Error(
@@ -179,8 +174,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // returns model url -> downloads an interactive 3D model
-    return NextResponse.json({ modelUrl: storedModelUrl });
+    return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
     console.error('3D Generation error:', error);
     return NextResponse.json(

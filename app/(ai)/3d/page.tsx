@@ -1,5 +1,6 @@
 'use client';
 
+import { Link } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -11,7 +12,7 @@ import type { ModelHistoryItem } from '@/components/3d/types';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatSidebar } from '@/components/ChatSidebar';
 import RightAiSidebar from '@/components/RightAiSidebar';
-import type { Chat } from '@/types/database.types';
+import type { Ai3dGeneration, Chat } from '@/types/database.types';
 
 export default function Generate3DModelPage() {
   const { remaining, loading: demoLimitLoading } = useDemoLimit();
@@ -39,9 +40,9 @@ export default function Generate3DModelPage() {
         method: 'GET',
       });
 
-      const data = await response.json();
+      const data: Ai3dGeneration[] = await response.json();
       if (response.ok) {
-        const formattedHistory: ModelHistoryItem[] = (data.models || [])
+        const formattedHistory: ModelHistoryItem[] = (data || [])
           .map(
             (item: any): ModelHistoryItem => ({
               id: item.id || `missing-id-${Math.random()}`,
@@ -63,7 +64,6 @@ export default function Generate3DModelPage() {
         setHistory(formattedHistory);
         console.log('Fetched and formatted history:', formattedHistory);
       } else {
-        console.error('Failed to fetch history:', data.error);
         setError('Failed to load history.');
         setHistory([]);
       }
@@ -85,10 +85,10 @@ export default function Generate3DModelPage() {
       setError('Session or image data is missing.');
       return;
     }
-    // if (remaining === 0) {
-    //   toast.error('Demo limit reached. Please upgrade to continue.');
-    //   return;
-    // }
+    if (remaining === 0) {
+      toast.error('Demo limit reached. Please upgrade to continue.');
+      return;
+    }
     setIsLoading(true);
     setError(null);
 
@@ -115,13 +115,13 @@ export default function Generate3DModelPage() {
         throw new Error(errorData.error || 'Failed to generate model');
       }
 
-      const data = await response.json();
-      if (data.modelUrl) {
-        setModelUrl(data.modelUrl);
-        console.log('Generated model URL:', data.modelUrl);
+      const data: Ai3dGeneration = await response.json();
+      if (data.url) {
+        setModelUrl(data.url);
+        console.log('Generated model URL:', data.url);
         fetchHistory();
       } else {
-        setError(data.error || 'Failed to generate model');
+        setError(data.url || 'Failed to generate model');
         console.error('Generation failed:', data);
       }
     } catch (err: any) {
@@ -215,7 +215,7 @@ export default function Generate3DModelPage() {
 
   return (
     <>
-      {/* <div
+      <div
         className={`${!session.api_keys_status.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         <div className="flex flex-col items-center">
@@ -228,7 +228,7 @@ export default function Generate3DModelPage() {
             </button>
           </Link>
         </div>
-      </div> */}
+      </div>
 
       {/* --- Sidebar Area --- */}
       <AiHistoryPortal>
