@@ -1,12 +1,10 @@
 'use client';
 
-import type { Message } from '@ai-sdk/react';
-import { useChat } from '@ai-sdk/react';
-import type { UIMessage } from 'ai';
 import { useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
-import { ChatGenerationController } from '@/app/controllers/chat-generation.controller';
+import { ImageGenerationController } from '@/app/controllers/image-generation.controller';
+import { useAiGeneration } from '@/app/hooks/useAiGeneration';
 import { useChatFunctionality } from '@/app/hooks/useChatFunctionality';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatMessages } from '@/components/ChatMessages';
@@ -15,30 +13,31 @@ import MainAiSection from '@/components/MainAiSection';
 import PromptSuggestions from '@/components/PromptSuggestions';
 import RightAiSidebar from '@/components/RightAiSidebar';
 import { TextInput } from '@/components/TextInput';
-import { Slider } from '@/components/ui/slider';
 import Blurs from '@/public/blurs.svg';
 import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
-import type { ChatGeneration } from '@/types/database.types';
-import { TEXT_MODEL_PRICING } from '@/utils/constants';
+import type { ImageGeneration } from '@/types/database.types';
+import { IMAGE_MODEL_PRICING } from '@/utils/constants';
+import type { ImageMessage } from '@/utils/types';
 
 const promptSuggestions = [
-  { title: 'Explain how to load my wallet', icon: WalletIcon },
-  { title: 'Tell me about USDC security', icon: UsdcIcon },
+  { title: 'A global-themed USDC card', icon: WalletIcon },
+  { title: 'Floating USDC coins', icon: UsdcIcon },
   { title: 'Surprise me', icon: SparkIcon },
 ];
 
-interface ChatProps {
+interface ImageChatProps {
   currChat: string;
 }
 
-export function Chat({ currChat }: ChatProps) {
-  const [provider, setProvider] = useState('gpt-4o-mini');
-  const [maxTokens, setMaxTokens] = useState(2000);
-  const chatIdRef = useRef<string | null>(null);
+export function ImageChat({ currChat }: ImageChatProps) {
+  const [provider, setProvider] = useState('flux-schnell');
+  const [aspectRatio, setAspectRatio] = useState('1:1');
+  const [quality, setQuality] = useState(80);
   const [isEditing, setIsEditing] = useState(false);
+  const chatIdRef = useRef<string | null>(null);
 
   const {
     messages,
@@ -47,25 +46,26 @@ export function Chat({ currChat }: ChatProps) {
     isLoading: isAiInferenceLoading,
     setMessages,
     handleSubmit,
+    aiGenerate,
     stop,
     setInput,
-  } = useChat({
-    api: '/api/generatetext',
+  } = useAiGeneration<ImageGeneration, ImageMessage>({
+    api: '/api/generateimage',
     body: {
-      provider: provider,
-      maxTokens: maxTokens,
+      aspect_ratio: aspectRatio,
+      output_quality: quality,
+      provider,
+      chat_id: chatIdRef.current ?? currChat,
     },
-    onFinish: async (message: any, { usage }: any) => {
+    onFinish: async (generation: ImageGeneration) => {
       if (chatIdRef.current || currChat) {
         const generateChatData =
-          await ChatGenerationController.getInstance().create(
+          await ImageGenerationController.getInstance().create(
             JSON.stringify({
-              user_text: chatInput,
-              ai_text: message.content,
-              provider: provider,
+              prompt: generation.prompt,
               chat_id: chatIdRef.current ?? currChat,
-              prompt_tokens: usage.promptTokens,
-              completion_tokens: usage.completionTokens,
+              provider: generation.provider,
+              url: generation.url,
             }),
           );
 
@@ -74,23 +74,25 @@ export function Chat({ currChat }: ChatProps) {
           return;
         }
 
-        setMessages((prevMsgs) => [
-          ...prevMsgs.slice(0, -2),
+        setMessages([
+          ...messages,
           {
             id: generateChatData.id + 'user',
             role: 'user',
-            content: generateChatData.user_text,
-            promptTokens: generateChatData.prompt_tokens,
-            completionTokens: generateChatData.completion_tokens,
+            prompt: generateChatData.prompt,
+            imageUrl: generateChatData.url,
+            cost: 0.01,
             provider: generateChatData.provider,
+            downloadable: false,
           },
           {
             id: generateChatData.id + 'ai',
             role: 'assistant',
-            content: generateChatData.ai_text,
-            promptTokens: generateChatData.prompt_tokens,
-            completionTokens: generateChatData.completion_tokens,
+            prompt: generateChatData.prompt,
+            imageUrl: generateChatData.url,
+            cost: 0.01,
             provider: generateChatData.provider,
+            downloadable: true,
           },
         ]);
       }
@@ -105,27 +107,29 @@ export function Chat({ currChat }: ChatProps) {
     onDeleteChat,
     onNewChat,
     handleMessageSubmit,
-  } = useChatFunctionality<ChatGeneration, Message>({
-    pageBaseUrl: 'chat',
+  } = useChatFunctionality<ImageGeneration, ImageMessage>({
+    pageBaseUrl: 'image',
     currChat,
-    fetchGeneration: ChatGenerationController.getInstance().fetch,
-    generationToMessages: (chatGenerations: ChatGeneration) => {
+    fetchGeneration: ImageGenerationController.getInstance().fetch,
+    generationToMessages: (chatGenerations: ImageGeneration) => {
       return [
         {
           id: chatGenerations.id + 'user',
           role: 'user',
-          content: chatGenerations.user_text,
-          promptTokens: chatGenerations.prompt_tokens,
-          completionTokens: chatGenerations.completion_tokens,
+          prompt: chatGenerations.prompt,
+          imageUrl: chatGenerations.url,
           provider: chatGenerations.provider,
+          cost: IMAGE_MODEL_PRICING.userBilledPrice,
+          downloadable: false,
         },
         {
           id: chatGenerations.id + 'ai',
           role: 'assistant',
-          content: chatGenerations.ai_text,
-          promptTokens: chatGenerations.prompt_tokens,
-          completionTokens: chatGenerations.completion_tokens,
+          prompt: chatGenerations.prompt,
+          imageUrl: chatGenerations.url,
           provider: chatGenerations.provider,
+          cost: IMAGE_MODEL_PRICING.userBilledPrice,
+          downloadable: true,
         },
       ];
     },
@@ -133,12 +137,19 @@ export function Chat({ currChat }: ChatProps) {
     chatInput,
     setMessages,
     handleSubmit: async (e: React.FormEvent<HTMLFormElement>) => {
-      await handleSubmit(e, {
-        body: {
+      setMessages([
+        ...messages,
+        {
+          id: `${messages.length}`,
+          role: 'user',
+          prompt: chatInput,
+          imageUrl: '',
+          cost: 0.01,
           provider: provider,
-          maxTokens: maxTokens,
+          downloadable: false,
         },
-      });
+      ]);
+      await handleSubmit(e);
     },
     chatIdRef,
   });
@@ -146,7 +157,7 @@ export function Chat({ currChat }: ChatProps) {
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const session = useSession();
 
-  const wordsPerToken = `Each word is around 3 tokens ≡ $${(TEXT_MODEL_PRICING[provider].userBilledInputPrice * 3).toFixed(5)}`;
+  const wordsPerToken = 'Each image costs 0.01 USDC';
 
   return (
     <>
@@ -188,11 +199,12 @@ export function Chat({ currChat }: ChatProps) {
                 </div>
               </div>
               <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full mt-[30px]">
-                <ChatMessages<UIMessage>
+                <ChatMessages<ImageMessage>
                   messages={messages}
                   handleInputChange={handleInputChange}
-                  setIsEditing={setIsEditing}
                   handleSubmit={handleSubmit}
+                  setIsEditing={setIsEditing}
+                  aiGenerate={aiGenerate}
                   isAiInferenceLoading={isAiInferenceLoading}
                 />
               </div>
@@ -240,34 +252,40 @@ export function Chat({ currChat }: ChatProps) {
       {/* Right section with balance and settings */}
       <RightAiSidebar isImageInput={false}>
         <div className="space-y-[20px] mt-4 w-full">
-          <div className="flex flex-col space-y-[4px]">
-            <div className="text-sub m-1">Max Tokens</div>
-            <div className="flex w-full h-8 border border-gray-200 items-center justify-center rounded-3xl p-2">
-              <Slider
-                defaultValue={[maxTokens]}
-                min={200}
-                max={10000}
-                step={100}
-                onValueChange={(val) => setMaxTokens(val[0])}
-              />
-            </div>
-            <div className="text-sub mr-auto w-full text-end">
-              {maxTokens} tokens ≡ $
-              {(
-                maxTokens * TEXT_MODEL_PRICING[provider].userBilledOutputPrice
-              ).toFixed(2)}
-            </div>
+          <div className="flex flex-col space-x-2">
+            <div className="text-sub mb-1">Aspect Ratio</div>
+            <select
+              value={aspectRatio}
+              onChange={(e) => setAspectRatio(e.target.value)}
+              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
+            >
+              <option value="1:1">1:1</option>
+              <option value="3:2">3:2</option>
+              <option value="4:3">4:3</option>
+              <option value="16:9">16:9</option>
+              <option value="21:9">21:9</option>
+            </select>
           </div>
-
-          <div className="flex flex-col">
+          <div className="flex flex-col space-x-2">
+            <div className="text-sub mb-1">Image Quality</div>
+            <select
+              value={quality}
+              onChange={(e) => setQuality(Number(e.target.value))}
+              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
+            >
+              <option value={50}>Low</option>
+              <option value={80}>Medium</option>
+              <option value={100}>High</option>
+            </select>
+          </div>
+          <div className="flex flex-col space-x-2">
             <div className="text-sub mb-1">Model Type</div>
             <select
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
-              className="border border-gray-200 rounded-lg p-3 bg-white text-body w-full"
+              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
             >
-              <option value={'gpt-4o-mini'}>gpt-4o-mini</option>
-              <option value={'gpt-4o'}>gpt-4o</option>
+              <option value="flux-schnell">FLUX.1</option>
             </select>
           </div>
         </div>

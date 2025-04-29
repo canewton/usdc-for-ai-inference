@@ -5,9 +5,11 @@ import DisabledSendIcon from '@/public/disabled-plane.svg';
 import PauseIcon from '@/public/pause-gumdrop.svg';
 import SendIcon from '@/public/plane.svg';
 
+import ExpandableTextArea from './expandable-text-area';
+
 interface TextInputProps {
   input: string;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
   isLoading: boolean;
   onStopGeneration: () => void;
@@ -27,29 +29,15 @@ export function TextInput({
   return (
     <div className="border-gray-200 rounded-3xl shadow-md">
       <form onSubmit={handleSubmit} className="flex space-x-2">
-        <div className="flex-1 relative">
-          <input
-            type="text"
-            value={editingMessage ? '' : input}
-            onChange={handleInputChange}
-            placeholder={
-              isLoading ? 'Circle AI is thinking...' : 'Message Circle AI'
-            }
-            className="flex-1 p-4 bg-white rounded-3xl placeholder-transparent outline-none text-body w-full overflow-x-auto whitespace-nowrap"
-            style={{
-              background:
-                'linear-gradient(to right, #b090F5, #5fbfff, #5fbfff)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-            }}
-            maxLength={maxLength}
-          />
-          {maxLength && input.length >= maxLength && (
-            <div className="absolute right-2 bottom-1 text-xs text-red-500">
-              Input too large ({maxLength} characters max)
-            </div>
-          )}
-        </div>
+        <ExpandableTextArea
+          value={editingMessage ? '' : input}
+          placeholder={
+            isLoading ? 'Circle AI is thinking...' : 'Message Circle AI'
+          }
+          className="flex-1 p-4 pb-1 rounded-3xl placeholder-transparent outline-none text-body w-full overflow-x-auto whitespace-nowrap"
+          maxLength={maxLength}
+          onChange={handleInputChange}
+        />
         {isLoading ? (
           <button
             type="button"

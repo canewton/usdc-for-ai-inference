@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       const ids = JSON.parse(modelids);
       const { data: models, error } = await supabase
         .from('3d_generations')
-        .select('id, url, prompt, created_at')
+        .select('*')
         .eq('user_id', user.id)
         .in('id', ids)
         .order('created_at', { ascending: false });

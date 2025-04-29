@@ -2,32 +2,32 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
+import { checkDemoLimit } from '@/app/utils/demoLimit';
 import { aiModel } from '@/types/ai.types';
-import { TEXT_MODEL_PRICING } from '@/utils/constants';
+import { IMAGE_MODEL_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-
     const {
       data: { user },
-      error: authError,
+      error,
     } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error('Unauthorized', authError);
+    if (error || !user) {
+      console.error('Unauthorized', error);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parse body
-    const {
-      user_text,
-      ai_text,
-      provider,
-      chat_id,
-      prompt_tokens,
-      completion_tokens,
-    } = await request.json();
+    const { canGenerate, remaining } = await checkDemoLimit(user.id);
+    if (!canGenerate) {
+      return NextResponse.json(
+        { error: 'Demo limit reached', remaining },
+        { status: 403 },
+      );
+    }
+
+    const { prompt, chat_id, provider, url } = await request.json();
 
     let profile: any = null;
     let wallet: any = null;
@@ -51,38 +51,39 @@ export async function POST(request: NextRequest) {
       wallet = walletData;
     }
 
-    await circleWalletTransfer(
-      user_text,
-      aiModel.TEXT_TO_TEXT,
+    const aiProject = await circleWalletTransfer(
+      prompt,
+      aiModel.TEXT_TO_IMAGE,
       wallet.circle_wallet_id,
-      `${Math.max(prompt_tokens * TEXT_MODEL_PRICING[provider].userBilledInputPrice + completion_tokens * TEXT_MODEL_PRICING[provider].userBilledOutputPrice, 0.01).toFixed(2)}`,
+      `${IMAGE_MODEL_PRICING.userBilledPrice}`,
     );
 
-    // Post text generation
     const { data, error: dbError } = await supabase
-      .from('chat_generations')
+      .from('image_generations')
       .insert([
         {
+          prompt,
           user_id: user.id,
-          user_text: user_text,
-          ai_text: ai_text,
+          url: url,
           provider: provider,
+          circle_transaction_id: aiProject.circle_transaction_id,
           chat_id: chat_id,
-          prompt_tokens: prompt_tokens,
-          completion_tokens: completion_tokens,
         },
       ])
       .select('*')
       .single();
 
     if (dbError) {
-      throw new Error(`Error posting chat: ${dbError.message}`);
+      throw new Error(
+        `Error inserting record into Supabase: ${dbError.message}`,
+      );
     }
-    return NextResponse.json(data, { status: 201 });
+
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    console.error('Generation error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Generation failed' },
       { status: 500 },
     );
   }

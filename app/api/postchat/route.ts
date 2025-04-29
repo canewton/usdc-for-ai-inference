@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse body
-    const { title } = await request.json();
+    const { title, chat_type } = await request.json();
 
     // Post text generation
     const { data, error: dbError } = await supabase
@@ -26,19 +26,16 @@ export async function POST(request: NextRequest) {
         {
           user_id: user.id,
           title: title,
+          chat_type: chat_type,
         },
       ])
-      .select('id, created_at');
+      .select('*')
+      .single();
 
     if (dbError) {
       throw new Error(`Error posting chat: ${dbError.message}`);
     }
-    return NextResponse.json({
-      response: 'Chat posted successfully',
-      id: data[0].id,
-      title: title,
-      created_at: data[0].created_at,
-    });
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

@@ -9,16 +9,18 @@ import {
 } from '@/components/ui/tooltip';
 import ChainIcon from '@/public/chain-icon.svg';
 import CloseIcon from '@/public/close.svg';
+import DownloadIcon from '@/public/download.svg';
 import EditHoveredIcon from '@/public/edit-hovered.svg';
 import EditIcon from '@/public/edit-icon.svg';
 import SendIcon from '@/public/plane.svg';
+import RefreshIcon from '@/public/refresh.svg';
+import RefreshIconDisabled from '@/public/refresh-disabled.svg';
 import UsdcIcon from '@/public/usdc-circle.svg';
 import { TEXT_MODEL_PRICING } from '@/utils/constants';
-import type { Message } from '@/utils/types';
+import type { BaseMessage } from '@/utils/types';
 
-interface MessageItemProps {
-  message: Message;
-  isLoading: boolean;
+interface MessageItemProps<M extends BaseMessage> {
+  message: M;
   editingMessageId: string | null;
   editedContent: string;
   setEditedContent: (content: string) => void;
@@ -28,11 +30,12 @@ interface MessageItemProps {
   handleInputChange: any;
   hoveredMessageId: string | null;
   setHoveredMessageId: any;
+  aiGenerate?: (input: string) => Promise<void>;
+  isAiInferenceLoading: boolean;
 }
 
-export function MessageItem({
+export function MessageItem<M extends BaseMessage>({
   message,
-  isLoading,
   editingMessageId,
   editedContent,
   setEditedContent,
@@ -42,7 +45,9 @@ export function MessageItem({
   handleInputChange,
   hoveredMessageId,
   setHoveredMessageId,
-}: MessageItemProps) {
+  aiGenerate,
+  isAiInferenceLoading,
+}: MessageItemProps<M>) {
   const [editHovered, setEditHovered] = useState(false);
 
   const handleCopy = async (textToCopy: string) => {
@@ -51,6 +56,37 @@ export function MessageItem({
     } catch (err) {
       console.error('Failed to copy:', err);
     }
+  };
+
+  function isMessage(item: unknown) {
+    return (
+      typeof item === 'object' &&
+      item !== null &&
+      'id' in item &&
+      typeof item.id === 'string' &&
+      'role' in item
+    );
+  }
+
+  if (!isMessage(message)) {
+    console.error('Invalid message object:', message);
+    return <div />;
+  }
+
+  const handleDownload = (url: string, fileName: string) => {
+    fetch(url)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      })
+      .catch((error) => console.error('Error downloading image:', error));
   };
 
   return (
@@ -89,18 +125,35 @@ export function MessageItem({
             }
             onMouseLeave={() => setHoveredMessageId(null)}
           >
-            <div
-              className={`${message.role !== 'user' && 'border-none'} p-2 rounded-3xl bg-white border border-blue-200 px-4 py-2`}
-            >
-              <ReactMarkdown>{message.content}</ReactMarkdown>
-            </div>
+            {((message.role == 'user' && message.content != undefined) ||
+              message.imageUrl == undefined) && (
+              <div
+                className={`${message.role !== 'user' && 'border-none'} p-2 rounded-3xl bg-white border border-blue-200 px-4 py-2`}
+              >
+                <ReactMarkdown>{message.content}</ReactMarkdown>
+              </div>
+            )}
+            {message.role == 'user' && message.prompt && (
+              <div
+                className={`${message.role !== 'user' && 'border-none'} p-2 rounded-3xl bg-white border border-blue-200 px-4 py-2`}
+              >
+                <ReactMarkdown>{message.prompt}</ReactMarkdown>
+              </div>
+            )}
+            {message.role == 'assistant' && message.imageUrl && (
+              <img
+                src={message.imageUrl}
+                alt="Generated"
+                className="rounded-md shadow-sm max-w-[300px] max-h-[300px] object-contain"
+              />
+            )}
             {/* Edit Message */}
             <div
               className={`${message.role === 'user' && 'h-6'} flex justify-end ${hoveredMessageId === message.id ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
             >
               {message.role === 'user' && hoveredMessageId === message.id && (
                 <div className="flex flex-row space-x-1">
-                  <button onClick={() => handleCopy(message.content)}>
+                  <button onClick={() => handleCopy(message?.content ?? '')}>
                     <img
                       src={ChainIcon.src}
                       alt="Chain icon"
@@ -108,7 +161,12 @@ export function MessageItem({
                     />
                   </button>
                   <button
-                    onClick={() => onEditMessage(message.id, message.content)}
+                    onClick={() =>
+                      onEditMessage(
+                        message.id,
+                        message?.content ?? message?.prompt ?? '',
+                      )
+                    }
                     onMouseEnter={() => setEditHovered(true)}
                     onMouseLeave={() => setEditHovered(false)}
                   >
@@ -125,44 +183,106 @@ export function MessageItem({
         )}
 
         {/* Cost tool tip */}
-        {message.role === 'assistant' && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="mr-auto border border-blue-200 mt-2 pl-2 pr-3 py-1 rounded-3xl flex flex-row items-center text-sm">
+        <div className="flex flex-row space-between items-center">
+          {message.role === 'assistant' &&
+            (message.content || message.imageUrl) && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="mr-auto border border-blue-200 mt-2 pl-2 pr-3 py-1 rounded-3xl flex flex-row items-center text-sm">
+                      <img
+                        src={UsdcIcon.src}
+                        alt="USDC symbol"
+                        className="h-6 w-6 mr-1"
+                      />
+                      {!message.provider ? (
+                        <p className="text-sub">Calculating...</p>
+                      ) : (
+                        <>
+                          {message.promptTokens && message.completionTokens && (
+                            <>
+                              - $
+                              {Math.max(
+                                message.promptTokens *
+                                  TEXT_MODEL_PRICING[message.provider]
+                                    .userBilledInputPrice +
+                                  message.completionTokens *
+                                    TEXT_MODEL_PRICING[message.provider]
+                                      .userBilledOutputPrice,
+                                0.01,
+                              ).toFixed(2)}
+                            </>
+                          )}
+                          {message.cost && <>- ${message.cost.toFixed(2)}</>}
+                        </>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  {message.provider &&
+                    message.promptTokens &&
+                    message.completionTokens && (
+                      <TooltipContent side="bottom" align="start">
+                        <p>
+                          {message.promptTokens} prompt tokens ≡ $
+                          {(
+                            message.promptTokens *
+                            TEXT_MODEL_PRICING[message.provider]
+                              .userBilledInputPrice
+                          ).toFixed(4)}
+                        </p>
+                        <p>
+                          {message.completionTokens} completion tokens ≡ $
+                          {(
+                            message.completionTokens *
+                            TEXT_MODEL_PRICING[message.provider]
+                              .userBilledOutputPrice
+                          ).toFixed(4)}
+                        </p>
+                      </TooltipContent>
+                    )}
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          {message.downloadable && message.imageUrl && (
+            <div className="flex flex-row items-center space-x-2">
+              <button
+                disabled={isAiInferenceLoading}
+                onClick={() => {
+                  if (aiGenerate) {
+                    aiGenerate(message.prompt ?? message.content ?? '');
+                  }
+                }}
+              >
+                {isAiInferenceLoading ? (
                   <img
-                    src={UsdcIcon.src}
-                    alt="USDC symbol"
-                    className="h-6 w-6 mr-1"
+                    src={RefreshIconDisabled.src}
+                    alt="Refresh image"
+                    className="h-5 w-5 mr-1"
                   />
-                  {isNaN(message.completionTokens) ? (
-                    <p className="text-sub">Calculating...</p>
-                  ) : (
-                    `$ -${Math.max(message.promptTokens * TEXT_MODEL_PRICING[message.provider].userBilledInputPrice + message.completionTokens * TEXT_MODEL_PRICING[message.provider].userBilledOutputPrice, 0.01).toFixed(2)}`
-                  )}
-                </div>
-              </TooltipTrigger>
-              {message.provider && (
-                <TooltipContent side="bottom" align="start">
-                  <p>
-                    {message.promptTokens} prompt tokens ≡ $
-                    {(
-                      message.promptTokens *
-                      TEXT_MODEL_PRICING[message.provider].userBilledInputPrice
-                    ).toFixed(4)}
-                  </p>
-                  <p>
-                    {message.completionTokens} completion tokens ≡ $
-                    {(
-                      message.completionTokens *
-                      TEXT_MODEL_PRICING[message.provider].userBilledOutputPrice
-                    ).toFixed(4)}
-                  </p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
-        )}
+                ) : (
+                  <img
+                    src={RefreshIcon.src}
+                    alt="Refresh image"
+                    className="h-5 w-5 mr-1"
+                  />
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  if (message.imageUrl) {
+                    handleDownload(message.imageUrl, 'generated-image.webp');
+                  }
+                }}
+              >
+                <img
+                  src={DownloadIcon.src}
+                  alt="Download"
+                  className="h-5 w-5 mr-1"
+                />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -16,10 +16,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const url = new URL(request.url);
+    const chat_type = url.searchParams.get('chat_type');
+
     const { data: chats, error } = await supabase
       .from('chats')
-      .select('id, title, created_at')
+      .select('*')
       .eq('user_id', user.id)
+      .eq('chat_type', chat_type)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -30,7 +34,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ chats: chats }, { status: 200 });
+    return NextResponse.json(chats, { status: 200 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

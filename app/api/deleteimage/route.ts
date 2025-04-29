@@ -23,17 +23,19 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Missing image_id' }, { status: 400 });
     }
 
-    const { error: dbError } = await supabase
+    const { data, error: dbError } = await supabase
       .from('image_generations')
       .delete()
       .eq('id', imageid)
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .select('*')
+      .single();
 
     if (dbError) {
       return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ message: 'Image deleted successfully' });
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(
