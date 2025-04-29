@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 
+import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
+import { aiModel } from '@/types/ai.types';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 
@@ -76,6 +78,28 @@ export async function POST(req: Request) {
       );
     }
 
+    let profile: any = null;
+    let wallet: any = null;
+    if (user) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .single();
+      profile = profileData;
+    }
+
+    if (profile) {
+      // Get wallet
+      const { data: walletData } = await supabase
+        .schema('public')
+        .from('wallets')
+        .select()
+        .eq('profile_id', profile.id)
+        .single();
+      wallet = walletData;
+    }
+
     const generatePreviewResponse = await fetch(MESHY_API_URL, {
       method: 'POST',
       headers: HEADERS,
@@ -91,6 +115,13 @@ export async function POST(req: Request) {
     if (!generatePreviewResponse.ok) {
       throw new Error('Failed to create preview model.');
     }
+
+    const aiProject = await circleWalletTransfer(
+      texture_prompt,
+      aiModel.IMAGE_TO_3D,
+      wallet.circle_wallet_id,
+      `${MODEL_ASSET_PRICING.userBilledPrice}`,
+    );
 
     const data: MeshyResponse = await generatePreviewResponse.json();
     const taskId: string = data.result;
@@ -134,6 +165,9 @@ export async function POST(req: Request) {
         url: storedModelUrl,
         provider: 'Meshy',
         mode: should_remesh ? 'Refine' : 'Preview',
+        circle_transaction_id: aiProject.circle_transaction_id,
+
+        // can delete
         replicate_billed_amount: MODEL_ASSET_PRICING.replicatePrice,
         user_billed_amount: MODEL_ASSET_PRICING.userBilledPrice,
       },
