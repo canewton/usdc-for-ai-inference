@@ -1,6 +1,5 @@
 'use client';
 
-import { Link } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -86,10 +85,10 @@ export default function Generate3DModelPage() {
       setError('Session or image data is missing.');
       return;
     }
-    if (remaining === 0) {
-      toast.error('Demo limit reached. Please upgrade to continue.');
-      return;
-    }
+    // if (remaining === 0) {
+    //   toast.error('Demo limit reached. Please upgrade to continue.');
+    //   return;
+    // }
     setIsLoading(true);
     setError(null);
 
@@ -109,7 +108,7 @@ export default function Generate3DModelPage() {
       if (!response.ok) {
         const errorData = await response.json();
         if (response.status === 429) {
-          toast.error('Demo limit reached. Please upgrade to continue.');
+          // toast.error('Demo limit reached. Please upgrade to continue.');
         } else {
           toast.error(errorData.error || 'Failed to generate model');
         }
@@ -216,7 +215,7 @@ export default function Generate3DModelPage() {
 
   return (
     <>
-      <div
+      {/* <div
         className={`${!session.api_keys_status.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         <div className="flex flex-col items-center">
@@ -229,7 +228,7 @@ export default function Generate3DModelPage() {
             </button>
           </Link>
         </div>
-      </div>
+      </div> */}
 
       {/* --- Sidebar Area --- */}
       <AiHistoryPortal>

@@ -1,38 +1,37 @@
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
-import { aiModel } from '@/types/ai.types';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 
-const MESHY_API_URL = 'https://api.meshy.ai/v2/generate/model';
-const MESHY_API_KEY = process.env.NEXT_PUBLIC_MESHY_API_KEY;
+const supabase = createClient();
 
-type MeshyResponse = {
-  id: string;
-  done: boolean;
-  model_urls: {
-    glb: string;
-    usdz: string;
-  };
-  images: string[];
+// -------------------------------------------
+// WORKING API KEY - LIMITED NUMBER OF TOKENS
+// -------------------------------------------
+const MESHY_API_KEY = process.env.MESHY_API!;
+const MESHY_API_URL =
+  process.env.MESHY_BASE_URL || 'https://api.meshy.ai/openapi/v1/image-to-3d';
+
+const HEADERS = {
+  Authorization: `Bearer ${MESHY_API_KEY}`,
+  'Content-Type': 'application/json',
 };
 
-interface WebhookResponse {
-  id: string;
-  model_urls: {
-    glb: string;
-    usdz: string;
-  };
+interface MeshyResponse {
+  result: string;
+}
+
+interface TaskStatusResponse {
+  status: string;
+  progress: number;
+  model_urls?: { glb: string };
 }
 
 // returns model url
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
     const supabase = await createClient();
-
     const {
       data: { user },
       error,
@@ -41,127 +40,102 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get info from request body
+    /**
+     * INPUT PARAMETERS:
+     *
+     * image_url         : string
+     *    Public image URL or a base64 data URI. (Required)
+     *
+     * enable_pbr        : boolean (default: false)
+     *    Indicates whether to generate Physically Based Rendering (PBR) maps in addition to the base color.
+     *
+     * should_remesh     : boolean (default: true)
+     *    Determines whether to disregard existing topology and target polycount during remeshing.
+     *
+     * should_texture    : boolean (default: true)
+     *    Specifies whether to add texturing to the 3D model.
+     *    - false: incurs a cost of 5 tokens.
+     *    - true: incurs a cost of 15 tokens.
+     *
+     * texture_prompt    : string
+     *    Descriptive prompt detailing the desired model texture. (Required)
+     */
     const {
-      prompt,
-      mode,
-      negative_prompt,
-      image_file,
-      style_id,
-      mesh_type,
-      mask_file,
-      geometry_guidance_scale,
-      geometry_steps,
-      texture_guidance_scale,
-      texture_steps,
+      image_url,
+      enable_pbr,
       should_remesh,
       should_texture,
       texture_prompt,
-    } = await request.json();
+    } = await req.json();
 
     const { canGenerate, remaining } = await checkDemoLimit(user.id);
     if (!canGenerate) {
       return NextResponse.json(
-        {
-          error:
-            'You have reached the limit of free generations. Please upgrade to continue.',
-          remaining,
-        },
-        { status: 403 },
+        { error: 'Demo limit reached. Please upgrade to continue.' },
+        { status: 429 },
       );
     }
 
-    let profile: any = null;
-    let wallet: any = null;
-    if (user) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('auth_user_id', user.id)
-        .single();
-      profile = profileData;
-    }
-
-    if (profile) {
-      // Get wallet
-      const { data: walletData } = await supabase
-        .schema('public')
-        .from('wallets')
-        .select()
-        .eq('profile_id', profile.id)
-        .single();
-      wallet = walletData;
-    }
-
-    const aiProject = await circleWalletTransfer(
-      prompt,
-      aiModel.IMAGE_TO_3D,
-      wallet.circle_wallet_id,
-      `${MODEL_ASSET_PRICING.userBilledPrice}`,
-    );
-
-    // Create parameters for API request
-    const modelParams = {
-      prompt,
-      negative_prompt,
-      texture_prompt: texture_prompt !== '' ? texture_prompt : prompt,
-      texture_guidance_scale,
-      texture_steps,
-      geometry_guidance_scale,
-      geometry_steps,
-      width: 512,
-      height: 512,
-      should_remesh,
-      should_texture,
-      mesh_type,
-      style_id,
-    };
-
-    // Make API call
-    const response = await fetch(MESHY_API_URL, {
+    const generatePreviewResponse = await fetch(MESHY_API_URL, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${MESHY_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(modelParams),
+      headers: HEADERS,
+      body: JSON.stringify({
+        image_url,
+        enable_pbr,
+        should_remesh,
+        should_texture,
+        texture_prompt,
+      }),
     });
 
-    const task = (await response.json()) as MeshyResponse;
+    if (!generatePreviewResponse.ok) {
+      throw new Error('Failed to create preview model.');
+    }
+
+    const data: MeshyResponse = await generatePreviewResponse.json();
+    const taskId: string = data.result;
+    console.log('Preview task created. Task ID:', taskId);
+
+    // poll preview task to keep track of generation progress
+    const task = await pollTaskStatus(taskId);
+
+    if (!task.model_urls?.glb) {
+      throw new Error('model URL missing.');
+    }
     let modelUrl: string = task.model_urls.glb;
     let modelResponse = await fetch(modelUrl);
     let modelBlob = await modelResponse.blob();
 
     // upload .glb (3D model file type) file into supabase storage
     const fileName = `3d-model-${Date.now()}.glb`;
-    const { error: uploadError } = await supabase.storage
+    const { error: storageError } = await supabase.storage
       .from('user-3d')
-      .upload(fileName, modelBlob);
+      .upload(fileName, modelBlob, {
+        contentType: 'model/gltf-binary',
+      });
 
-    if (uploadError) {
-      return NextResponse.json(
-        {
-          error: 'Could not upload model',
-        },
-        { status: 500 },
+    if (storageError) {
+      throw new Error(
+        `Error uploading model to Supabase: ${storageError.message}`,
       );
     }
 
     const { data: publicURLData } = supabase.storage
-      .from('user-3d') // Ensure this bucket exists and has correct policies
+      .from('user-3d')
       .getPublicUrl(fileName);
     const storedModelUrl = publicURLData.publicUrl;
 
     // inserting into DB
     const { error: dbError } = await supabase.from('3d_generations').insert([
       {
-        image_url: image_file,
+        image_url,
         prompt: texture_prompt,
         user_id: user.id,
         url: storedModelUrl,
         provider: 'Meshy',
         mode: should_remesh ? 'Refine' : 'Preview',
-        circle_transaction_id: aiProject.circle_transaction_id,
+        replicate_billed_amount: MODEL_ASSET_PRICING.replicatePrice,
+        user_billed_amount: MODEL_ASSET_PRICING.userBilledPrice,
       },
     ]);
 
@@ -179,5 +153,32 @@ export async function POST(request: NextRequest) {
       { error: error.message || '3D Generation failed' },
       { status: 500 },
     );
+  }
+}
+
+// helper to incrementally generate task statuses
+async function pollTaskStatus(taskId: string): Promise<TaskStatusResponse> {
+  while (true) {
+    const response = await fetch(`${MESHY_API_URL}/${taskId}`, {
+      method: 'GET',
+      headers: HEADERS,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch task status: ${response.statusText}`);
+    }
+
+    const taskData: TaskStatusResponse = await response.json();
+    console.log(
+      `Task status: ${taskData.status}, Progress: ${taskData.progress}`,
+    );
+
+    if (taskData.status === 'SUCCEEDED') {
+      return taskData;
+    } else if (taskData.status === 'FAILED') {
+      throw new Error('Meshy AI task failed.');
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 }

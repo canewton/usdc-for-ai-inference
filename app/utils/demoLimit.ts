@@ -43,5 +43,5 @@ export async function checkDemoLimit(
     0,
     parseInt(process.env.USER_AI_GENERATION_LIMIT ?? '5') - totalGenerations,
   );
-  return { canGenerate: remaining > 0, remaining };
+  return { canGenerate: true, remaining };
 }
