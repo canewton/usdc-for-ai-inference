@@ -10,6 +10,7 @@ interface ChatMessagesProps<M> {
   handleSubmit: (e: any) => void;
   setIsEditing: (isEditing: boolean) => void;
   aiGenerate?: (input: string) => Promise<void>;
+  isAiInferenceLoading: boolean;
 }
 
 export function ChatMessages<M extends BaseMessage>({
@@ -18,6 +19,7 @@ export function ChatMessages<M extends BaseMessage>({
   handleSubmit,
   setIsEditing,
   aiGenerate,
+  isAiInferenceLoading,
 }: ChatMessagesProps<M>) {
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -65,7 +67,7 @@ export function ChatMessages<M extends BaseMessage>({
   };
 
   return (
-    <div className="space-y-[30px] flex flex-col text-headline w-full">
+    <div className="space-y-[30px] flex flex-col text-headline w-full max-w-[800px]">
       {messages.map((message: any) => (
         <MessageItem<M>
           message={message}
@@ -80,6 +82,7 @@ export function ChatMessages<M extends BaseMessage>({
           setHoveredMessageId={setHoveredMessageId}
           key={message.id}
           aiGenerate={aiGenerate}
+          isAiInferenceLoading={isAiInferenceLoading}
         />
       ))}
       <div ref={messagesEndRef} />

@@ -14,6 +14,7 @@ import EditHoveredIcon from '@/public/edit-hovered.svg';
 import EditIcon from '@/public/edit-icon.svg';
 import SendIcon from '@/public/plane.svg';
 import RefreshIcon from '@/public/refresh.svg';
+import RefreshIconDisabled from '@/public/refresh-disabled.svg';
 import UsdcIcon from '@/public/usdc-circle.svg';
 import { TEXT_MODEL_PRICING } from '@/utils/constants';
 import type { BaseMessage } from '@/utils/types';
@@ -30,6 +31,7 @@ interface MessageItemProps<M extends BaseMessage> {
   hoveredMessageId: string | null;
   setHoveredMessageId: any;
   aiGenerate?: (input: string) => Promise<void>;
+  isAiInferenceLoading: boolean;
 }
 
 export function MessageItem<M extends BaseMessage>({
@@ -44,6 +46,7 @@ export function MessageItem<M extends BaseMessage>({
   hoveredMessageId,
   setHoveredMessageId,
   aiGenerate,
+  isAiInferenceLoading,
 }: MessageItemProps<M>) {
   const [editHovered, setEditHovered] = useState(false);
 
@@ -242,26 +245,41 @@ export function MessageItem<M extends BaseMessage>({
             )}
           {message.downloadable && message.imageUrl && (
             <div className="flex flex-row items-center space-x-2">
-              <img
-                src={RefreshIcon.src}
-                alt="Refresh image"
-                className="h-5 w-5 mr-1"
+              <button
+                disabled={isAiInferenceLoading}
                 onClick={() => {
                   if (aiGenerate) {
                     aiGenerate(message.prompt ?? message.content ?? '');
                   }
                 }}
-              />
-              <img
-                src={DownloadIcon.src}
-                alt="Download"
-                className="h-5 w-5 mr-1"
+              >
+                {isAiInferenceLoading ? (
+                  <img
+                    src={RefreshIconDisabled.src}
+                    alt="Refresh image"
+                    className="h-5 w-5 mr-1"
+                  />
+                ) : (
+                  <img
+                    src={RefreshIcon.src}
+                    alt="Refresh image"
+                    className="h-5 w-5 mr-1"
+                  />
+                )}
+              </button>
+              <button
                 onClick={() => {
                   if (message.imageUrl) {
                     handleDownload(message.imageUrl, 'generated-image.webp');
                   }
                 }}
-              />
+              >
+                <img
+                  src={DownloadIcon.src}
+                  alt="Download"
+                  className="h-5 w-5 mr-1"
+                />
+              </button>
             </div>
           )}
         </div>

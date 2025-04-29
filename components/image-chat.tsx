@@ -198,13 +198,14 @@ export function ImageChat({ currChat }: ImageChatProps) {
                   </div>
                 </div>
               </div>
-              <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full max-w-[800px] mt-[30px]">
-                <ChatMessages
+              <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full mt-[30px]">
+                <ChatMessages<ImageMessage>
                   messages={messages}
                   handleInputChange={handleInputChange}
                   handleSubmit={handleSubmit}
                   setIsEditing={setIsEditing}
                   aiGenerate={aiGenerate}
+                  isAiInferenceLoading={isAiInferenceLoading}
                 />
               </div>
             </>

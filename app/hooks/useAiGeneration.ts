@@ -23,17 +23,15 @@ export function useAiGeneration<G, M>({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
     try {
       await aiGenerate(input);
     } catch (error) {
       console.error('Error:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const aiGenerate = async (input: string) => {
+    setIsLoading(true);
     try {
       const response = await fetch(api, {
         method: 'POST',
@@ -49,6 +47,8 @@ export function useAiGeneration<G, M>({
       setInput('');
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 

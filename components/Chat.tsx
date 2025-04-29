@@ -187,12 +187,13 @@ export function Chat({ currChat }: ChatProps) {
                   </div>
                 </div>
               </div>
-              <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full max-w-[800px] mt-[30px]">
+              <div className="justify-items-center overflow-auto mb-4 h-[calc(100vh-365px)] w-full mt-[30px]">
                 <ChatMessages<UIMessage>
                   messages={messages}
                   handleInputChange={handleInputChange}
                   setIsEditing={setIsEditing}
                   handleSubmit={handleSubmit}
+                  isAiInferenceLoading={isAiInferenceLoading}
                 />
               </div>
             </>
