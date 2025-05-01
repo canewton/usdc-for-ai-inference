@@ -22,13 +22,9 @@ const promptSuggestions = [
 interface CanvasAreaProps {
   modelUrl: string | null;
   imageDataUri: string;
-  mode: boolean;
   isLoading: boolean;
-  prompt: string;
-  setMode: (mode: boolean) => void;
   setPrompt: (prompt: string) => void;
   setError: (error: string | null) => void;
-  error: string | null;
   remaining: number | null;
   demoLimitLoading: boolean;
 }
@@ -36,13 +32,9 @@ interface CanvasAreaProps {
 export default function CanvasArea({
   modelUrl,
   imageDataUri,
-  mode,
   isLoading,
-  prompt,
-  setMode,
   setPrompt,
   setError,
-  error,
   remaining,
   demoLimitLoading,
 }: CanvasAreaProps) {
@@ -96,8 +88,6 @@ export default function CanvasArea({
 
   return (
     <MainAiSection>
-      {/* Header component will be used to select preview/refine modes, not currently used. */}
-      {/* <Header mode={mode} setMode={setMode} /> */}
       <div className="flex-grow flex flex-col items-center justify-center bg-white p-4 relative">
         {!demoLimitLoading && remaining !== null && (
           <div className="text-sm text-gray-500 mb-4">
@@ -183,7 +173,6 @@ export default function CanvasArea({
                 <PromptSuggestions
                   onSelect={handleLocalInputChange}
                   suggestions={promptSuggestions}
-                  disabled={!mode}
                 />
               </div>
               <div className="w-full mt-4">

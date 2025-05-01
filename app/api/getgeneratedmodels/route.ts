@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      return NextResponse.json({ models: models }, { status: 200 });
+      return NextResponse.json(models, { status: 200 });
     } else {
       const { data: models, error } = await supabase
         .from('3d_generations')
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      return NextResponse.json({ models: models }, { status: 200 });
+      return NextResponse.json(models, { status: 200 });
     }
   } catch (error: any) {
     console.error('Model get error: ', error);

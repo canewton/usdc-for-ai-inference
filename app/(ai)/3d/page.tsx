@@ -12,25 +12,18 @@ import type { ModelHistoryItem } from '@/components/3d/types';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatSidebar } from '@/components/ChatSidebar';
 import RightAiSidebar from '@/components/RightAiSidebar';
-import type { Chat } from '@/types/database.types';
+import type { Ai3dGeneration, Chat } from '@/types/database.types';
 
 export default function Generate3DModelPage() {
   const { remaining, loading: demoLimitLoading } = useDemoLimit();
   const [prompt, setPrompt] = useState('');
   const [imageDataUri, setImageDataUri] = useState('');
-  const [mode, setMode] = useState(true); // not currently used -> always on refine mode (true)
   const [isLoading, setIsLoading] = useState(false);
   const [modelUrl, setModelUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ModelHistoryItem[]>([]);
 
   const session = useSession();
-
-  useEffect(() => {
-    if (!mode) {
-      setPrompt('');
-    }
-  }, [mode]);
 
   const fetchHistory = async () => {
     console.log('Fetching history...');
@@ -40,9 +33,9 @@ export default function Generate3DModelPage() {
         method: 'GET',
       });
 
-      const data = await response.json();
+      const data: Ai3dGeneration[] = await response.json();
       if (response.ok) {
-        const formattedHistory: ModelHistoryItem[] = (data.models || [])
+        const formattedHistory: ModelHistoryItem[] = (data || [])
           .map(
             (item: any): ModelHistoryItem => ({
               id: item.id || `missing-id-${Math.random()}`,
@@ -64,7 +57,6 @@ export default function Generate3DModelPage() {
         setHistory(formattedHistory);
         console.log('Fetched and formatted history:', formattedHistory);
       } else {
-        console.error('Failed to fetch history:', data.error);
         setError('Failed to load history.');
         setHistory([]);
       }
@@ -101,28 +93,29 @@ export default function Generate3DModelPage() {
         },
         body: JSON.stringify({
           image_url: imageDataUri,
-          should_texture: mode,
-          texture_prompt: selectedPrompt,
+          ...(selectedPrompt !== ''
+            ? { should_texture: true, texture_prompt: selectedPrompt }
+            : {}),
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
         if (response.status === 429) {
-          toast.error('Demo limit reached. Please upgrade to continue.');
+          // toast.error('Demo limit reached. Please upgrade to continue.');
         } else {
           toast.error(errorData.error || 'Failed to generate model');
         }
         throw new Error(errorData.error || 'Failed to generate model');
       }
 
-      const data = await response.json();
-      if (data.modelUrl) {
-        setModelUrl(data.modelUrl);
-        console.log('Generated model URL:', data.modelUrl);
+      const data: Ai3dGeneration = await response.json();
+      if (data.url) {
+        setModelUrl(data.url);
+        console.log('Generated model URL:', data.url);
         fetchHistory();
       } else {
-        setError(data.error || 'Failed to generate model');
+        setError(data.url || 'Failed to generate model');
         console.error('Generation failed:', data);
       }
     } catch (err: any) {
@@ -136,9 +129,6 @@ export default function Generate3DModelPage() {
   const handleSelectHistoryItem = (id: string) => {
     const selectedItem = history.find((item) => item.id === id);
     if (selectedItem?.url) {
-      console.log(
-        `Selecting history item via ChatSidebar: ${id}, URL: ${selectedItem.url}`,
-      );
       setModelUrl(selectedItem.url);
       setError(null);
     } else {
@@ -159,8 +149,6 @@ export default function Generate3DModelPage() {
   };
 
   const handleDelete = async (modelId: string) => {
-    console.log(`Attempting to delete model via ChatSidebar: ${modelId}`);
-
     const itemToDelete = history.find((item) => item.id === modelId);
     const urlToDelete = itemToDelete?.url;
 
@@ -168,13 +156,12 @@ export default function Generate3DModelPage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/deletemodel?modelid=${modelId}', {
+      const response = await fetch(`/api/deletemodel?modelid=${modelId}`, {
         method: 'DELETE',
       });
 
       const data = await response.json();
       if (response.ok) {
-        console.log('Model deleted successfully:', data.message);
         await fetchHistory();
         if (modelUrl === urlToDelete) {
           setModelUrl(null);
@@ -194,7 +181,6 @@ export default function Generate3DModelPage() {
   };
 
   const chatsDataForSidebar: Chat[] = useMemo(() => {
-    console.log('Transforming history for ChatSidebar:', history);
     return history.map(
       (item): Chat => ({
         id: item.id,
@@ -246,13 +232,9 @@ export default function Generate3DModelPage() {
       <CanvasArea
         modelUrl={modelUrl}
         imageDataUri={imageDataUri}
-        mode={mode}
         isLoading={isLoading}
-        prompt={prompt}
-        setMode={setMode}
         setPrompt={setPrompt}
         setError={setError}
-        error={error}
         remaining={remaining}
         demoLimitLoading={demoLimitLoading}
       />
@@ -262,7 +244,6 @@ export default function Generate3DModelPage() {
         <ControlPanel
           imageDataUri={imageDataUri}
           prompt={prompt}
-          mode={mode}
           isLoading={isLoading}
           error={error}
           setImageDataUri={setImageDataUri}

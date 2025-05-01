@@ -63,6 +63,18 @@ export interface ImageGeneration {
   chat_id: string;
 }
 
+export interface Ai3dGeneration {
+  id: string;
+  created_at: string;
+  prompt: string;
+  url: string;
+  provider: string;
+  user_id: string;
+  mode: string;
+  circle_transaction_id: string;
+  image_url: string;
+}
+
 export type Database = {
   public: {
     Tables: {

@@ -23,11 +23,13 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Missing model_id' }, { status: 400 });
     }
 
-    const { error: deletedbError } = await supabase
+    const { data, error: deletedbError } = await supabase
       .from('3d_generations')
       .delete()
       .eq('id', modelid)
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .select('*')
+      .single();
 
     if (deletedbError) {
       return NextResponse.json(
@@ -36,7 +38,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ message: 'Model deleted successfully ' });
+    return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
     console.error('3D Generation error:', error);
     return NextResponse.json(
