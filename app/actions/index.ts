@@ -54,14 +54,11 @@ export const signUpAction = async (formData: FormData) => {
   // or handle potential cleanup if user never confirms email.
   try {
     // 1. Create Wallet Set
-    const createWalletSetResponse = await fetch(
-      `${baseUrl}/api/wallet-set`,
-      {
-        method: 'PUT',
-        body: JSON.stringify({ entityName: email }), // Use email as entity name for simplicity
-        headers: { 'Content-Type': 'application/json' },
-      },
-    );
+    const createWalletSetResponse = await fetch(`${baseUrl}/api/wallet-set`, {
+      method: 'PUT',
+      body: JSON.stringify({ entityName: email }), // Use email as entity name for simplicity
+      headers: { 'Content-Type': 'application/json' },
+    });
 
     if (!createWalletSetResponse.ok) {
       const errorBody = await createWalletSetResponse.text();
