@@ -3,6 +3,8 @@ import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+import ImageUploader from '../image-uploader';
+
 interface ControlPanelProps {
   imageDataUri: string;
   prompt: string;
@@ -35,32 +37,17 @@ export default function ControlPanel({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isDisabled = !!modelUrl;
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isDisabled) return;
-    const file = e.target.files?.[0];
-    if (file) {
-      const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-      const maxSize = 20 * 1024 * 1024;
-      if (!validTypes.includes(file.type)) {
-        setError('Please upload a PNG, JPG, or JPEG file.');
-        return;
-      }
-      if (file.size > maxSize) {
-        setError('File size exceeds 20MB.');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const dataUri = reader.result as string;
-        setImageDataUri(dataUri);
-        setError(null);
-      };
-      reader.onerror = () => {
-        setError('Error reading the image file.');
-      };
-      reader.readAsDataURL(file);
-    }
+  const uploadImage = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUri = reader.result as string;
+      setImageDataUri(dataUri);
+      setError(null);
+    };
+    reader.onerror = () => {
+      setError('Error reading the image file.');
+    };
+    reader.readAsDataURL(file);
   };
 
   useEffect(() => {
@@ -92,45 +79,14 @@ export default function ControlPanel({
       {/* Image Upload Section */}
       <div>
         <label className="block text-xs text-gray-500 mb-1">Image</label>
-        <div
-          className={`w-full h-[120px] bg-white rounded-md border border-dashed border-[#eaeaec] flex flex-col items-center justify-center cursor-pointer ${
-            isDisabled
-              ? 'opacity-50 pointer-events-none'
-              : 'hover:border-gray-400'
-          } overflow-hidden`}
-          onClick={() =>
-            !isDisabled && document.getElementById('image-upload')?.click()
-          }
-        >
-          {imageDataUri ? (
-            <div className="flex flex-col items-center justify-center w-full h-full p-2">
-              <img
-                src={imageDataUri}
-                alt="Uploaded"
-                className="w-full h-full max-w-full object-contain"
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-3 w-[200px]">
-              <img className="w-4 h-4" alt="Upload" src="/vector-1.svg" />
-              <div className="text-center">
-                <p className="text-gray-700 text-sm">Click or drag to upload</p>
-                <p className="text-gray-500 text-xs">
-                  Supported: png, jpg, jpeg
-                </p>
-                <p className="text-gray-500 text-xs">Max: 20MB</p>
-              </div>
-            </div>
-          )}
-          <input
-            id="image-upload"
-            type="file"
-            accept="image/png, image/jpeg, image/jpg"
-            onChange={handleImageUpload}
-            className="hidden"
-            ref={fileInputRef}
-          />
-        </div>
+        <ImageUploader
+          setPreview={setImageDataUri}
+          preview={imageDataUri}
+          isDisabled={isDisabled}
+          inputRef={fileInputRef}
+          onImageUpload={uploadImage}
+          maxSizeMB={20}
+        />
       </div>
 
       {/* Prompt Section */}

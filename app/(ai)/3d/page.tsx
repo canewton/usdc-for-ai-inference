@@ -167,7 +167,7 @@ export default function Generate3DModelPage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/deletemodel?modelid=${modelId}', {
+      const response = await fetch(`/api/deletemodel?modelid=${modelId}`, {
         method: 'DELETE',
       });
 
@@ -193,7 +193,6 @@ export default function Generate3DModelPage() {
   };
 
   const chatsDataForSidebar: Chat[] = useMemo(() => {
-    console.log('Transforming history for ChatSidebar:', history);
     return history.map(
       (item): Chat => ({
         id: item.id,
