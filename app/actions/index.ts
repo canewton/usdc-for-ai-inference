@@ -7,18 +7,15 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { encodedRedirect } from '@/utils/utils'; // Assuming utils/utils.ts exists
 
-const getBaseUrl = () => {
-  // Ensure this function correctly determines the base URL in different environments
-  const vc = process.env.NEXT_PUBLIC_VERCEL_URL;
-  const local = 'http://localhost:3000';
-  return vc ? `https://${vc}` : local;
-};
+const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+  ? process.env.NEXT_PUBLIC_VERCEL_URL
+  : 'http://localhost:3000';
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get('email')?.toString();
   const password = formData.get('password')?.toString();
   const supabase = await createClient();
-  const origin = (await headers()).get('origin') ?? getBaseUrl(); // Fallback if origin header isn't set
+  const origin = (await headers()).get('origin') ?? baseUrl; // Fallback if origin header isn't set
 
   if (!email || !password) {
     // Use encodedRedirect for user-facing errors
@@ -58,7 +55,7 @@ export const signUpAction = async (formData: FormData) => {
   try {
     // 1. Create Wallet Set
     const createWalletSetResponse = await fetch(
-      `${getBaseUrl()}/api/wallet-set`,
+      `${baseUrl}/api/wallet-set`,
       {
         method: 'PUT',
         body: JSON.stringify({ entityName: email }), // Use email as entity name for simplicity
@@ -90,7 +87,7 @@ export const signUpAction = async (formData: FormData) => {
     }
 
     // 2. Create Wallet
-    const createWalletResponse = await fetch(`${getBaseUrl()}/api/wallet`, {
+    const createWalletResponse = await fetch(`${baseUrl}/api/wallet`, {
       method: 'POST',
       body: JSON.stringify({ walletSetId }),
       headers: { 'Content-Type': 'application/json' },
@@ -235,7 +232,7 @@ export const signInAction = async (formData: FormData) => {
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get('email')?.toString();
   const supabase = await createClient();
-  const origin = (await headers()).get('origin') ?? getBaseUrl(); // Get origin reliably
+  const origin = (await headers()).get('origin') ?? baseUrl; // Get origin reliably
 
   if (!email) {
     return encodedRedirect('error', '/forgot-password', 'Email is required');
