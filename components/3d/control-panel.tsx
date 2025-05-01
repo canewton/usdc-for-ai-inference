@@ -8,7 +8,6 @@ import ImageUploader from '../image-uploader';
 interface ControlPanelProps {
   imageDataUri: string;
   prompt: string;
-  mode: boolean;
   isLoading: boolean;
   error: string | null;
   modelUrl: string | null;
@@ -23,7 +22,6 @@ interface ControlPanelProps {
 export default function ControlPanel({
   imageDataUri,
   prompt,
-  mode,
   isLoading,
   error,
   modelUrl,
@@ -49,12 +47,6 @@ export default function ControlPanel({
     };
     reader.readAsDataURL(file);
   };
-
-  useEffect(() => {
-    if (!mode) {
-      setPrompt('');
-    }
-  }, [mode, setPrompt]);
 
   const resetGenerationState = () => {
     setPrompt('');
@@ -91,14 +83,16 @@ export default function ControlPanel({
 
       {/* Prompt Section */}
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Prompt</label>
+        <label className="block text-xs text-gray-500 mb-1">
+          Prompt (Optional)
+        </label>
         <Input
           placeholder="Describe the model texture..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           className="w-full border-[#E5E7EB] rounded-md p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-          disabled={!mode || isDisabled}
-          required
+          disabled={isDisabled}
+          required={false}
           maxLength={300}
         />
       </div>
@@ -129,7 +123,7 @@ export default function ControlPanel({
         <Button
           onClick={() => submitPrompt(prompt)}
           className="w-full bg-gray-100 text-gray-700 py-2 rounded-full flex items-center justify-center space-x-2"
-          disabled={isDisabled || isLoading || !imageDataUri || !prompt}
+          disabled={isDisabled || isLoading || !imageDataUri}
         >
           <img className="w-6 h-6" alt="Generate" src="/spark-jelly.svg" />
           <span className="text-sm">

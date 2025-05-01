@@ -18,19 +18,12 @@ export default function Generate3DModelPage() {
   const { remaining, loading: demoLimitLoading } = useDemoLimit();
   const [prompt, setPrompt] = useState('');
   const [imageDataUri, setImageDataUri] = useState('');
-  const [mode, setMode] = useState(true); // not currently used -> always on refine mode (true)
   const [isLoading, setIsLoading] = useState(false);
   const [modelUrl, setModelUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ModelHistoryItem[]>([]);
 
   const session = useSession();
-
-  useEffect(() => {
-    if (!mode) {
-      setPrompt('');
-    }
-  }, [mode]);
 
   const fetchHistory = async () => {
     console.log('Fetching history...');
@@ -100,8 +93,9 @@ export default function Generate3DModelPage() {
         },
         body: JSON.stringify({
           image_url: imageDataUri,
-          should_texture: mode,
-          texture_prompt: selectedPrompt,
+          ...(selectedPrompt !== ''
+            ? { should_texture: true, texture_prompt: selectedPrompt }
+            : {}),
         }),
       });
 
@@ -135,9 +129,6 @@ export default function Generate3DModelPage() {
   const handleSelectHistoryItem = (id: string) => {
     const selectedItem = history.find((item) => item.id === id);
     if (selectedItem?.url) {
-      console.log(
-        `Selecting history item via ChatSidebar: ${id}, URL: ${selectedItem.url}`,
-      );
       setModelUrl(selectedItem.url);
       setError(null);
     } else {
@@ -158,8 +149,6 @@ export default function Generate3DModelPage() {
   };
 
   const handleDelete = async (modelId: string) => {
-    console.log(`Attempting to delete model via ChatSidebar: ${modelId}`);
-
     const itemToDelete = history.find((item) => item.id === modelId);
     const urlToDelete = itemToDelete?.url;
 
@@ -173,7 +162,6 @@ export default function Generate3DModelPage() {
 
       const data = await response.json();
       if (response.ok) {
-        console.log('Model deleted successfully:', data.message);
         await fetchHistory();
         if (modelUrl === urlToDelete) {
           setModelUrl(null);
@@ -244,13 +232,9 @@ export default function Generate3DModelPage() {
       <CanvasArea
         modelUrl={modelUrl}
         imageDataUri={imageDataUri}
-        mode={mode}
         isLoading={isLoading}
-        prompt={prompt}
-        setMode={setMode}
         setPrompt={setPrompt}
         setError={setError}
-        error={error}
         remaining={remaining}
         demoLimitLoading={demoLimitLoading}
       />
@@ -260,7 +244,6 @@ export default function Generate3DModelPage() {
         <ControlPanel
           imageDataUri={imageDataUri}
           prompt={prompt}
-          mode={mode}
           isLoading={isLoading}
           error={error}
           setImageDataUri={setImageDataUri}

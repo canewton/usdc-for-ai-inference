@@ -1,30 +1,28 @@
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
 import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { aiModel } from '@/types/ai.types';
-import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client'; // Keep browser client for storage uploads
 import { createClient } from '@/utils/supabase/server';
 
 const NOVITA_API_URL = 'https://api.novita.ai/v3/async/img2video';
 const NOVITA_API_KEY = process.env.NEXT_PUBLIC_NOVITA_API_KEY;
 
-export async function POST(request: NextRequest) {
-  try {
-    const supabase = await createClient();
+export async function POST(req: Request) {
+  const supabase = await createClient();
 
+  try {
     const {
       data: { user },
       error,
     } = await supabase.auth.getUser();
 
-    if (!user || error) {
-      console.error(error);
+    if (error || !user) {
+      console.error('Unauthorized', error);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const requestBody = await request.json();
+    const requestBody = await req.json();
 
     const { model_name, image_file, seed, prompt } = requestBody;
 
@@ -57,66 +55,61 @@ export async function POST(request: NextRequest) {
       model_name === 'SVD-XT' ? '0.20' : '0.15',
     );
 
-    // Generate a unique file name with uuid
-    const fileName = `${uuidv4()}.webp`;
+    const fileData = image_file;
+    const fileName = `${user.id}_${uuidv4()}.webp`;
 
-    // Convert the base64 data to buffer
-    const fileData = image_file.split(',')[1];
     const base64Data = fileData.split(';base64,').pop();
     const fileBuffer = Buffer.from(base64Data, 'base64');
 
-    const supabaseStorageClient = createSupabaseBrowserClient(); // Use browser client for storage upload
-    const { error: storageError } = await supabaseStorageClient.storage
-      .from('video-prompts') // Ensure this bucket exists and policies are correct
+    const { error: storageError } = await supabase.storage
+      .from('video-prompts')
       .upload(fileName, fileBuffer, {
         contentType: 'image/webp',
         cacheControl: '3600',
       });
 
     if (storageError) {
-      console.error('Storage error:', storageError);
+      console.error('Error uploading to Supabase:', storageError);
       return NextResponse.json(
         { error: 'Failed to upload image' },
         { status: 500 },
       );
     }
 
-    const { data: publicUrlData } = supabaseStorageClient.storage
-      .from('video-prompts') // Use same bucket name
+    const { data: publicUrlData } = supabase.storage
+      .from('video-prompts')
       .getPublicUrl(fileName);
 
     if (!publicUrlData.publicUrl) {
-      return NextResponse.json(
-        { error: 'Failed to get image URL' },
-        { status: 500 },
-      );
+      throw new Error('Failed to retrieve public URL for image');
     }
 
-    const task_id = uuidv4();
+    const { publicUrl } = publicUrlData;
 
     const input = {
-      task_id,
-      model_name,
-      image_url: publicUrlData.publicUrl,
-      seed: parseInt(seed),
-      prompt,
-      motion_bucket_id: 127,
-      guidance_scale: 7.5,
-      input_enhancement: true,
+      model_name: model_name,
+      image_file: image_file,
+      frames_num: model_name === 'SVD-XT' ? 25 : 14,
+      frames_per_second: 6,
+      image_file_resize_mode: 'ORIGINAL_RESOLUTION',
+      steps: 20,
+      seed: seed || Math.floor(Math.random() * 1000000),
+      motion_bucket_id: 1,
+      cond_aug: 1,
       enable_frame_interpolation: true,
     };
 
-    const novitaResponse = await fetch(NOVITA_API_URL, {
+    const response = await fetch(NOVITA_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Novita-API-Key': NOVITA_API_KEY as string,
+        Authorization: `Bearer ${NOVITA_API_KEY}`,
       },
       body: JSON.stringify(input),
     });
 
-    const data = await novitaResponse.json();
-    if (!novitaResponse.ok) {
+    const data = await response.json();
+    if (!response.ok) {
       console.error('Error from Novita API:', data);
       return NextResponse.json(
         { error: 'Error from Novita API' },
@@ -124,25 +117,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!data.task_id) {
-      return NextResponse.json(
-        { error: 'No task ID returned from Novita API' },
-        { status: 500 },
-      );
-    }
+    const { task_id } = data;
 
-    // store this video generation in our database
-    const { error: generationError } = await storeVideoGeneration({
+    const promptInput = prompt || 'Test';
+
+    await saveVideoGeneration({
       user_id: user.id,
-      prompt,
+      prompt: promptInput,
       model_name,
+      seed: input.seed,
+      prompt_image_path: publicUrl,
       task_id,
       processing_status: 'pending',
     });
-
-    if (generationError) {
-      throw new Error('Failed to store video generation');
-    }
 
     return NextResponse.json({ task_id });
   } catch (error) {
@@ -154,41 +141,47 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Store video generation in database
 interface VideoGenerationParams {
   user_id: string;
   prompt: string;
   model_name: string;
+  seed: number;
+  prompt_image_path: string;
   task_id: string;
   processing_status: string;
   error_message?: string | null;
   video_url?: string | null;
 }
 
-async function storeVideoGeneration({
+async function saveVideoGeneration({
   user_id,
   prompt,
   model_name,
+  seed,
+  prompt_image_path,
   task_id,
   processing_status,
   error_message = null,
   video_url = null,
 }: VideoGenerationParams) {
-  const supabase = createSupabaseBrowserClient(); // Or server if context allows, but browser client often simpler here if called from within the route handler
+  const supabase = await createClient();
   try {
     const { error } = await supabase.from('video_generations').insert({
       user_id,
       prompt,
       model_name,
+      seed,
+      prompt_image_path,
       task_id,
       processing_status,
       error_message,
       video_url,
     });
 
-    return { error };
-  } catch (error) {
-    console.error('Error storing video generation:', error);
-    return { error };
+    if (error) {
+      console.error('Error saving video generation:', error);
+    }
+  } catch (err) {
+    console.error('Exception saving video generation:', err);
   }
 }

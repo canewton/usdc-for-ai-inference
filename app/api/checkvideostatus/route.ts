@@ -1,7 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client';
 import { createClient } from '@/utils/supabase/server';
 
 const NOVITA_API_URL = 'https://api.novita.ai/v3/async/task-result';
@@ -46,6 +45,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log('Novita API response:', novitaResponse);
+
     const data = await novitaResponse.json();
     if (!novitaResponse.ok) {
       console.error('Error from Novita API:', data);
@@ -68,7 +69,6 @@ export async function POST(request: NextRequest) {
     const videos = data.videos || [];
 
     if (videos.length > 0) {
-      const supabaseStorageClient = createSupabaseBrowserClient();
       const video = await fetch(videos[0].video_url);
       const videoBlob = await video.blob();
 
