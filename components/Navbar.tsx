@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 
 import { signOutAction } from '@/app/actions'; // Assuming actions are in app/actions
 import { useSession } from '@/app/contexts/SessionContext';
+import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import { NavbarAIDropdown } from '@/components/navbar-ai-dropdown';
 import { Button } from '@/components/ui/button';
 import type { Profile } from '@/types/database.types'; // Assuming types/database.types.ts exists
@@ -48,6 +49,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
   const navbarRef = useRef<HTMLDivElement>(null);
   const session = useSession();
   const router = useRouter();
+  const { remaining, loading: demoLimitLoading } = useDemoLimit();
 
   // Determine which tabs to display
   const tabsToDisplay = profile?.is_admin ? adminTabs : commonTabs;
@@ -155,37 +157,40 @@ export default function Navbar({ user, profile }: NavbarProps) {
           )}
         </div>
 
-        {/* Auth Section */}
-        <div className="flex items-center space-x-3">
-          {user ? (
-            <>
-              <div className="text-sm text-gray-600 hidden md:block">
-                {user.email}
-              </div>
-              {/* Simple Profile Initial Circle */}
-              <div className="bg-indigo-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
-                {user.email ? user.email[0].toUpperCase() : '?'}
-              </div>
-              <form action={signOutAction}>
-                <Button type="submit" variant="outline" size="sm">
-                  Sign Out
-                </Button>
-              </form>
-            </>
-          ) : (
-            // Show Sign In/Sign Up buttons if not logged in and not on auth pages
-            !pathname.startsWith('/sign-in') &&
-            !pathname.startsWith('/sign-up') && (
+        <div className="flex items-center space-x-[100px]">
+          <p className="text-sm text-gray-600">
+            Demo AI generations remaining: {remaining ?? 0}
+          </p>
+
+          {/* Auth Section */}
+          <div className="flex items-center space-x-3">
+            {user ? (
               <>
-                <Button asChild size="sm" variant="ghost">
-                  <Link href="/sign-in">Sign In</Link>
-                </Button>
-                <Button asChild size="sm" variant="default">
-                  <Link href="/sign-up">Sign Up</Link>
-                </Button>
+                {/* Simple Profile Initial Circle */}
+                <div className="bg-indigo-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
+                  {user.email ? user.email[0].toUpperCase() : '?'}
+                </div>
+                <form action={signOutAction}>
+                  <Button type="submit" variant="outline" size="sm">
+                    Sign Out
+                  </Button>
+                </form>
               </>
-            )
-          )}
+            ) : (
+              // Show Sign In/Sign Up buttons if not logged in and not on auth pages
+              !pathname.startsWith('/sign-in') &&
+              !pathname.startsWith('/sign-up') && (
+                <>
+                  <Button asChild size="sm" variant="ghost">
+                    <Link href="/sign-in">Sign In</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="default">
+                    <Link href="/sign-up">Sign Up</Link>
+                  </Button>
+                </>
+              )
+            )}
+          </div>
         </div>
       </div>
     </div>
