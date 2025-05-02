@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     } else {
       const { data: models, error } = await supabase
         .from('3d_generations')
-        .select('id, url, prompt, created_at')
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 

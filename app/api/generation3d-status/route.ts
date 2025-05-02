@@ -21,7 +21,7 @@ interface TaskStatusResponse {
 }
 
 export async function POST(request: Request) {
-  const { taskId, texture_prompt, image_url } = await request.json();
+  const { taskId, texture_prompt, image_url, title } = await request.json();
   const supabase = await createClient();
   const {
     data: { user },
@@ -111,6 +111,7 @@ export async function POST(request: Request) {
             mode: 'Preview',
             circle_transaction_id: aiProject.circle_transaction_id,
             status: taskData.status,
+            title: title,
           },
         ])
         .select('*')

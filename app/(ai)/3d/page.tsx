@@ -24,6 +24,7 @@ export default function Generate3DModelPage() {
   const [history, setHistory] = useState<ModelHistoryItem[]>([]);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [generationProgress, setGenerationProgress] = useState<number>(0);
+  const [title, setTitle] = useState<string>('');
 
   const session = useSession();
 
@@ -42,6 +43,7 @@ export default function Generate3DModelPage() {
               url: item.url || '',
               prompt: item.prompt || '',
               user_id: item.user_id || '',
+              title: item.title || '',
               created_at: item.created_at
                 ? new Date(item.created_at).toISOString()
                 : new Date().toISOString(),
@@ -55,7 +57,6 @@ export default function Generate3DModelPage() {
           );
 
         setHistory(formattedHistory);
-        console.log('Fetched and formatted history:', formattedHistory);
       } else {
         setError('Failed to load history.');
         setHistory([]);
@@ -121,6 +122,7 @@ export default function Generate3DModelPage() {
       taskId,
       texture_prompt: prompt,
       image_url: imageDataUri,
+      title: title,
     },
     5000,
     taskId !== null,
@@ -198,7 +200,7 @@ export default function Generate3DModelPage() {
     return history.map(
       (item): Chat => ({
         id: item.id,
-        title: item.prompt || `Model ${item.id.substring(0, 6)}`,
+        title: item.title || `Model ${item.id.substring(0, 6)}`,
         created_at: item.created_at,
         user_id: item.user_id,
       }),
@@ -268,6 +270,8 @@ export default function Generate3DModelPage() {
           modelUrl={modelUrl}
           remaining={remaining}
           demoLimitLoading={demoLimitLoading}
+          title={title}
+          setTitle={setTitle}
         />
       </RightAiSidebar>
     </>
