@@ -38,7 +38,8 @@ export function SessionProvider({
   circle_wallet_id: string | null;
   api_keys_status: any;
 }) {
-  const [is_ai_inference_loading, update_is_ai_inference_loading] = useState(false);
+  const [is_ai_inference_loading, update_is_ai_inference_loading] =
+    useState(false);
 
   return (
     <SessionContext.Provider

@@ -141,11 +141,13 @@ export function MessageItem<M extends BaseMessage>({
               </div>
             )}
             {message.role == 'assistant' && message.imageUrl && (
-              <img
-                src={message.imageUrl}
-                alt="Generated"
-                className="rounded-md shadow-sm max-w-[300px] max-h-[300px] object-contain"
-              />
+              <div className="h-[300px]">
+                <img
+                  src={message.imageUrl}
+                  alt="Generated"
+                  className="rounded-md shadow-sm object-contain h-full"
+                />
+              </div>
             )}
             {/* Edit Message */}
             <div
@@ -201,7 +203,7 @@ export function MessageItem<M extends BaseMessage>({
                         <>
                           {message.promptTokens && message.completionTokens && (
                             <>
-                              - $
+                              -$
                               {Math.max(
                                 message.promptTokens *
                                   TEXT_MODEL_PRICING[message.provider]

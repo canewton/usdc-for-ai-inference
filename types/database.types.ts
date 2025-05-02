@@ -73,6 +73,7 @@ export interface Ai3dGeneration {
   mode: string;
   circle_transaction_id: string;
   image_url: string;
+  status: string;
 }
 
 export type Database = {

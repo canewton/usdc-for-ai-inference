@@ -2,13 +2,13 @@
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+import { toast } from 'sonner';
 
+import { useSession } from '@/app/contexts/SessionContext';
 import ChatIcon from '@/public/chat-jelly.svg';
 import VideoIcon from '@/public/entertainment-bazooka.svg';
 import ImageIcon from '@/public/image-julius.svg';
 import MultichainIcon from '@/public/multichain-apple.svg';
-import { useSession } from '@/app/contexts/SessionContext';
-import { toast } from 'sonner';
 
 type SidebarItemProps = {
   title: string;

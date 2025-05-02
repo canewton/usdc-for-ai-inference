@@ -10,6 +10,7 @@ import ModelIcon from '@/public/group.svg';
 import SparkIcon from '@/public/spark.svg';
 import UsdcIcon from '@/public/usdc.svg';
 
+import LoadingBar from '../loading-bar';
 import MainAiSection from '../MainAiSection';
 import PromptSuggestions from '../PromptSuggestions';
 
@@ -27,6 +28,7 @@ interface CanvasAreaProps {
   setError: (error: string | null) => void;
   remaining: number | null;
   demoLimitLoading: boolean;
+  generationProgress: number;
 }
 
 export default function CanvasArea({
@@ -37,6 +39,7 @@ export default function CanvasArea({
   setError,
   remaining,
   demoLimitLoading,
+  generationProgress,
 }: CanvasAreaProps) {
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const modelTooltip =
@@ -85,6 +88,19 @@ export default function CanvasArea({
   const handleLocalInputChange = (suggestion: { title: string; icon: any }) => {
     setPrompt(suggestion.title);
   };
+
+  if (isLoading) {
+    return (
+      <MainAiSection>
+        <div className="flex-grow flex flex-col items-center justify-center bg-white p-4 relative">
+          <LoadingBar
+            progress={generationProgress}
+            message={'Generating your 3D model'}
+          />
+        </div>
+      </MainAiSection>
+    );
+  }
 
   return (
     <MainAiSection>
