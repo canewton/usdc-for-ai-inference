@@ -104,13 +104,6 @@ export default function CanvasArea({
   return (
     <MainAiSection>
       <div className="flex-grow flex flex-col items-center justify-center bg-white p-4 relative">
-        {!demoLimitLoading && remaining !== null && (
-          <div className="text-sm text-gray-500 mb-4">
-            {remaining === 0
-              ? 'Demo limit reached'
-              : `${remaining} generations remaining`}
-          </div>
-        )}
         {/* Show canvas if model is selected, otherwise display initial screen. */}
         {modelUrl ? (
           <div className="w-full h-full flex flex-col items-center relative">

@@ -158,9 +158,11 @@ export default function Navbar({ user, profile }: NavbarProps) {
         </div>
 
         <div className="flex items-center space-x-[100px]">
-          <p className="text-sm text-gray-600">
-            Demo AI generations remaining: {remaining ?? 0}
-          </p>
+          {user && (
+            <p className="text-sm text-gray-600">
+              Demo AI generations remaining: {remaining ?? 0}
+            </p>
+          )}
 
           {/* Auth Section */}
           <div className="flex items-center space-x-3">
