@@ -16,13 +16,14 @@ import PromptSuggestions from '@/components/PromptSuggestions';
 import RightAiSidebar from '@/components/RightAiSidebar';
 import { TextInput } from '@/components/TextInput';
 import { Slider } from '@/components/ui/slider';
-import Blurs from '@/public/blurs.svg';
 import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
 import type { ChatGeneration } from '@/types/database.types';
 import { TEXT_MODEL_PRICING } from '@/utils/constants';
+
+import { AiGenerationIntro } from './ai-generation-intro';
 
 const promptSuggestions = [
   { title: 'Explain how to load my wallet', icon: WalletIcon },
@@ -202,21 +203,10 @@ export function Chat({ currChat }: ChatProps) {
               </div>
             </>
           ) : (
-            <div className="relative w-full h-full">
-              <img
-                src={Blurs.src}
-                alt="blur background"
-                className="w-1/2 object-contain mx-auto"
-              />
-              <div className="inset-0 flex items-center justify-center absolute">
-                <div className="flex flex-col items-center justify-center w-1/3 text-center">
-                  <h1 className="text-5xl text-body mb-2">What do you need?</h1>
-                  <p className="text-xl text-sub">
-                    Ask our AI chatbot about anything
-                  </p>
-                </div>
-              </div>
-            </div>
+            <AiGenerationIntro
+              title="What do you need?"
+              description="Ask our AI chatbot about anything"
+            />
           )}
           <div className="w-full max-w-[800px]">
             <PromptSuggestions
@@ -245,7 +235,9 @@ export function Chat({ currChat }: ChatProps) {
       <RightAiSidebar isImageInput={false}>
         <div className="space-y-[20px] mt-4 w-full">
           <div className="flex flex-col space-y-[4px]">
-            <div className="text-sub m-1">Max Tokens</div>
+            <label className="block text-sm text-gray-500 mb-1">
+              Max Tokens
+            </label>
             <div className="flex w-full h-8 border border-gray-200 items-center justify-center rounded-3xl p-2">
               <Slider
                 defaultValue={[maxTokens]}
@@ -264,7 +256,9 @@ export function Chat({ currChat }: ChatProps) {
           </div>
 
           <div className="flex flex-col">
-            <div className="text-sub mb-1">Model Type</div>
+            <label className="block text-sm text-gray-500 mb-1">
+              Model Type
+            </label>
             <select
               value={provider}
               onChange={(e) => setProvider(e.target.value)}

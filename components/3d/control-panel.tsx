@@ -74,7 +74,7 @@ export default function ControlPanel({
     <div className="flex flex-col space-y-4 w-full min-w-0 text-left">
       {/* Image Upload Section */}
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Image</label>
+        <label className="block text-sm text-gray-500 mb-1">Image</label>
         <ImageUploader
           setPreview={setImageDataUri}
           preview={imageDataUri}
@@ -87,7 +87,7 @@ export default function ControlPanel({
 
       {/* Prompt Section */}
       <div>
-        <label className="block text-xs text-gray-500 mb-1">
+        <label className="block text-sm text-gray-500 mb-1">
           Prompt (Optional)
         </label>
         <Input
@@ -103,7 +103,7 @@ export default function ControlPanel({
 
       {/* Model Type Section */}
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Model Type</label>
+        <label className="block text-sm text-gray-500 mb-1">Model Type</label>
         <select
           className="w-full p-2 border rounded-md text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
           style={{
@@ -123,7 +123,7 @@ export default function ControlPanel({
       </div>
 
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Title</label>
+        <label className="block text-sm text-gray-500 mb-1">Title</label>
         <Input
           placeholder="Name of your model"
           value={title}
@@ -148,7 +148,7 @@ export default function ControlPanel({
           </span>
         </Button>
         {error && (
-          <p className="text-red-500 mt-2 text-xs text-center">{error}</p>
+          <p className="text-red-500 mt-2 text-sm text-center">{error}</p>
         )}
       </div>
     </div>

@@ -7,9 +7,9 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import Blurs from '@/public/blurs.svg';
 import WalletIcon from '@/public/digital-wallet.svg';
 import ModelIcon from '@/public/group.svg';
-import SparkIcon from '@/public/spark.svg';
 import UsdcIcon from '@/public/usdc.svg';
 
+import { AiGenerationIntro } from '../ai-generation-intro';
 import LoadingBar from '../loading-bar';
 import MainAiSection from '../MainAiSection';
 import PromptSuggestions from '../PromptSuggestions';
@@ -17,7 +17,6 @@ import PromptSuggestions from '../PromptSuggestions';
 const promptSuggestions = [
   { title: 'Worn leather with subtle creases', icon: WalletIcon },
   { title: 'Aged metal with fine engravings', icon: UsdcIcon },
-  { title: 'Surprise me', icon: SparkIcon },
 ];
 
 interface CanvasAreaProps {
@@ -115,7 +114,7 @@ export default function CanvasArea({
         {/* Show canvas if model is selected, otherwise display initial screen. */}
         {modelUrl ? (
           <div className="w-full h-full flex flex-col items-center relative">
-            <div className="absolute top-0 left-0 flex items-center space-x-2 z-20 pointer-events-auto">
+            <div className="absolute top-2 left-2 flex items-center space-x-2 z-20 pointer-events-auto">
               <img
                 src={ModelIcon.src}
                 alt="Orbit/rotate icon"
@@ -176,15 +175,11 @@ export default function CanvasArea({
             className="relative w-full h-full bg-contain bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${Blurs.src})` }}
           >
-            <div className="absolute inset-0 flex flex-col items-center justify-start pt-8">
-              <div className="flex flex-col items-center justify-center w-1/3 text-center">
-                <h1 className="text-5xl text-body mb-2">
-                  What will you create?
-                </h1>
-                <p className="text-xl text-sub">
-                  Generate 3D assets from your own images
-                </p>
-              </div>
+            <div className="absolute inset-0 flex flex-col items-center justify-start">
+              <AiGenerationIntro
+                title="What will you create?"
+                description="Generate 3D assets from your own images"
+              />
               <div className="relative z-20 mt-4">
                 <PromptSuggestions
                   onSelect={handleLocalInputChange}
