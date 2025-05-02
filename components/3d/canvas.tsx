@@ -171,7 +171,7 @@ export default function CanvasArea({
             <div className="absolute inset-0 flex flex-col items-center justify-start">
               <AiGenerationIntro
                 title="What will you create?"
-                description="Generate 3D assets from your own images for $0.20 each"
+                description="Generate 3D assets from your own images for $0.02 each"
               />
               <div className="relative z-20 mt-4">
                 <PromptSuggestions
