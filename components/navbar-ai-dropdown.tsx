@@ -1,8 +1,9 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
+import { useSession } from '@/app/contexts/SessionContext';
 // Importing icons from public folder
 import ChatIcon from '@/public/chat-jelly.svg';
 import VideoIcon from '@/public/entertainment-bazooka.svg';
@@ -26,6 +27,8 @@ const SidebarItem = ({
   url,
   description,
 }: SidebarItemProps) => {
+  const session = useSession();
+  const router = useRouter();
   let hoverColor = '';
   let activeBackground = '';
   let activeFontColor = '';
@@ -48,18 +51,27 @@ const SidebarItem = ({
     activeFontColor = 'text-[#9F72FF]';
   }
 
-  const classes = `flex flex-row items-center py-2 px-4 text-sm transition rounded-lg ${hoverColor} ${active ? `${activeBackground} ${activeFontColor} font-bold` : ''}`;
+  const classes = `flex flex-row items-center py-2 px-4 text-sm transition rounded-lg w-full ${hoverColor} ${active ? `${activeBackground} ${activeFontColor} font-bold` : ''}`;
 
   return (
-    <Link href={url} className={classes}>
+    <button
+      className={classes}
+      onClick={() => {
+        if (!session.is_ai_inference_loading) {
+          router.push(url);
+        } else {
+          toast.info('Please wait for the current generation to finish.');
+        }
+      }}
+    >
       <img src={icon.src} alt={alt} className="w-8 h-8 mr-2" />
-      <div>
+      <div className="flex flex-col items-start">
         <div>{title}</div>
         {description && (
           <div className="text-xs text-gray-500">{description}</div>
         )}
       </div>
-    </Link>
+    </button>
   );
 };
 

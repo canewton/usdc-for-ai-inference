@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import { useDemoLimit } from '@/app/hooks/useDemoLimit';
+import { usePolling } from '@/app/hooks/usePolling';
 import CanvasArea from '@/components/3d/canvas';
 import ControlPanel from '@/components/3d/control-panel';
 import type { ModelHistoryItem } from '@/components/3d/types';
@@ -18,16 +19,16 @@ export default function Generate3DModelPage() {
   const { remaining, loading: demoLimitLoading } = useDemoLimit();
   const [prompt, setPrompt] = useState('');
   const [imageDataUri, setImageDataUri] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [modelUrl, setModelUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ModelHistoryItem[]>([]);
+  const [taskId, setTaskId] = useState<string | null>(null);
+  const [generationProgress, setGenerationProgress] = useState<number>(0);
+  const [title, setTitle] = useState<string>('');
 
   const session = useSession();
 
   const fetchHistory = async () => {
-    console.log('Fetching history...');
-    setIsLoading(true);
     try {
       const response = await fetch('/api/getgeneratedmodels', {
         method: 'GET',
@@ -42,6 +43,7 @@ export default function Generate3DModelPage() {
               url: item.url || '',
               prompt: item.prompt || '',
               user_id: item.user_id || '',
+              title: item.title || '',
               created_at: item.created_at
                 ? new Date(item.created_at).toISOString()
                 : new Date().toISOString(),
@@ -55,7 +57,6 @@ export default function Generate3DModelPage() {
           );
 
         setHistory(formattedHistory);
-        console.log('Fetched and formatted history:', formattedHistory);
       } else {
         setError('Failed to load history.');
         setHistory([]);
@@ -64,8 +65,6 @@ export default function Generate3DModelPage() {
       console.error('Error fetching history:', err);
       setError('An error occurred while loading history.');
       setHistory([]);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -82,7 +81,7 @@ export default function Generate3DModelPage() {
       toast.error('Demo limit reached. Please upgrade to continue.');
       return;
     }
-    setIsLoading(true);
+    session.update_is_ai_inference_loading(true);
     setError(null);
 
     try {
@@ -102,29 +101,50 @@ export default function Generate3DModelPage() {
       if (!response.ok) {
         const errorData = await response.json();
         if (response.status === 429) {
-          // toast.error('Demo limit reached. Please upgrade to continue.');
+          toast.error('Demo limit reached.');
         } else {
           toast.error(errorData.error || 'Failed to generate model');
         }
         throw new Error(errorData.error || 'Failed to generate model');
       }
 
-      const data: Ai3dGeneration = await response.json();
-      if (data.url) {
-        setModelUrl(data.url);
-        console.log('Generated model URL:', data.url);
-        fetchHistory();
-      } else {
-        setError(data.url || 'Failed to generate model');
-        console.error('Generation failed:', data);
-      }
+      const data: any = await response.json();
+      setTaskId(data.taskId);
     } catch (err: any) {
       setError(`An error occurred: ${err.message || 'Unknown error'}`);
       console.error('Generation error:', err);
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  usePolling(
+    `/api/generation3d-status?taskId=${taskId}`,
+    {
+      taskId,
+      texture_prompt: prompt,
+      image_url: imageDataUri,
+      title: title,
+    },
+    5000,
+    taskId !== null,
+    (input: any) => {
+      if (input.status === 'SUCCEEDED') {
+        setModelUrl(input.url);
+        setTaskId(null);
+        setError(null);
+        session.update_is_ai_inference_loading(false);
+        fetchHistory();
+        return true;
+      } else if (input.status === 'FAILED') {
+        setError('Generation failed.');
+        setTaskId(null);
+        session.update_is_ai_inference_loading(false);
+        return true;
+      } else {
+        setGenerationProgress(input.progress);
+      }
+      return false;
+    },
+  );
 
   const handleSelectHistoryItem = (id: string) => {
     const selectedItem = history.find((item) => item.id === id);
@@ -151,8 +171,6 @@ export default function Generate3DModelPage() {
   const handleDelete = async (modelId: string) => {
     const itemToDelete = history.find((item) => item.id === modelId);
     const urlToDelete = itemToDelete?.url;
-
-    setIsLoading(true);
     setError(null);
 
     try {
@@ -175,8 +193,6 @@ export default function Generate3DModelPage() {
         `An error occurred while deleting: ${err.message || 'Unknown error'}`,
       );
       console.error('Delete error:', err);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -184,7 +200,7 @@ export default function Generate3DModelPage() {
     return history.map(
       (item): Chat => ({
         id: item.id,
-        title: item.prompt || `Model ${item.id.substring(0, 6)}`,
+        title: item.title || `Model ${item.id.substring(0, 6)}`,
         created_at: item.created_at,
         user_id: item.user_id,
       }),
@@ -232,11 +248,12 @@ export default function Generate3DModelPage() {
       <CanvasArea
         modelUrl={modelUrl}
         imageDataUri={imageDataUri}
-        isLoading={isLoading}
+        isLoading={session.is_ai_inference_loading}
         setPrompt={setPrompt}
         setError={setError}
         remaining={remaining}
         demoLimitLoading={demoLimitLoading}
+        generationProgress={generationProgress}
       />
 
       {/* --- Right Sidebar --- */}
@@ -244,7 +261,7 @@ export default function Generate3DModelPage() {
         <ControlPanel
           imageDataUri={imageDataUri}
           prompt={prompt}
-          isLoading={isLoading}
+          isLoading={session.is_ai_inference_loading}
           error={error}
           setImageDataUri={setImageDataUri}
           setPrompt={setPrompt}
@@ -253,6 +270,8 @@ export default function Generate3DModelPage() {
           modelUrl={modelUrl}
           remaining={remaining}
           demoLimitLoading={demoLimitLoading}
+          title={title}
+          setTitle={setTitle}
         />
       </RightAiSidebar>
     </>

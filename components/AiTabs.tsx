@@ -1,8 +1,10 @@
 'use client';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React from 'react';
+import { toast } from 'sonner';
 
+import { useSession } from '@/app/contexts/SessionContext';
 import ChatIcon from '@/public/chat-jelly.svg';
 import VideoIcon from '@/public/entertainment-bazooka.svg';
 import ImageIcon from '@/public/image-julius.svg';
@@ -23,6 +25,8 @@ const SidebarItem = ({
   alt,
   url,
 }: SidebarItemProps) => {
+  const router = useRouter();
+  const session = useSession();
   let hoverColor = '';
   let activeBackground = '';
   let activeFontColor = '';
@@ -49,10 +53,19 @@ const SidebarItem = ({
   const classes = `flex flex-row items-center py-2 px-4 text-sm transition rounded-lg ${hoverColor} ${active ? `${activeBackground} ${activeFontColor} font-bold` : ''}`;
 
   return (
-    <Link href={url} className={classes}>
+    <button
+      onClick={() => {
+        if (session.is_ai_inference_loading) {
+          toast.info('Please wait for the current generation to finish.');
+        } else {
+          router.push(url);
+        }
+      }}
+      className={classes}
+    >
       <img src={icon.src} alt={alt} className="w-8 h-8 mr-2" />
       {title}
-    </Link>
+    </button>
   );
 };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import { ImageGenerationController } from '@/app/controllers/image-generation.controller';
@@ -13,7 +13,6 @@ import MainAiSection from '@/components/MainAiSection';
 import PromptSuggestions from '@/components/PromptSuggestions';
 import RightAiSidebar from '@/components/RightAiSidebar';
 import { TextInput } from '@/components/TextInput';
-import Blurs from '@/public/blurs.svg';
 import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
@@ -21,6 +20,8 @@ import UsdcIcon from '@/public/usdc.svg';
 import type { ImageGeneration } from '@/types/database.types';
 import { IMAGE_MODEL_PRICING } from '@/utils/constants';
 import type { ImageMessage } from '@/utils/types';
+
+import { AiGenerationIntro } from './ai-generation-intro';
 
 const promptSuggestions = [
   { title: 'A global-themed USDC card', icon: WalletIcon },
@@ -98,6 +99,10 @@ export function ImageChat({ currChat }: ImageChatProps) {
       }
     },
   });
+
+  useEffect(() => {
+    session.update_is_ai_inference_loading(isAiInferenceLoading);
+  }, [isAiInferenceLoading]);
 
   const {
     currChatId,
@@ -210,21 +215,10 @@ export function ImageChat({ currChat }: ImageChatProps) {
               </div>
             </>
           ) : (
-            <div className="relative w-full h-full">
-              <img
-                src={Blurs.src}
-                alt="blur background"
-                className="w-1/2 object-contain mx-auto"
-              />
-              <div className="inset-0 flex items-center justify-center absolute">
-                <div className="flex flex-col items-center justify-center w-1/3 text-center">
-                  <h1 className="text-5xl text-body mb-2">What do you need?</h1>
-                  <p className="text-xl text-sub">
-                    Ask our AI chatbot about anything
-                  </p>
-                </div>
-              </div>
-            </div>
+            <AiGenerationIntro
+              title="What can you create?"
+              description="Generate images for $0.01 each"
+            />
           )}
           <div className="w-full max-w-[800px]">
             <PromptSuggestions
@@ -252,8 +246,10 @@ export function ImageChat({ currChat }: ImageChatProps) {
       {/* Right section with balance and settings */}
       <RightAiSidebar isImageInput={false}>
         <div className="space-y-[20px] mt-4 w-full">
-          <div className="flex flex-col space-x-2">
-            <div className="text-sub mb-1">Aspect Ratio</div>
+          <div className="flex flex-col">
+            <label className="block text-sm text-gray-500 mb-1">
+              Aspect Ratio
+            </label>
             <select
               value={aspectRatio}
               onChange={(e) => setAspectRatio(e.target.value)}
@@ -266,8 +262,10 @@ export function ImageChat({ currChat }: ImageChatProps) {
               <option value="21:9">21:9</option>
             </select>
           </div>
-          <div className="flex flex-col space-x-2">
-            <div className="text-sub mb-1">Image Quality</div>
+          <div className="flex flex-col">
+            <label className="block text-sm text-gray-500 mb-1">
+              Image Quality
+            </label>
             <select
               value={quality}
               onChange={(e) => setQuality(Number(e.target.value))}
@@ -278,8 +276,10 @@ export function ImageChat({ currChat }: ImageChatProps) {
               <option value={100}>High</option>
             </select>
           </div>
-          <div className="flex flex-col space-x-2">
-            <div className="text-sub mb-1">Model Type</div>
+          <div className="flex flex-col">
+            <label className="block text-sm text-gray-500 mb-1">
+              Model Type
+            </label>
             <select
               value={provider}
               onChange={(e) => setProvider(e.target.value)}

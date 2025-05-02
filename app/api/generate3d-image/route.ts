@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
-import { aiModel } from '@/types/ai.types';
-import { MODEL_ASSET_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 
 const MESHY_API_KEY = process.env.MESHY_API!;
@@ -73,28 +70,6 @@ export async function POST(req: Request) {
       );
     }
 
-    let profile: any = null;
-    let wallet: any = null;
-    if (user) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('auth_user_id', user.id)
-        .single();
-      profile = profileData;
-    }
-
-    if (profile) {
-      // Get wallet
-      const { data: walletData } = await supabase
-        .schema('public')
-        .from('wallets')
-        .select()
-        .eq('profile_id', profile.id)
-        .single();
-      wallet = walletData;
-    }
-
     const generatePreviewResponse = await fetch(MESHY_API_URL, {
       method: 'POST',
       headers: HEADERS,
@@ -111,102 +86,15 @@ export async function POST(req: Request) {
       throw new Error('Failed to create preview model.');
     }
 
-    const aiProject = await circleWalletTransfer(
-      texture_prompt,
-      aiModel.IMAGE_TO_3D,
-      wallet.circle_wallet_id,
-      `${MODEL_ASSET_PRICING.userBilledPrice}`,
-    );
-
     const meshyResponse: MeshyResponse = await generatePreviewResponse.json();
     const taskId: string = meshyResponse.result;
-    console.log('Preview task created. Task ID:', taskId);
 
-    // poll preview task to keep track of generation progress
-    const task = await pollTaskStatus(taskId);
-
-    if (!task.model_urls?.glb) {
-      throw new Error('model URL missing.');
-    }
-    let modelUrl: string = task.model_urls.glb;
-    let modelResponse = await fetch(modelUrl);
-    let modelBlob = await modelResponse.blob();
-
-    // upload .glb (3D model file type) file into supabase storage
-    const fileName = `3d-model-${Date.now()}.glb`;
-    const { error: storageError } = await supabase.storage
-      .from('user-3d')
-      .upload(fileName, modelBlob, {
-        contentType: 'model/gltf-binary',
-      });
-
-    if (storageError) {
-      throw new Error(
-        `Error uploading model to Supabase: ${storageError.message}`,
-      );
-    }
-
-    const { data: publicURLData } = supabase.storage
-      .from('user-3d')
-      .getPublicUrl(fileName);
-    const storedModelUrl = publicURLData.publicUrl;
-
-    // inserting into DB
-    const { data, error: dbError } = await supabase
-      .from('3d_generations')
-      .insert([
-        {
-          image_url,
-          prompt: texture_prompt,
-          user_id: user.id,
-          url: storedModelUrl,
-          provider: 'Meshy',
-          mode: should_remesh ? 'Refine' : 'Preview',
-          circle_transaction_id: aiProject.circle_transaction_id,
-        },
-      ])
-      .select('*')
-      .single();
-
-    if (dbError) {
-      throw new Error(
-        `Error inserting record into Supabase: ${dbError.message}`,
-      );
-    }
-
-    return NextResponse.json(data, { status: 200 });
-  } catch (error: any) {
-    console.error('3D Generation error:', error);
+    return NextResponse.json({ taskId }, { status: 200 });
+  } catch (error) {
+    console.error('Error generating 3D model:', error);
     return NextResponse.json(
-      { error: error.message || '3D Generation failed' },
+      { error: 'Failed to generate 3D model' },
       { status: 500 },
     );
-  }
-}
-
-// helper to incrementally generate task statuses
-async function pollTaskStatus(taskId: string): Promise<TaskStatusResponse> {
-  while (true) {
-    const response = await fetch(`${MESHY_API_URL}/${taskId}`, {
-      method: 'GET',
-      headers: HEADERS,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch task status: ${response.statusText}`);
-    }
-
-    const taskData: TaskStatusResponse = await response.json();
-    console.log(
-      `Task status: ${taskData.status}, Progress: ${taskData.progress}`,
-    );
-
-    if (taskData.status === 'SUCCEEDED') {
-      return taskData;
-    } else if (taskData.status === 'FAILED') {
-      throw new Error('Meshy AI task failed.');
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 }

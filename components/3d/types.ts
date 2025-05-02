@@ -4,4 +4,5 @@ export interface ModelHistoryItem {
   prompt: string;
   user_id: string;
   created_at: string;
+  title: string;
 }

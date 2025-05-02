@@ -8,6 +8,7 @@ import ImageUploader from '../image-uploader';
 interface ControlPanelProps {
   imageDataUri: string;
   prompt: string;
+  title: string;
   isLoading: boolean;
   error: string | null;
   modelUrl: string | null;
@@ -15,6 +16,7 @@ interface ControlPanelProps {
   demoLimitLoading: boolean;
   setImageDataUri: (uri: string) => void;
   setPrompt: (prompt: string) => void;
+  setTitle: (title: string) => void;
   setError: (error: string | null) => void;
   submitPrompt: (prompt: string) => void;
 }
@@ -22,6 +24,7 @@ interface ControlPanelProps {
 export default function ControlPanel({
   imageDataUri,
   prompt,
+  title,
   isLoading,
   error,
   modelUrl,
@@ -29,6 +32,7 @@ export default function ControlPanel({
   demoLimitLoading,
   setImageDataUri,
   setPrompt,
+  setTitle,
   setError,
   submitPrompt,
 }: ControlPanelProps) {
@@ -70,7 +74,7 @@ export default function ControlPanel({
     <div className="flex flex-col space-y-4 w-full min-w-0 text-left">
       {/* Image Upload Section */}
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Image</label>
+        <label className="block text-sm text-gray-500 mb-1">Image</label>
         <ImageUploader
           setPreview={setImageDataUri}
           preview={imageDataUri}
@@ -83,7 +87,7 @@ export default function ControlPanel({
 
       {/* Prompt Section */}
       <div>
-        <label className="block text-xs text-gray-500 mb-1">
+        <label className="block text-sm text-gray-500 mb-1">
           Prompt (Optional)
         </label>
         <Input
@@ -99,7 +103,7 @@ export default function ControlPanel({
 
       {/* Model Type Section */}
       <div>
-        <label className="block text-xs text-gray-500 mb-1">Model Type</label>
+        <label className="block text-sm text-gray-500 mb-1">Model Type</label>
         <select
           className="w-full p-2 border rounded-md text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
           style={{
@@ -118,12 +122,25 @@ export default function ControlPanel({
         </select>
       </div>
 
+      <div>
+        <label className="block text-sm text-gray-500 mb-1">Title</label>
+        <Input
+          placeholder="Name of your model"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full border-[#E5E7EB] rounded-md p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          disabled={isDisabled}
+          required={true}
+          maxLength={300}
+        />
+      </div>
+
       {/* Generate Button */}
       <div>
         <Button
           onClick={() => submitPrompt(prompt)}
           className="w-full bg-gray-100 text-gray-700 py-2 rounded-full flex items-center justify-center space-x-2"
-          disabled={isDisabled || isLoading || !imageDataUri}
+          disabled={isDisabled || isLoading || !imageDataUri || !title}
         >
           <img className="w-6 h-6" alt="Generate" src="/spark-jelly.svg" />
           <span className="text-sm">
@@ -131,17 +148,9 @@ export default function ControlPanel({
           </span>
         </Button>
         {error && (
-          <p className="text-red-500 mt-2 text-xs text-center">{error}</p>
+          <p className="text-red-500 mt-2 text-sm text-center">{error}</p>
         )}
       </div>
-
-      {!demoLimitLoading && remaining !== null && (
-        <div className="text-sm text-gray-500">
-          {remaining === 0
-            ? 'Demo limit reached'
-            : `${remaining} generations remaining`}
-        </div>
-      )}
     </div>
   );
 }

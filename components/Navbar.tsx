@@ -3,10 +3,13 @@
 
 import type { User } from '@supabase/supabase-js';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { signOutAction } from '@/app/actions'; // Assuming actions are in app/actions
+import { useSession } from '@/app/contexts/SessionContext';
+import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import { NavbarAIDropdown } from '@/components/navbar-ai-dropdown';
 import { Button } from '@/components/ui/button';
 import type { Profile } from '@/types/database.types'; // Assuming types/database.types.ts exists
@@ -44,6 +47,9 @@ export default function Navbar({ user, profile }: NavbarProps) {
   const [showDropdown, setShowDropdown] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
+  const session = useSession();
+  const router = useRouter();
+  const { remaining, loading: demoLimitLoading } = useDemoLimit();
 
   // Determine which tabs to display
   const tabsToDisplay = profile?.is_admin ? adminTabs : commonTabs;
@@ -88,90 +94,103 @@ export default function Navbar({ user, profile }: NavbarProps) {
       {/* Added margin-bottom to prevent content overlap */}
       <div className="fixed top-0 left-0 right-0 min-h-16 bg-white border-b border-gray-200 flex items-center justify-between shadow-lg px-6 md:px-20 z-50">
         {/* Logo */}
-        <Link
-          href={
-            user ? (profile?.is_admin ? '/admin' : '/dashboard') : '/sign-in'
-          }
-          className="flex items-center"
-        >
-          <img
-            src="/circle-logo-1.png" // Assumes logo is in public folder
-            alt="Circle Logo"
-            className="h-8 w-auto" // Use w-auto for proper scaling
-          />
-        </Link>
-
-        {/* Navigation Tabs (Only if user is logged in) */}
-        {user && (
-          <div
-            className="flex-grow flex justify-center items-center"
-            ref={navbarRef}
+        <div className="flex items-center space-x-[100px]">
+          <Link
+            href={
+              user ? (profile?.is_admin ? '/admin' : '/dashboard') : '/sign-in'
+            }
+            className="flex items-center"
           >
-            <div className="flex items-center space-x-4 md:space-x-8">
-              {tabsToDisplay.map((tab) => (
-                <div key={tab.name} className="relative">
-                  <Link
-                    href={tab.route}
-                    className={`text-sm font-medium transition-colors ${
-                      isTabActive(tab.route, tab.dropdownRoutes)
-                        ? 'text-blue-500'
-                        : 'text-gray-600 hover:text-blue-500'
-                    }`}
-                    onMouseEnter={() => {
-                      if (tab.dropdown) {
-                        setShowDropdown(tab.name);
-                      }
-                    }}
-                    onClick={() => setShowDropdown('')} // Close dropdown on click
-                  >
-                    {tab.name}
-                  </Link>
-                  {showDropdown === tab.name && tab.dropdown && (
-                    <div
-                      ref={dropdownRef}
-                      className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]" // Increased z-index
-                      onMouseLeave={() => setShowDropdown('')}
-                    >
-                      {tab.dropdown}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+            <img
+              src="/circle-logo-1.png" // Assumes logo is in public folder
+              alt="Circle Logo"
+              className="h-8 w-auto" // Use w-auto for proper scaling
+            />
+          </Link>
 
-        {/* Auth Section */}
-        <div className="flex items-center space-x-3">
-          {user ? (
-            <>
-              <div className="text-sm text-gray-600 hidden md:block">
-                {user.email}
+          {/* Navigation Tabs (Only if user is logged in) */}
+          {user && (
+            <div
+              className="flex-grow flex justify-center items-center"
+              ref={navbarRef}
+            >
+              <div className="flex items-center space-x-4 md:space-x-8">
+                {tabsToDisplay.map((tab) => (
+                  <div key={tab.name} className="relative">
+                    <button
+                      className={`text-sm font-medium transition-colors ${
+                        isTabActive(tab.route, tab.dropdownRoutes)
+                          ? 'text-blue-500'
+                          : 'text-gray-600 hover:text-blue-500'
+                      }`}
+                      onMouseEnter={() => {
+                        if (tab.dropdown) {
+                          setShowDropdown(tab.name);
+                        }
+                      }}
+                      onClick={() => {
+                        setShowDropdown('');
+                        if (!session.is_ai_inference_loading) {
+                          router.push(tab.route);
+                        } else {
+                          toast.info(
+                            'Please wait for the current generation to finish.',
+                          );
+                        }
+                      }} // Close dropdown on click
+                    >
+                      {tab.name}
+                    </button>
+                    {showDropdown === tab.name && tab.dropdown && (
+                      <div
+                        ref={dropdownRef}
+                        className="absolute left-1/2 transform -translate-x-1/2 mt-6 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]" // Increased z-index
+                        onMouseLeave={() => setShowDropdown('')}
+                      >
+                        {tab.dropdown}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-              {/* Simple Profile Initial Circle */}
-              <div className="bg-indigo-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
-                {user.email ? user.email[0].toUpperCase() : '?'}
-              </div>
-              <form action={signOutAction}>
-                <Button type="submit" variant="outline" size="sm">
-                  Sign Out
-                </Button>
-              </form>
-            </>
-          ) : (
-            // Show Sign In/Sign Up buttons if not logged in and not on auth pages
-            !pathname.startsWith('/sign-in') &&
-            !pathname.startsWith('/sign-up') && (
-              <>
-                <Button asChild size="sm" variant="ghost">
-                  <Link href="/sign-in">Sign In</Link>
-                </Button>
-                <Button asChild size="sm" variant="default">
-                  <Link href="/sign-up">Sign Up</Link>
-                </Button>
-              </>
-            )
+            </div>
           )}
+        </div>
+
+        <div className="flex items-center space-x-[100px]">
+          <p className="text-sm text-gray-600">
+            Demo AI generations remaining: {remaining ?? 0}
+          </p>
+
+          {/* Auth Section */}
+          <div className="flex items-center space-x-3">
+            {user ? (
+              <>
+                {/* Simple Profile Initial Circle */}
+                <div className="bg-indigo-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
+                  {user.email ? user.email[0].toUpperCase() : '?'}
+                </div>
+                <form action={signOutAction}>
+                  <Button type="submit" variant="outline" size="sm">
+                    Sign Out
+                  </Button>
+                </form>
+              </>
+            ) : (
+              // Show Sign In/Sign Up buttons if not logged in and not on auth pages
+              !pathname.startsWith('/sign-in') &&
+              !pathname.startsWith('/sign-up') && (
+                <>
+                  <Button asChild size="sm" variant="ghost">
+                    <Link href="/sign-in">Sign In</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="default">
+                    <Link href="/sign-up">Sign Up</Link>
+                  </Button>
+                </>
+              )
+            )}
+          </div>
         </div>
       </div>
     </div>
