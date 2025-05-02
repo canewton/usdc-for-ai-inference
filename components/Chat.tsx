@@ -3,7 +3,7 @@
 import type { Message } from '@ai-sdk/react';
 import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import { ChatGenerationController } from '@/app/controllers/chat-generation.controller';
@@ -39,6 +39,8 @@ export function Chat({ currChat }: ChatProps) {
   const [maxTokens, setMaxTokens] = useState(2000);
   const chatIdRef = useRef<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+
+  const session = useSession();
 
   const {
     messages,
@@ -97,6 +99,10 @@ export function Chat({ currChat }: ChatProps) {
     },
   });
 
+  useEffect(() => {
+    session.update_is_ai_inference_loading(isAiInferenceLoading);
+  }, [isAiInferenceLoading]);
+
   const {
     currChatId,
     chats,
@@ -144,8 +150,6 @@ export function Chat({ currChat }: ChatProps) {
   });
 
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
-  const session = useSession();
-
   const wordsPerToken = `Each word is around 3 tokens ≡ $${(TEXT_MODEL_PRICING[provider].userBilledInputPrice * 3).toFixed(5)}`;
 
   return (

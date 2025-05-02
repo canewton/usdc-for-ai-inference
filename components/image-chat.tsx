@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import { ImageGenerationController } from '@/app/controllers/image-generation.controller';
@@ -98,6 +98,10 @@ export function ImageChat({ currChat }: ImageChatProps) {
       }
     },
   });
+
+  useEffect(() => {
+    session.update_is_ai_inference_loading(isAiInferenceLoading);
+  }, [isAiInferenceLoading]);
 
   const {
     currChatId,

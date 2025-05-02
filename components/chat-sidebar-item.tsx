@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 
+import { useSession } from '@/app/contexts/SessionContext';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +42,8 @@ export const ChatSidebarItem = ({
 }: ChatSideBarItemProps) => {
   const [open, setOpen] = useState(false);
 
+  const session = useSession();
+
   return (
     <div
       key={chat.id}
@@ -49,7 +53,11 @@ export const ChatSidebarItem = ({
           : 'hover:bg-[#F1F0F5] transition duration-300'
       }`}
       onClick={() => {
-        onSelectChat(chat.id);
+        if (!session.is_ai_inference_loading) {
+          onSelectChat(chat.id);
+        } else {
+          toast.info('Please wait for the current generation to finish.');
+        }
       }}
       onMouseEnter={() => setHoveredChatId(chat.id)}
       onMouseLeave={() => setHoveredChatId('')}

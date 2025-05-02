@@ -1,6 +1,8 @@
 import { isThisWeek, isYesterday, subDays } from 'date-fns';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
+import { useSession } from '@/app/contexts/SessionContext';
 import type { Chat } from '@/types/database.types';
 
 import { ChatSidebarItem } from './chat-sidebar-item';
@@ -22,6 +24,8 @@ export function ChatSidebar({
 }: ChatSidebarProps) {
   const [hoveredChatId, setHoveredChatId] = useState<string>('');
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+
+  const session = useSession();
 
   // Group chats by time period
   const groupChatsByTimePeriod = (chats: Chat[]) => {
@@ -84,7 +88,13 @@ export function ChatSidebar({
     <div className="h-[calc(100vh-317px)] pt-4 pb-8 px-2 rounded-r-3xl border border-gray-200 bg-section">
       <div className="overflow-auto h-full px-2">
         <button
-          onClick={onNewChat}
+          onClick={() => {
+            if (!session.is_ai_inference_loading) {
+              onNewChat();
+            } else {
+              toast.info('Please wait for the current generation to finish.');
+            }
+          }}
           className="p-2 mb-4 text-left w-full h-fit hover:bg-gray-50 transition rounded-lg text-headline"
         >
           New Chat

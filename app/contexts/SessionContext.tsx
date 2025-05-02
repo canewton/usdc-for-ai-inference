@@ -1,18 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { createContext, useContext } from 'react';
 
 type SessionContextType = {
   wallet_id: string | null;
   circle_wallet_id: string | null;
   api_keys_status: any;
+  is_ai_inference_loading: boolean;
+  update_is_ai_inference_loading: (loading: boolean) => void;
 };
 
 export const SessionContext = createContext<SessionContextType>({
   wallet_id: null,
   circle_wallet_id: null,
   api_keys_status: null,
+  is_ai_inference_loading: false,
+  update_is_ai_inference_loading: () => {},
 });
 
 export function useSession() {
@@ -34,9 +38,17 @@ export function SessionProvider({
   circle_wallet_id: string | null;
   api_keys_status: any;
 }) {
+  const [is_ai_inference_loading, update_is_ai_inference_loading] = useState(false);
+
   return (
     <SessionContext.Provider
-      value={{ wallet_id, circle_wallet_id, api_keys_status }}
+      value={{
+        wallet_id,
+        circle_wallet_id,
+        api_keys_status,
+        is_ai_inference_loading,
+        update_is_ai_inference_loading,
+      }}
     >
       {children}
     </SessionContext.Provider>

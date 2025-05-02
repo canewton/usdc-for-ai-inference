@@ -3,10 +3,12 @@
 
 import type { User } from '@supabase/supabase-js';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { signOutAction } from '@/app/actions'; // Assuming actions are in app/actions
+import { useSession } from '@/app/contexts/SessionContext';
 import { NavbarAIDropdown } from '@/components/navbar-ai-dropdown';
 import { Button } from '@/components/ui/button';
 import type { Profile } from '@/types/database.types'; // Assuming types/database.types.ts exists
@@ -44,6 +46,8 @@ export default function Navbar({ user, profile }: NavbarProps) {
   const [showDropdown, setShowDropdown] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
+  const session = useSession();
+  const router = useRouter();
 
   // Determine which tabs to display
   const tabsToDisplay = profile?.is_admin ? adminTabs : commonTabs;
@@ -110,8 +114,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
             <div className="flex items-center space-x-4 md:space-x-8">
               {tabsToDisplay.map((tab) => (
                 <div key={tab.name} className="relative">
-                  <Link
-                    href={tab.route}
+                  <button
                     className={`text-sm font-medium transition-colors ${
                       isTabActive(tab.route, tab.dropdownRoutes)
                         ? 'text-blue-500'
@@ -122,10 +125,19 @@ export default function Navbar({ user, profile }: NavbarProps) {
                         setShowDropdown(tab.name);
                       }
                     }}
-                    onClick={() => setShowDropdown('')} // Close dropdown on click
+                    onClick={() => {
+                      setShowDropdown('');
+                      if (!session.is_ai_inference_loading) {
+                        router.push(tab.route);
+                      } else {
+                        toast.info(
+                          'Please wait for the current generation to finish.',
+                        );
+                      }
+                    }} // Close dropdown on click
                   >
                     {tab.name}
-                  </Link>
+                  </button>
                   {showDropdown === tab.name && tab.dropdown && (
                     <div
                       ref={dropdownRef}

@@ -66,14 +66,12 @@ export async function middleware(request: NextRequest) {
   // Define protected routes
   const protectedRoutes = ['/dashboard', '/admin', '/chat', '/3d', '/video'];
   const adminRoutes = ['/admin'];
-  const authRoutes = ['/sign-in', '/sign-up', '/forgot-password'];
   const userOnlyRoutes = ['/dashboard', '/3d', '/chat', '/image', '/video'];
 
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route),
   );
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
-  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
   const isUserOnlyRoute = userOnlyRoutes.some(
     (route) => pathname === route || pathname.startsWith(route),
   );
@@ -101,15 +99,6 @@ export async function middleware(request: NextRequest) {
       // Redirect admin from user-only routes to admin dashboard
       if (isUserOnlyRoute) {
         return NextResponse.redirect(new URL('/admin', request.url));
-      }
-    }
-
-    if (isAuthRoute) {
-      // Redirect authenticated users trying to access auth pages to dashboard or admin based on role
-      if (profile?.is_admin) {
-        return NextResponse.redirect(new URL('/admin', request.url));
-      } else {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
       }
     }
 

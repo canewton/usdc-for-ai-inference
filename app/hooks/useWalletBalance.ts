@@ -70,7 +70,6 @@ export function useWalletBalance(
       const shouldUpdateBalance = payload.new.balance !== stringifiedBalance;
 
       if (shouldUpdateBalance) {
-        toast.info('Wallet balance updated');
         setBalance(Number(payload.new.balance));
       }
     },
