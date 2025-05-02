@@ -92,66 +92,68 @@ export default function Navbar({ user, profile }: NavbarProps) {
       {/* Added margin-bottom to prevent content overlap */}
       <div className="fixed top-0 left-0 right-0 min-h-16 bg-white border-b border-gray-200 flex items-center justify-between shadow-lg px-6 md:px-20 z-50">
         {/* Logo */}
-        <Link
-          href={
-            user ? (profile?.is_admin ? '/admin' : '/dashboard') : '/sign-in'
-          }
-          className="flex items-center"
-        >
-          <img
-            src="/circle-logo-1.png" // Assumes logo is in public folder
-            alt="Circle Logo"
-            className="h-8 w-auto" // Use w-auto for proper scaling
-          />
-        </Link>
-
-        {/* Navigation Tabs (Only if user is logged in) */}
-        {user && (
-          <div
-            className="flex-grow flex justify-center items-center"
-            ref={navbarRef}
+        <div className="flex items-center space-x-[100px]">
+          <Link
+            href={
+              user ? (profile?.is_admin ? '/admin' : '/dashboard') : '/sign-in'
+            }
+            className="flex items-center"
           >
-            <div className="flex items-center space-x-4 md:space-x-8">
-              {tabsToDisplay.map((tab) => (
-                <div key={tab.name} className="relative">
-                  <button
-                    className={`text-sm font-medium transition-colors ${
-                      isTabActive(tab.route, tab.dropdownRoutes)
-                        ? 'text-blue-500'
-                        : 'text-gray-600 hover:text-blue-500'
-                    }`}
-                    onMouseEnter={() => {
-                      if (tab.dropdown) {
-                        setShowDropdown(tab.name);
-                      }
-                    }}
-                    onClick={() => {
-                      setShowDropdown('');
-                      if (!session.is_ai_inference_loading) {
-                        router.push(tab.route);
-                      } else {
-                        toast.info(
-                          'Please wait for the current generation to finish.',
-                        );
-                      }
-                    }} // Close dropdown on click
-                  >
-                    {tab.name}
-                  </button>
-                  {showDropdown === tab.name && tab.dropdown && (
-                    <div
-                      ref={dropdownRef}
-                      className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]" // Increased z-index
-                      onMouseLeave={() => setShowDropdown('')}
+            <img
+              src="/circle-logo-1.png" // Assumes logo is in public folder
+              alt="Circle Logo"
+              className="h-8 w-auto" // Use w-auto for proper scaling
+            />
+          </Link>
+
+          {/* Navigation Tabs (Only if user is logged in) */}
+          {user && (
+            <div
+              className="flex-grow flex justify-center items-center"
+              ref={navbarRef}
+            >
+              <div className="flex items-center space-x-4 md:space-x-8">
+                {tabsToDisplay.map((tab) => (
+                  <div key={tab.name} className="relative">
+                    <button
+                      className={`text-sm font-medium transition-colors ${
+                        isTabActive(tab.route, tab.dropdownRoutes)
+                          ? 'text-blue-500'
+                          : 'text-gray-600 hover:text-blue-500'
+                      }`}
+                      onMouseEnter={() => {
+                        if (tab.dropdown) {
+                          setShowDropdown(tab.name);
+                        }
+                      }}
+                      onClick={() => {
+                        setShowDropdown('');
+                        if (!session.is_ai_inference_loading) {
+                          router.push(tab.route);
+                        } else {
+                          toast.info(
+                            'Please wait for the current generation to finish.',
+                          );
+                        }
+                      }} // Close dropdown on click
                     >
-                      {tab.dropdown}
-                    </div>
-                  )}
-                </div>
-              ))}
+                      {tab.name}
+                    </button>
+                    {showDropdown === tab.name && tab.dropdown && (
+                      <div
+                        ref={dropdownRef}
+                        className="absolute left-1/2 transform -translate-x-1/2 mt-6 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]" // Increased z-index
+                        onMouseLeave={() => setShowDropdown('')}
+                      >
+                        {tab.dropdown}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Auth Section */}
         <div className="flex items-center space-x-3">
