@@ -13,9 +13,9 @@ export function WalletBalance({
   walletId,
   circleWalletId,
 }: WalletBalanceProps) {
-  const { balance, loading } = useWalletBalance(walletId, circleWalletId);
+  const { balance, error } = useWalletBalance(walletId, circleWalletId);
 
-  if (balance == 0 && loading) {
+  if (error || balance === null) {
     return <Skeleton className="w-[103px] h-[28px] rounded-full" />;
   }
 

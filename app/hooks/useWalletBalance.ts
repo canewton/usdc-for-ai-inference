@@ -6,10 +6,12 @@ import { toast } from 'sonner';
 
 import { createClient } from '@/utils/supabase/client';
 
+import { useSession } from '../contexts/SessionContext';
+
 interface UseWalletBalanceResult {
-  balance: number;
-  loading: boolean;
+  balance: number | null;
   refreshBalance: () => Promise<void>;
+  error: string | null;
 }
 
 const supabase = createClient();
@@ -18,12 +20,16 @@ export function useWalletBalance(
   walletId: string,
   circleWalletId: string,
 ): UseWalletBalanceResult {
-  const [balance, setBalance] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const session = useSession();
+  const [balance, setBalance] = useState(session.walletBalance);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setBalance(session.walletBalance);
+  }, [session.walletBalance]);
 
   const fetchBalance = useCallback(async () => {
     try {
-      setLoading(true);
       const balanceResponse = await fetch('/api/wallet/balance', {
         method: 'POST',
         headers: {
@@ -42,35 +48,37 @@ export function useWalletBalance(
         toast.error('Error fetching wallet balance', {
           description: parsedBalance.error,
         });
+        setError('Error fetching wallet balance');
         return;
       }
+
+      setError(null);
 
       if (parsedBalance === null || parsedBalance === undefined) {
         console.log('Wallet has no balance');
         toast.info('Wallet has no balance');
-        setBalance(0);
+        session.setWalletBalance(0);
         return;
       }
 
-      setBalance(parsedBalance);
+      session.setWalletBalance(parsedBalance);
     } catch (error) {
       console.error('Error fetching balance:', error);
       toast.error('Failed to fetch balance');
-    } finally {
-      setLoading(false);
+      setError('Failed to fetch balance');
     }
   }, [circleWalletId]);
 
   const updateWalletBalance = useCallback(
     (
       payload: RealtimePostgresUpdatePayload<Record<string, string>>,
-      currentBalance: number,
+      currentBalance: number | null,
     ) => {
-      const stringifiedBalance = currentBalance.toString();
+      const stringifiedBalance = currentBalance?.toString();
       const shouldUpdateBalance = payload.new.balance !== stringifiedBalance;
 
       if (shouldUpdateBalance) {
-        setBalance(Number(payload.new.balance));
+        session.setWalletBalance(Number(payload.new.balance));
       }
     },
     [],
@@ -117,7 +125,7 @@ export function useWalletBalance(
 
   return {
     balance,
-    loading,
+    error,
     refreshBalance: fetchBalance,
   };
 }

@@ -19,6 +19,8 @@ type SessionContextType = {
   setImageChats: (chats: Chat[]) => void;
   textChats: Chat[];
   setTextChats: (chats: Chat[]) => void;
+  walletBalance: number | null;
+  setWalletBalance: (balance: number | null) => void;
 };
 
 export const SessionContext = createContext<SessionContextType>({
@@ -35,6 +37,8 @@ export const SessionContext = createContext<SessionContextType>({
   setImageChats: () => {},
   textChats: [],
   setTextChats: () => {},
+  walletBalance: null,
+  setWalletBalance: () => {},
 });
 
 export function useSession() {
@@ -61,6 +65,7 @@ export function SessionProvider({
   const [ai3dGenerations, setAi3dGenerations] = useState<Ai3dGeneration[]>([]);
   const [imageChats, setImageChats] = useState<Chat[]>([]);
   const [textChats, setTextChats] = useState<Chat[]>([]);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
 
   return (
     <SessionContext.Provider
@@ -78,6 +83,8 @@ export function SessionProvider({
         setImageChats,
         textChats,
         setTextChats,
+        walletBalance,
+        setWalletBalance,
       }}
     >
       {children}
