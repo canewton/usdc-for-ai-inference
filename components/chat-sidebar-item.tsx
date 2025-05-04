@@ -53,7 +53,7 @@ export const ChatSidebarItem = ({
           : 'hover:bg-[#F1F0F5] transition duration-300'
       }`}
       onClick={() => {
-        if (!session.is_ai_inference_loading) {
+        if (!session.isAiInferenceLoading) {
           onSelectChat(chat.id);
         } else {
           toast.info('Please wait for the current generation to finish.');

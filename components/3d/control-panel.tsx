@@ -138,7 +138,7 @@ export default function ControlPanel({
       <div>
         <Button
           onClick={() => {
-            if (session.demo_limit > 0) {
+            if (session.demoLimit > 0) {
               submitPrompt(prompt);
             } else {
               toast.error('Demo limit reached.');

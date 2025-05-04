@@ -57,7 +57,7 @@ const SidebarItem = ({
     <button
       className={classes}
       onClick={() => {
-        if (!session.is_ai_inference_loading) {
+        if (!session.isAiInferenceLoading) {
           router.push(url);
         } else {
           toast.info('Please wait for the current generation to finish.');

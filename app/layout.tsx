@@ -70,9 +70,9 @@ export default async function RootLayout({
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
         <SessionProvider
-          wallet_id={wallet?.id ?? null}
-          circle_wallet_id={wallet?.circle_wallet_id ?? null}
-          api_keys_status={{
+          walletId={wallet?.id ?? null}
+          circleWalletId={wallet?.circle_wallet_id ?? null}
+          apiKeyStatus={{
             text: process.env.OPENAI_API_KEY ? true : false,
             image: process.env.REPLICATE_API_TOKEN ? true : false,
             model: process.env.MESHY_API_URL ? true : false,

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
 import { useSession } from '../contexts/SessionContext';
 
 export function useDemoLimit() {
@@ -31,7 +32,7 @@ export function useDemoLimit() {
   }, []);
 
   useEffect(() => {
-    session.update_demo_limit(remaining ?? 0)
+    session.setDemoLimit(remaining ?? 0);
   }, [remaining]);
 
   return { remaining, loading };

@@ -89,7 +89,7 @@ export function ChatSidebar({
       <div className="overflow-auto h-full px-2">
         <button
           onClick={() => {
-            if (!session.is_ai_inference_loading) {
+            if (!session.isAiInferenceLoading) {
               onNewChat();
             } else {
               toast.info('Please wait for the current generation to finish.');

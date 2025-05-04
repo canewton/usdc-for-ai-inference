@@ -61,7 +61,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
       chat_id: chatIdRef.current ?? currChat,
     },
     onFinish: async (generation: ImageGeneration) => {
-      session.update_demo_limit(session.demo_limit - 1);
+      session.setDemoLimit(session.demoLimit - 1);
 
       if (chatIdRef.current || currChat) {
         const generateChatData =
@@ -105,7 +105,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
   });
 
   useEffect(() => {
-    session.update_is_ai_inference_loading(isAiInferenceLoading);
+    session.setIsAiInferenceLoading(isAiInferenceLoading);
   }, [isAiInferenceLoading]);
   const {
     currChatId,
@@ -144,7 +144,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
     chatInput,
     setMessages,
     handleSubmit: async (e: React.FormEvent<HTMLFormElement>) => {
-      if (session.demo_limit > 0) {
+      if (session.demoLimit > 0) {
         setMessages([
           ...messages,
           {
@@ -171,7 +171,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
   return (
     <>
       <div
-        className={`${!session.api_keys_status.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.apiKeyStatus.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         This page is not available during the hosted demo.
       </div>

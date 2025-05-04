@@ -60,7 +60,7 @@ export function Chat({ currChat }: ChatProps) {
       maxTokens: maxTokens,
     },
     onFinish: async (message: any, { usage }: any) => {
-      session.update_demo_limit(session.demo_limit - 1);
+      session.setDemoLimit(session.demoLimit - 1);
 
       if (chatIdRef.current || currChat) {
         const generateChatData =
@@ -104,7 +104,7 @@ export function Chat({ currChat }: ChatProps) {
   });
 
   useEffect(() => {
-    session.update_is_ai_inference_loading(isAiInferenceLoading);
+    session.setIsAiInferenceLoading(isAiInferenceLoading);
   }, [isAiInferenceLoading]);
 
   const {
@@ -142,7 +142,7 @@ export function Chat({ currChat }: ChatProps) {
     chatInput,
     setMessages,
     handleSubmit: async (e: React.FormEvent<HTMLFormElement>) => {
-      if (session.demo_limit > 0) {
+      if (session.demoLimit > 0) {
         await handleSubmit(e, {
           body: {
             provider: provider,
@@ -162,7 +162,7 @@ export function Chat({ currChat }: ChatProps) {
   return (
     <>
       <div
-        className={`${!session.api_keys_status.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.apiKeyStatus.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         This page is not available during the hosted demo.
       </div>

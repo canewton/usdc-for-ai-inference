@@ -75,7 +75,7 @@ export default function Generate3DModelPage() {
       setError('Session or image data is missing.');
       return;
     }
-    session.update_is_ai_inference_loading(true);
+    session.setIsAiInferenceLoading(true);
     setError(null);
 
     try {
@@ -125,15 +125,15 @@ export default function Generate3DModelPage() {
         setModelUrl(input.url);
         setTaskId(null);
         setError(null);
-        session.update_is_ai_inference_loading(false);
-        session.update_demo_limit(session.demo_limit - 1);
+        session.setIsAiInferenceLoading(false);
+        session.setDemoLimit(session.demoLimit - 1);
         fetchHistory();
         return true;
       } else if (input.status === 'FAILED') {
         setError('Generation failed.');
         setTaskId(null);
-        session.update_is_ai_inference_loading(false);
-        session.update_demo_limit(session.demo_limit - 1);
+        session.setIsAiInferenceLoading(false);
+        session.setDemoLimit(session.demoLimit - 1);
         return true;
       } else {
         setGenerationProgress(input.progress);
@@ -215,7 +215,7 @@ export default function Generate3DModelPage() {
   return (
     <>
       <div
-        className={`${!session.api_keys_status.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.apiKeyStatus.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         <div className="flex flex-col items-center">
           <div className="mb-4">
@@ -244,7 +244,7 @@ export default function Generate3DModelPage() {
       <CanvasArea
         modelUrl={modelUrl}
         imageDataUri={imageDataUri}
-        isLoading={session.is_ai_inference_loading}
+        isLoading={session.isAiInferenceLoading}
         setPrompt={setPrompt}
         setError={setError}
         generationProgress={generationProgress}
@@ -255,7 +255,7 @@ export default function Generate3DModelPage() {
         <ControlPanel
           imageDataUri={imageDataUri}
           prompt={prompt}
-          isLoading={session.is_ai_inference_loading}
+          isLoading={session.isAiInferenceLoading}
           error={error}
           setImageDataUri={setImageDataUri}
           setPrompt={setPrompt}

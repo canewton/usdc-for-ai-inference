@@ -28,7 +28,7 @@ export default function RightAiSidebar({
       className={`flex w-1/3 min-w-[300px] flex-col items-center p-6 border border-gray-200 rounded-l-3xl bg-section h-[calc(100vh-85px)] overflow-y-auto space-y-[20px]`}
     >
       <div className="px-4 py-3 border border-gray-200 rounded-lg bg-white mb-4 w-full">
-        {session.circle_wallet_id && session.wallet_id ? (
+        {session.circleWalletId && session.walletId ? (
           <>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 relative bg-blue-50 rounded-full flex items-center justify-center">
@@ -41,8 +41,8 @@ export default function RightAiSidebar({
               </div>
               <div className="flex flex-col">
                 <WalletBalance
-                  circleWalletId={session.circle_wallet_id}
-                  walletId={session.wallet_id}
+                  circleWalletId={session.circleWalletId}
+                  walletId={session.walletId}
                   key={`balance-${refreshTrigger}`}
                 />
                 <div className="text-xs text-gray-500">USDC Balance</div>
