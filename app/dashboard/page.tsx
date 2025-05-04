@@ -9,14 +9,10 @@ import { WalletBalance } from '@/components/usdc-insights/wallet-balance';
 import { WalletInformationDialog } from '@/components/usdc-insights/wallet-information-dialog';
 import { createClient } from '@/utils/supabase/server';
 
-import { useDemoLimit } from '../hooks/useDemoLimit';
 import { USDCIcon } from '../icons/USDCIcon';
 
 export default async function Dashboard() {
   const supabase = await createClient();
-
-  // refetch the demo limit on this page that updates global state
-  useDemoLimit();
 
   const {
     data: { user },

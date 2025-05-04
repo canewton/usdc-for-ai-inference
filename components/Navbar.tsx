@@ -46,13 +46,14 @@ export default function Navbar({ user, profile }: NavbarProps) {
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState('');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [refetched, setRefetched] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
   const session = useSession();
   const router = useRouter();
 
   // update global demo limit state on load
-  useDemoLimit();
+  const { refetch, error } = useDemoLimit();
 
   // Determine which tabs to display
   const tabsToDisplay = profile?.is_admin ? adminTabs : commonTabs;
@@ -75,6 +76,19 @@ export default function Navbar({ user, profile }: NavbarProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (user && !profile?.is_admin) {
+      refetch();
+      setRefetched(true);
+    }
+  }, [user, profile]);
+
+  useEffect(() => {
+    if (user && !profile?.is_admin && error && refetched) {
+      toast.error(error);
+    }
+  }, [user, profile, error]);
 
   // Function to determine if a tab is active
   const isTabActive = (tabRoute: string, tabDropdownRoutes?: string[]) => {
@@ -203,7 +217,16 @@ export default function Navbar({ user, profile }: NavbarProps) {
                         </div>
                         <button
                           className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center"
-                          onClick={signOutAction}
+                          onClick={() => {
+                            signOutAction().then(() => {
+                              session.setAi3dGenerations([]);
+                              session.setImageChats([]);
+                              session.setTextChats([]);
+                              session.setWalletBalance(null);
+                              session.setDemoLimit(0);
+                              session.setIsAiInferenceLoading(false);
+                            });
+                          }}
                         >
                           Sign Out
                         </button>
