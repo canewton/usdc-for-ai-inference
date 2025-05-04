@@ -31,30 +31,10 @@ export default function Generate3DModelPage() {
       const response = await fetch('/api/getgeneratedmodels', {
         method: 'GET',
       });
-
       const data: Ai3dGeneration[] = await response.json();
-      if (response.ok) {
-        const formattedHistory: ModelHistoryItem[] = (data || [])
-          .map(
-            (item: any): ModelHistoryItem => ({
-              id: item.id || `missing-id-${Math.random()}`,
-              url: item.url || '',
-              prompt: item.prompt || '',
-              user_id: item.user_id || '',
-              title: item.title || '',
-              created_at: item.created_at
-                ? new Date(item.created_at).toISOString()
-                : new Date().toISOString(),
-              ...item,
-            }),
-          )
-          .sort(
-            (a: any, b: any) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at).getTime(),
-          );
 
-        setHistory(formattedHistory);
+      if (response.ok) {
+        session.setAi3dGenerations(data);
       } else {
         setError('Failed to load history.');
         setHistory([]);
@@ -65,6 +45,29 @@ export default function Generate3DModelPage() {
       setHistory([]);
     }
   };
+
+  useEffect(() => {
+    const formattedHistory: ModelHistoryItem[] = session.ai3dGenerations
+      .map(
+        (item: any): ModelHistoryItem => ({
+          id: item.id || `missing-id-${Math.random()}`,
+          url: item.url || '',
+          prompt: item.prompt || '',
+          user_id: item.user_id || '',
+          title: item.title || '',
+          created_at: item.created_at
+            ? new Date(item.created_at).toISOString()
+            : new Date().toISOString(),
+          ...item,
+        }),
+      )
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+
+    setHistory(formattedHistory);
+  }, [session.ai3dGenerations]);
 
   useEffect(() => {
     fetchHistory();

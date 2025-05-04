@@ -10,7 +10,7 @@ import { useSession } from '../contexts/SessionContext';
 import { ChatController } from '../controllers/chat.controller';
 
 interface ChatFunctionalityProps<G, M> {
-  pageBaseUrl: 'chat' | '3d' | 'image' | 'video';
+  pageBaseUrl: 'chat' | 'image';
   currChat: string;
   fetchGeneration: (id: string) => Promise<G[] | null>;
   generationToMessages: (generation: G) => M[];
@@ -33,10 +33,30 @@ export function useChatFunctionality<G, M extends BaseMessage>({
   chatIdRef,
 }: ChatFunctionalityProps<G, M>) {
   const [currChatId, setCurrChatId] = useState(currChat || '');
-  const [chats, setChats] = useState<AiChat[]>([]);
 
   const session = useSession();
   const router = useRouter();
+
+  const setSessionChat = (chat: AiChat[]) => {
+    if (pageBaseUrl === 'chat') {
+      session.setTextChats(chat);
+    } else {
+      session.setImageChats(chat);
+    }
+  };
+
+  const getSessionChat = () => {
+    if (pageBaseUrl === 'chat') {
+      return session.textChats;
+    } else {
+      return session.imageChats;
+    }
+  };
+  const [chats, setChats] = useState<AiChat[]>(getSessionChat());
+
+  useEffect(() => {
+    setChats(getSessionChat());
+  }, [session.textChats, session.imageChats]);
 
   const onSelectChat = async (id: string) => {
     const messages = await fetchGeneration(id);
@@ -61,7 +81,7 @@ export function useChatFunctionality<G, M extends BaseMessage>({
             console.error('Failed to delete chat');
             return;
           }
-          setChats((prevChats) => prevChats.filter((chat) => chat.id !== id));
+          setSessionChat(getSessionChat().filter((chat) => chat.id !== id));
           setMessages([]);
           setCurrChatId('');
           router.push(`/${pageBaseUrl}/`);
@@ -97,9 +117,9 @@ export function useChatFunctionality<G, M extends BaseMessage>({
         window.history.replaceState(null, '', `/${pageBaseUrl}/${chatData.id}`);
         // Update chats
         if (chats.length > 0 && chats[0].id === '') {
-          setChats((prevChats) => [chatData, ...prevChats.slice(1)]);
+          setSessionChat([chatData, ...getSessionChat().slice(1)]);
         } else {
-          setChats((prevChats) => [chatData, ...prevChats]);
+          setSessionChat([chatData, ...getSessionChat()]);
         }
       } else {
         console.error('Failed to create new chat');
@@ -123,7 +143,7 @@ export function useChatFunctionality<G, M extends BaseMessage>({
           console.error('Failed to fetch chats');
           return;
         }
-        setChats(chats);
+        setSessionChat(chats);
       });
   }, []);
 
