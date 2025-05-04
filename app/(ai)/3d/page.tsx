@@ -5,7 +5,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useSession } from '@/app/contexts/SessionContext';
-import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import { usePolling } from '@/app/hooks/usePolling';
 import CanvasArea from '@/components/3d/canvas';
 import ControlPanel from '@/components/3d/control-panel';
@@ -16,7 +15,6 @@ import RightAiSidebar from '@/components/RightAiSidebar';
 import type { Ai3dGeneration, Chat } from '@/types/database.types';
 
 export default function Generate3DModelPage() {
-  const { remaining, loading: demoLimitLoading } = useDemoLimit();
   const [prompt, setPrompt] = useState('');
   const [imageDataUri, setImageDataUri] = useState('');
   const [modelUrl, setModelUrl] = useState<string | null>(null);
@@ -77,10 +75,6 @@ export default function Generate3DModelPage() {
       setError('Session or image data is missing.');
       return;
     }
-    if (remaining === 0) {
-      toast.error('Demo limit reached. Please upgrade to continue.');
-      return;
-    }
     session.update_is_ai_inference_loading(true);
     setError(null);
 
@@ -132,12 +126,14 @@ export default function Generate3DModelPage() {
         setTaskId(null);
         setError(null);
         session.update_is_ai_inference_loading(false);
+        session.update_demo_limit(session.demo_limit - 1);
         fetchHistory();
         return true;
       } else if (input.status === 'FAILED') {
         setError('Generation failed.');
         setTaskId(null);
         session.update_is_ai_inference_loading(false);
+        session.update_demo_limit(session.demo_limit - 1);
         return true;
       } else {
         setGenerationProgress(input.progress);
@@ -251,8 +247,6 @@ export default function Generate3DModelPage() {
         isLoading={session.is_ai_inference_loading}
         setPrompt={setPrompt}
         setError={setError}
-        remaining={remaining}
-        demoLimitLoading={demoLimitLoading}
         generationProgress={generationProgress}
       />
 
@@ -268,8 +262,6 @@ export default function Generate3DModelPage() {
           setError={setError}
           submitPrompt={submitPrompt}
           modelUrl={modelUrl}
-          remaining={remaining}
-          demoLimitLoading={demoLimitLoading}
           title={title}
           setTitle={setTitle}
         />

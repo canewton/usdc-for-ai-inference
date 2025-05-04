@@ -9,10 +9,10 @@ import { toast } from 'sonner';
 
 import { signOutAction } from '@/app/actions'; // Assuming actions are in app/actions
 import { useSession } from '@/app/contexts/SessionContext';
-import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import { NavbarAIDropdown } from '@/components/navbar-ai-dropdown';
 import { Button } from '@/components/ui/button';
 import type { Profile } from '@/types/database.types'; // Assuming types/database.types.ts exists
+import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 
 interface NavbarProps {
   user: User | null;
@@ -50,7 +50,9 @@ export default function Navbar({ user, profile }: NavbarProps) {
   const navbarRef = useRef<HTMLDivElement>(null);
   const session = useSession();
   const router = useRouter();
-  const { remaining, loading: demoLimitLoading } = useDemoLimit();
+
+  // update global demo limit state on load
+  useDemoLimit();
 
   // Determine which tabs to display
   const tabsToDisplay = profile?.is_admin ? adminTabs : commonTabs;
@@ -171,7 +173,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
           <div className="flex items-center space-x-[50px]">
             {user && !profile?.is_admin && (
               <p className="text-sm text-gray-400">
-                Demo AI generations remaining: {remaining ?? 0}
+                Demo AI generations remaining: {session.demo_limit}
               </p>
             )}
 

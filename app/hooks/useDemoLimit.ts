@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useSession } from '../contexts/SessionContext';
 
 export function useDemoLimit() {
   const [remaining, setRemaining] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const session = useSession();
 
   useEffect(() => {
     async function checkLimit() {
@@ -26,6 +29,10 @@ export function useDemoLimit() {
 
     checkLimit();
   }, []);
+
+  useEffect(() => {
+    session.update_demo_limit(remaining ?? 0)
+  }, [remaining]);
 
   return { remaining, loading };
 }

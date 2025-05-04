@@ -5,9 +5,9 @@ export async function checkDemoLimit(
 ): Promise<{ canGenerate: boolean; remaining: number }> {
   const supabase = await createClient();
 
-  if (!process.env.NEXT_PUBLIC_VERCEL_URL) {
-    return { canGenerate: true, remaining: Infinity };
-  }
+  // if (!process.env.NEXT_PUBLIC_VERCEL_URL) {
+  //   return { canGenerate: true, remaining: Infinity };
+  // }
 
   // Count all types of generations
   const { data: chatGenerations, error: chatError } = await supabase
@@ -38,6 +38,12 @@ export async function checkDemoLimit(
     (chatGenerations?.length || 0) +
     (imageGenerations?.length || 0) +
     (modelGenerations?.length || 0);
+
+  console.log('Total generations:', totalGenerations);
+  console.log(
+    'remaining:',
+    parseInt(process.env.USER_AI_GENERATION_LIMIT ?? '5') - totalGenerations,
+  );
 
   const remaining = Math.max(
     0,

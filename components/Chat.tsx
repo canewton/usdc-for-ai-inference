@@ -4,6 +4,7 @@ import type { Message } from '@ai-sdk/react';
 import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import { ChatGenerationController } from '@/app/controllers/chat-generation.controller';
@@ -59,6 +60,8 @@ export function Chat({ currChat }: ChatProps) {
       maxTokens: maxTokens,
     },
     onFinish: async (message: any, { usage }: any) => {
+      session.update_demo_limit(session.demo_limit - 1);
+
       if (chatIdRef.current || currChat) {
         const generateChatData =
           await ChatGenerationController.getInstance().create(
@@ -107,7 +110,6 @@ export function Chat({ currChat }: ChatProps) {
   const {
     currChatId,
     chats,
-    showLimitError,
     onSelectChat,
     onDeleteChat,
     onNewChat,
@@ -140,12 +142,16 @@ export function Chat({ currChat }: ChatProps) {
     chatInput,
     setMessages,
     handleSubmit: async (e: React.FormEvent<HTMLFormElement>) => {
-      await handleSubmit(e, {
-        body: {
-          provider: provider,
-          maxTokens: maxTokens,
-        },
-      });
+      if (session.demo_limit > 0) {
+        await handleSubmit(e, {
+          body: {
+            provider: provider,
+            maxTokens: maxTokens,
+          },
+        });
+      } else {
+        toast.error('Demo limit reached.');
+      }
     },
     chatIdRef,
   });
@@ -222,11 +228,6 @@ export function Chat({ currChat }: ChatProps) {
               editingMessage={isEditing}
               maxLength={1000}
             />
-            {showLimitError && (
-              <p className="text-red-500 text-sm mt-2 text-center">
-                Demo limit reached. Please upgrade to continue.
-              </p>
-            )}
           </div>
         </div>
       </MainAiSection>

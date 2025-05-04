@@ -65,7 +65,7 @@ export async function POST(req: Request) {
     const { canGenerate, remaining } = await checkDemoLimit(user.id);
     if (!canGenerate) {
       return NextResponse.json(
-        { error: 'Demo limit reached. Please upgrade to continue.' },
+        { error: 'Demo limit reached.' },
         { status: 429 },
       );
     }

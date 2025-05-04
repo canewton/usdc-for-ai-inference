@@ -9,6 +9,8 @@ type SessionContextType = {
   api_keys_status: any;
   is_ai_inference_loading: boolean;
   update_is_ai_inference_loading: (loading: boolean) => void;
+  demo_limit: number;
+  update_demo_limit: (limit: number) => void;
 };
 
 export const SessionContext = createContext<SessionContextType>({
@@ -17,6 +19,8 @@ export const SessionContext = createContext<SessionContextType>({
   api_keys_status: null,
   is_ai_inference_loading: false,
   update_is_ai_inference_loading: () => {},
+  demo_limit: 0,
+  update_demo_limit: () => {},
 });
 
 export function useSession() {
@@ -40,6 +44,7 @@ export function SessionProvider({
 }) {
   const [is_ai_inference_loading, update_is_ai_inference_loading] =
     useState(false);
+  const [demo_limit, update_demo_limit] = useState(0);
 
   return (
     <SessionContext.Provider
@@ -49,6 +54,8 @@ export function SessionProvider({
         api_keys_status,
         is_ai_inference_loading,
         update_is_ai_inference_loading,
+        demo_limit,
+        update_demo_limit,
       }}
     >
       {children}

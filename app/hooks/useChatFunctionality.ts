@@ -8,7 +8,6 @@ import type { BaseMessage } from '@/utils/types';
 
 import { useSession } from '../contexts/SessionContext';
 import { ChatController } from '../controllers/chat.controller';
-import { useDemoLimit } from './useDemoLimit';
 
 interface ChatFunctionalityProps<G, M> {
   pageBaseUrl: 'chat' | '3d' | 'image' | 'video';
@@ -33,10 +32,8 @@ export function useChatFunctionality<G, M extends BaseMessage>({
   handleSubmit,
   chatIdRef,
 }: ChatFunctionalityProps<G, M>) {
-  const { remaining } = useDemoLimit();
   const [currChatId, setCurrChatId] = useState(currChat || '');
   const [chats, setChats] = useState<AiChat[]>([]);
-  const [showLimitError, setShowLimitError] = useState(false);
 
   const session = useSession();
   const router = useRouter();
@@ -80,12 +77,7 @@ export function useChatFunctionality<G, M extends BaseMessage>({
 
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (remaining === 0) {
-      setShowLimitError(true);
-      return;
-    }
 
-    setShowLimitError(false);
     var chatId = currChatId;
     if (!currChatId) {
       // Post new chat
@@ -151,7 +143,6 @@ export function useChatFunctionality<G, M extends BaseMessage>({
   return {
     currChatId,
     chats,
-    showLimitError,
     onSelectChat,
     onDeleteChat,
     onNewChat,

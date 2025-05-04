@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import { ImageGenerationController } from '@/app/controllers/image-generation.controller';
@@ -39,6 +40,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
   const [quality, setQuality] = useState(80);
   const [isEditing, setIsEditing] = useState(false);
   const chatIdRef = useRef<string | null>(null);
+  const session = useSession();
 
   const {
     messages,
@@ -59,6 +61,8 @@ export function ImageChat({ currChat }: ImageChatProps) {
       chat_id: chatIdRef.current ?? currChat,
     },
     onFinish: async (generation: ImageGeneration) => {
+      session.update_demo_limit(session.demo_limit - 1);
+
       if (chatIdRef.current || currChat) {
         const generateChatData =
           await ImageGenerationController.getInstance().create(
@@ -103,11 +107,9 @@ export function ImageChat({ currChat }: ImageChatProps) {
   useEffect(() => {
     session.update_is_ai_inference_loading(isAiInferenceLoading);
   }, [isAiInferenceLoading]);
-
   const {
     currChatId,
     chats,
-    showLimitError,
     onSelectChat,
     onDeleteChat,
     onNewChat,
@@ -142,26 +144,28 @@ export function ImageChat({ currChat }: ImageChatProps) {
     chatInput,
     setMessages,
     handleSubmit: async (e: React.FormEvent<HTMLFormElement>) => {
-      setMessages([
-        ...messages,
-        {
-          id: `${messages.length}`,
-          role: 'user',
-          prompt: chatInput,
-          imageUrl: '',
-          cost: 0.01,
-          provider: provider,
-          downloadable: false,
-        },
-      ]);
-      await handleSubmit(e);
+      if (session.demo_limit > 0) {
+        setMessages([
+          ...messages,
+          {
+            id: `${messages.length}`,
+            role: 'user',
+            prompt: chatInput,
+            imageUrl: '',
+            cost: 0.01,
+            provider: provider,
+            downloadable: false,
+          },
+        ]);
+        await handleSubmit(e);
+      } else {
+        toast.error('Demo limit reached.');
+      }
     },
     chatIdRef,
   });
 
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
-  const session = useSession();
-
   const wordsPerToken = 'Each image costs 0.01 USDC';
 
   return (
@@ -234,11 +238,6 @@ export function ImageChat({ currChat }: ImageChatProps) {
               editingMessage={isEditing}
               maxLength={1000}
             />
-            {showLimitError && (
-              <p className="text-red-500 text-sm mt-2 text-center">
-                Demo limit reached. Please upgrade to continue.
-              </p>
-            )}
           </div>
         </div>
       </MainAiSection>

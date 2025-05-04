@@ -25,8 +25,6 @@ interface CanvasAreaProps {
   isLoading: boolean;
   setPrompt: (prompt: string) => void;
   setError: (error: string | null) => void;
-  remaining: number | null;
-  demoLimitLoading: boolean;
   generationProgress: number;
 }
 
@@ -36,8 +34,6 @@ export default function CanvasArea({
   isLoading,
   setPrompt,
   setError,
-  remaining,
-  demoLimitLoading,
   generationProgress,
 }: CanvasAreaProps) {
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
