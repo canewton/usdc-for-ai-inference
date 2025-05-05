@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       }
 
       const aiProject = await circleWalletTransfer(
-        texture_prompt,
+        title,
         aiModel.IMAGE_TO_3D,
         wallet.circle_wallet_id,
         `${MODEL_ASSET_PRICING.userBilledPrice}`,
