@@ -45,11 +45,16 @@ const adminTabs: NavTab[] = [
 export default function Navbar({ user, profile }: NavbarProps) {
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState('');
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [refetched, setRefetched] = useState(false);
+  const [dropdownHovered, setDropdownHovered] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
   const session = useSession();
   const router = useRouter();
-  const { remaining, loading: demoLimitLoading } = useDemoLimit();
+
+  // update global demo limit state on load
+  const { refetch, error } = useDemoLimit();
 
   // Determine which tabs to display
   const tabsToDisplay = profile?.is_admin ? adminTabs : commonTabs;
@@ -73,6 +78,19 @@ export default function Navbar({ user, profile }: NavbarProps) {
     };
   }, []);
 
+  useEffect(() => {
+    if (user && !profile?.is_admin) {
+      refetch();
+      setRefetched(true);
+    }
+  }, [user, profile]);
+
+  useEffect(() => {
+    if (user && !profile?.is_admin && error && refetched) {
+      toast.error(error);
+    }
+  }, [user, profile, error]);
+
   // Function to determine if a tab is active
   const isTabActive = (tabRoute: string, tabDropdownRoutes?: string[]) => {
     // Exact match or base path match
@@ -89,12 +107,20 @@ export default function Navbar({ user, profile }: NavbarProps) {
   };
 
   return (
-    <div className="mb-16">
+    <div
+      className="pb-[70px]"
+      onMouseLeave={() => {
+        if (!dropdownHovered) {
+          setShowDropdown('');
+          setShowProfileDropdown(false);
+        }
+      }}
+    >
       {' '}
       {/* Added margin-bottom to prevent content overlap */}
-      <div className="fixed top-0 left-0 right-0 min-h-16 bg-white border-b border-gray-200 flex items-center justify-between shadow-lg px-6 md:px-20 z-50">
+      <div className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between shadow-lg px-6 md:px-8 z-50">
         {/* Logo */}
-        <div className="flex items-center space-x-[100px]">
+        <div className="flex items-center space-x-[50px]">
           <Link
             href={
               user ? (profile?.is_admin ? '/admin' : '/dashboard') : '/sign-in'
@@ -130,7 +156,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
                       }}
                       onClick={() => {
                         setShowDropdown('');
-                        if (!session.is_ai_inference_loading) {
+                        if (!session.isAiInferenceLoading) {
                           router.push(tab.route);
                         } else {
                           toast.info(
@@ -145,7 +171,13 @@ export default function Navbar({ user, profile }: NavbarProps) {
                       <div
                         ref={dropdownRef}
                         className="absolute left-1/2 transform -translate-x-1/2 mt-6 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]" // Increased z-index
-                        onMouseLeave={() => setShowDropdown('')}
+                        onMouseLeave={() => {
+                          setShowDropdown('');
+                          setDropdownHovered(false);
+                        }}
+                        onMouseEnter={() => {
+                          setDropdownHovered(true);
+                        }}
                       >
                         {tab.dropdown}
                       </div>
@@ -157,27 +189,44 @@ export default function Navbar({ user, profile }: NavbarProps) {
           )}
         </div>
 
-        <div className="flex items-center space-x-[100px]">
+        <div className="flex items-center space-x-[50px]">
           {user && (
-            <p className="text-sm text-gray-600">
-              Demo AI generations remaining: {remaining ?? 0}
+            <p className="text-sm text-gray-400">
+              Demo AI generations remaining: {session.demoLimit}
             </p>
           )}
 
           {/* Auth Section */}
           <div className="flex items-center space-x-3">
             {user ? (
-              <>
-                {/* Simple Profile Initial Circle */}
-                <div className="bg-indigo-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium">
+              <div className="relative">
+                {/* Profile Circle (Dropdown Trigger) */}
+                <div
+                  className="bg-indigo-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium cursor-pointer"
+                  onMouseEnter={() => setShowProfileDropdown(true)}
+                >
                   {user.email ? user.email[0].toUpperCase() : '?'}
                 </div>
-                <form action={signOutAction}>
-                  <Button type="submit" variant="outline" size="sm">
-                    Sign Out
-                  </Button>
-                </form>
-              </>
+
+                {/* Dropdown Menu */}
+                {showProfileDropdown && (
+                  <div
+                    className="absolute -right-4 mt-5 mx-4 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+                    onMouseEnter={() => setShowProfileDropdown(true)}
+                    onMouseLeave={() => setShowProfileDropdown(false)}
+                  >
+                    <div className="block w-full px-4 py-2 text-center">
+                      <p className="text-sm text-gray-700">{user.email}</p>
+                    </div>
+                    <button
+                      className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center"
+                      onClick={signOutAction}
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               // Show Sign In/Sign Up buttons if not logged in and not on auth pages
               !pathname.startsWith('/sign-in') &&

@@ -3,20 +3,42 @@
 import React, { useState } from 'react';
 import { createContext, useContext } from 'react';
 
+import type { Ai3dGeneration, Chat } from '@/types/database.types';
+
 type SessionContextType = {
-  wallet_id: string | null;
-  circle_wallet_id: string | null;
-  api_keys_status: any;
-  is_ai_inference_loading: boolean;
-  update_is_ai_inference_loading: (loading: boolean) => void;
+  walletId: string | null;
+  circleWalletId: string | null;
+  apiKeyStatus: any;
+  isAiInferenceLoading: boolean;
+  setIsAiInferenceLoading: (loading: boolean) => void;
+  demoLimit: number;
+  setDemoLimit: (limit: number) => void;
+  ai3dGenerations: Ai3dGeneration[];
+  setAi3dGenerations: (generations: Ai3dGeneration[]) => void;
+  imageChats: Chat[];
+  setImageChats: (chats: Chat[]) => void;
+  textChats: Chat[];
+  setTextChats: (chats: Chat[]) => void;
+  walletBalance: number | null;
+  setWalletBalance: (balance: number | null) => void;
 };
 
 export const SessionContext = createContext<SessionContextType>({
-  wallet_id: null,
-  circle_wallet_id: null,
-  api_keys_status: null,
-  is_ai_inference_loading: false,
-  update_is_ai_inference_loading: () => {},
+  walletId: null,
+  circleWalletId: null,
+  apiKeyStatus: null,
+  isAiInferenceLoading: false,
+  setIsAiInferenceLoading: () => {},
+  demoLimit: 0,
+  setDemoLimit: () => {},
+  ai3dGenerations: [],
+  setAi3dGenerations: () => {},
+  imageChats: [],
+  setImageChats: () => {},
+  textChats: [],
+  setTextChats: () => {},
+  walletBalance: null,
+  setWalletBalance: () => {},
 });
 
 export function useSession() {
@@ -29,26 +51,40 @@ export function useSession() {
 
 export function SessionProvider({
   children,
-  wallet_id,
-  circle_wallet_id,
-  api_keys_status,
+  walletId,
+  circleWalletId,
+  apiKeyStatus,
 }: {
   children: React.ReactNode;
-  wallet_id: string | null;
-  circle_wallet_id: string | null;
-  api_keys_status: any;
+  walletId: string | null;
+  circleWalletId: string | null;
+  apiKeyStatus: any;
 }) {
-  const [is_ai_inference_loading, update_is_ai_inference_loading] =
-    useState(false);
+  const [isAiInferenceLoading, setIsAiInferenceLoading] = useState(false);
+  const [demoLimit, setDemoLimit] = useState(0);
+  const [ai3dGenerations, setAi3dGenerations] = useState<Ai3dGeneration[]>([]);
+  const [imageChats, setImageChats] = useState<Chat[]>([]);
+  const [textChats, setTextChats] = useState<Chat[]>([]);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
 
   return (
     <SessionContext.Provider
       value={{
-        wallet_id,
-        circle_wallet_id,
-        api_keys_status,
-        is_ai_inference_loading,
-        update_is_ai_inference_loading,
+        walletId,
+        circleWalletId,
+        apiKeyStatus,
+        isAiInferenceLoading,
+        setIsAiInferenceLoading,
+        demoLimit,
+        setDemoLimit,
+        ai3dGenerations,
+        setAi3dGenerations,
+        imageChats,
+        setImageChats,
+        textChats,
+        setTextChats,
+        walletBalance,
+        setWalletBalance,
       }}
     >
       {children}

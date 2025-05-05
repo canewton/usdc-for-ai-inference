@@ -4,6 +4,7 @@ import type { Message } from '@ai-sdk/react';
 import { useChat } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import { ChatGenerationController } from '@/app/controllers/chat-generation.controller';
@@ -26,7 +27,7 @@ import { TEXT_MODEL_PRICING } from '@/utils/constants';
 import { AiGenerationIntro } from './ai-generation-intro';
 
 const promptSuggestions = [
-  { title: 'Explain how to load my wallet', icon: WalletIcon },
+  { title: 'What are the benefits of USDC', icon: WalletIcon },
   { title: 'Tell me about USDC security', icon: UsdcIcon },
   { title: 'Surprise me', icon: SparkIcon },
 ];
@@ -56,9 +57,12 @@ export function Chat({ currChat }: ChatProps) {
     api: '/api/generatetext',
     body: {
       provider: provider,
-      maxTokens: maxTokens,
+      max_tokens: maxTokens,
+      circle_wallet_id: session.circleWalletId,
     },
     onFinish: async (message: any, { usage }: any) => {
+      session.setDemoLimit(session.demoLimit - 1);
+
       if (chatIdRef.current || currChat) {
         const generateChatData =
           await ChatGenerationController.getInstance().create(
@@ -101,13 +105,12 @@ export function Chat({ currChat }: ChatProps) {
   });
 
   useEffect(() => {
-    session.update_is_ai_inference_loading(isAiInferenceLoading);
+    session.setIsAiInferenceLoading(isAiInferenceLoading);
   }, [isAiInferenceLoading]);
 
   const {
     currChatId,
     chats,
-    showLimitError,
     onSelectChat,
     onDeleteChat,
     onNewChat,
@@ -140,12 +143,22 @@ export function Chat({ currChat }: ChatProps) {
     chatInput,
     setMessages,
     handleSubmit: async (e: React.FormEvent<HTMLFormElement>) => {
-      await handleSubmit(e, {
-        body: {
-          provider: provider,
-          maxTokens: maxTokens,
-        },
-      });
+      if (session.demoLimit > 0 && (session.walletBalance ?? 0) > 0) {
+        await handleSubmit(e, {
+          body: {
+            provider: provider,
+            maxTokens: maxTokens,
+          },
+        });
+      } else if (session.demoLimit <= 0) {
+        toast.error('Demo limit reached.');
+      } else if (
+        (session.walletBalance ?? 0) -
+          maxTokens * TEXT_MODEL_PRICING[provider].userBilledInputPrice <
+        0
+      ) {
+        toast.error('Insufficient wallet balance.');
+      }
     },
     chatIdRef,
   });
@@ -156,7 +169,7 @@ export function Chat({ currChat }: ChatProps) {
   return (
     <>
       <div
-        className={`${!session.api_keys_status.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.apiKeyStatus.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         This page is not available during the hosted demo.
       </div>
@@ -222,11 +235,6 @@ export function Chat({ currChat }: ChatProps) {
               editingMessage={isEditing}
               maxLength={1000}
             />
-            {showLimitError && (
-              <p className="text-red-500 text-sm mt-2 text-center">
-                Demo limit reached. Please upgrade to continue.
-              </p>
-            )}
           </div>
         </div>
       </MainAiSection>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import { ImageGenerationController } from '@/app/controllers/image-generation.controller';
@@ -39,6 +40,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
   const [quality, setQuality] = useState(80);
   const [isEditing, setIsEditing] = useState(false);
   const chatIdRef = useRef<string | null>(null);
+  const session = useSession();
 
   const {
     messages,
@@ -57,8 +59,11 @@ export function ImageChat({ currChat }: ImageChatProps) {
       output_quality: quality,
       provider,
       chat_id: chatIdRef.current ?? currChat,
+      circle_wallet_id: session.circleWalletId,
     },
     onFinish: async (generation: ImageGeneration) => {
+      session.setDemoLimit(session.demoLimit - 1);
+
       if (chatIdRef.current || currChat) {
         const generateChatData =
           await ImageGenerationController.getInstance().create(
@@ -101,13 +106,11 @@ export function ImageChat({ currChat }: ImageChatProps) {
   });
 
   useEffect(() => {
-    session.update_is_ai_inference_loading(isAiInferenceLoading);
+    session.setIsAiInferenceLoading(isAiInferenceLoading);
   }, [isAiInferenceLoading]);
-
   const {
     currChatId,
     chats,
-    showLimitError,
     onSelectChat,
     onDeleteChat,
     onNewChat,
@@ -142,32 +145,39 @@ export function ImageChat({ currChat }: ImageChatProps) {
     chatInput,
     setMessages,
     handleSubmit: async (e: React.FormEvent<HTMLFormElement>) => {
-      setMessages([
-        ...messages,
-        {
-          id: `${messages.length}`,
-          role: 'user',
-          prompt: chatInput,
-          imageUrl: '',
-          cost: 0.01,
-          provider: provider,
-          downloadable: false,
-        },
-      ]);
-      await handleSubmit(e);
+      if (session.demoLimit > 0 && (session.walletBalance ?? 0) > 0) {
+        setMessages([
+          ...messages,
+          {
+            id: `${messages.length}`,
+            role: 'user',
+            prompt: chatInput,
+            imageUrl: '',
+            cost: 0.01,
+            provider: provider,
+            downloadable: false,
+          },
+        ]);
+        await handleSubmit(e);
+      } else if (session.demoLimit <= 0) {
+        toast.error('Demo limit reached.');
+      } else if (
+        (session.walletBalance ?? 0) - IMAGE_MODEL_PRICING.userBilledPrice <
+        0
+      ) {
+        toast.error('Insufficient wallet balance.');
+      }
     },
     chatIdRef,
   });
 
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
-  const session = useSession();
-
   const wordsPerToken = 'Each image costs 0.01 USDC';
 
   return (
     <>
       <div
-        className={`${!session.api_keys_status.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.apiKeyStatus.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         This page is not available during the hosted demo.
       </div>
@@ -217,7 +227,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
           ) : (
             <AiGenerationIntro
               title="What can you create?"
-              description="Generate images for $0.01 each"
+              description={`Generate images for $${IMAGE_MODEL_PRICING.userBilledPrice} each`}
             />
           )}
           <div className="w-full max-w-[800px]">
@@ -234,11 +244,6 @@ export function ImageChat({ currChat }: ImageChatProps) {
               editingMessage={isEditing}
               maxLength={1000}
             />
-            {showLimitError && (
-              <p className="text-red-500 text-sm mt-2 text-center">
-                Demo limit reached. Please upgrade to continue.
-              </p>
-            )}
           </div>
         </div>
       </MainAiSection>

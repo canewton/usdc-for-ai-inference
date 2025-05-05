@@ -4,6 +4,8 @@ import Replicate from 'replicate';
 import { v4 as uuidv4 } from 'uuid';
 
 import { checkDemoLimit } from '@/app/utils/demoLimit';
+import { IMAGE_MODEL_PRICING } from '@/utils/constants';
+import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
 import { createClient } from '@/utils/supabase/server';
 
 export async function POST(request: NextRequest) {
@@ -26,8 +28,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { prompt, aspect_ratio, output_quality, provider, chat_id } =
-      await request.json();
+    const {
+      prompt,
+      aspect_ratio,
+      output_quality,
+      provider,
+      chat_id,
+      circle_wallet_id,
+    } = await request.json();
+
+    const response = await circleDeveloperSdk.getWalletTokenBalance({
+      id: circle_wallet_id,
+      includeAll: true,
+    });
+
+    const parsedAmount = response.data?.tokenBalances?.find(
+      ({ token }: { token: { symbol?: string } }) => token.symbol === 'USDC',
+    )?.amount;
+
+    if (
+      !parsedAmount ||
+      parseInt(parsedAmount) - IMAGE_MODEL_PRICING.userBilledPrice < 0
+    ) {
+      console.log('Insufficient wallet balance');
+      return NextResponse.json(
+        { error: 'Insufficient wallet balance' },
+        { status: 400 },
+      );
+    }
 
     const replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,

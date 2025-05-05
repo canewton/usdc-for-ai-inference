@@ -5,7 +5,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useSession } from '@/app/contexts/SessionContext';
-import { useDemoLimit } from '@/app/hooks/useDemoLimit';
 import { usePolling } from '@/app/hooks/usePolling';
 import CanvasArea from '@/components/3d/canvas';
 import ControlPanel from '@/components/3d/control-panel';
@@ -16,7 +15,6 @@ import RightAiSidebar from '@/components/RightAiSidebar';
 import type { Ai3dGeneration, Chat } from '@/types/database.types';
 
 export default function Generate3DModelPage() {
-  const { remaining, loading: demoLimitLoading } = useDemoLimit();
   const [prompt, setPrompt] = useState('');
   const [imageDataUri, setImageDataUri] = useState('');
   const [modelUrl, setModelUrl] = useState<string | null>(null);
@@ -33,30 +31,10 @@ export default function Generate3DModelPage() {
       const response = await fetch('/api/getgeneratedmodels', {
         method: 'GET',
       });
-
       const data: Ai3dGeneration[] = await response.json();
-      if (response.ok) {
-        const formattedHistory: ModelHistoryItem[] = (data || [])
-          .map(
-            (item: any): ModelHistoryItem => ({
-              id: item.id || `missing-id-${Math.random()}`,
-              url: item.url || '',
-              prompt: item.prompt || '',
-              user_id: item.user_id || '',
-              title: item.title || '',
-              created_at: item.created_at
-                ? new Date(item.created_at).toISOString()
-                : new Date().toISOString(),
-              ...item,
-            }),
-          )
-          .sort(
-            (a: any, b: any) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at).getTime(),
-          );
 
-        setHistory(formattedHistory);
+      if (response.ok) {
+        session.setAi3dGenerations(data);
       } else {
         setError('Failed to load history.');
         setHistory([]);
@@ -69,6 +47,29 @@ export default function Generate3DModelPage() {
   };
 
   useEffect(() => {
+    const formattedHistory: ModelHistoryItem[] = session.ai3dGenerations
+      .map(
+        (item: any): ModelHistoryItem => ({
+          id: item.id || `missing-id-${Math.random()}`,
+          url: item.url || '',
+          prompt: item.prompt || '',
+          user_id: item.user_id || '',
+          title: item.title || '',
+          created_at: item.created_at
+            ? new Date(item.created_at).toISOString()
+            : new Date().toISOString(),
+          ...item,
+        }),
+      )
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+
+    setHistory(formattedHistory);
+  }, [session.ai3dGenerations]);
+
+  useEffect(() => {
     fetchHistory();
   }, []);
 
@@ -77,11 +78,7 @@ export default function Generate3DModelPage() {
       setError('Session or image data is missing.');
       return;
     }
-    if (remaining === 0) {
-      toast.error('Demo limit reached. Please upgrade to continue.');
-      return;
-    }
-    session.update_is_ai_inference_loading(true);
+    session.setIsAiInferenceLoading(true);
     setError(null);
 
     try {
@@ -92,6 +89,7 @@ export default function Generate3DModelPage() {
         },
         body: JSON.stringify({
           image_url: imageDataUri,
+          circle_wallet_id: session.circleWalletId,
           ...(selectedPrompt !== ''
             ? { should_texture: true, texture_prompt: selectedPrompt }
             : {}),
@@ -131,13 +129,15 @@ export default function Generate3DModelPage() {
         setModelUrl(input.url);
         setTaskId(null);
         setError(null);
-        session.update_is_ai_inference_loading(false);
+        session.setIsAiInferenceLoading(false);
+        session.setDemoLimit(session.demoLimit - 1);
         fetchHistory();
         return true;
       } else if (input.status === 'FAILED') {
         setError('Generation failed.');
         setTaskId(null);
-        session.update_is_ai_inference_loading(false);
+        session.setIsAiInferenceLoading(false);
+        session.setDemoLimit(session.demoLimit - 1);
         return true;
       } else {
         setGenerationProgress(input.progress);
@@ -219,7 +219,7 @@ export default function Generate3DModelPage() {
   return (
     <>
       <div
-        className={`${!session.api_keys_status.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
+        className={`${!session.apiKeyStatus.text ? 'flex flex-row items-center justify-center text-white overlay fixed inset-0 bg-gray-800 bg-opacity-80 z-50 pointer-events-auto' : 'hidden'}`}
       >
         <div className="flex flex-col items-center">
           <div className="mb-4">
@@ -248,11 +248,9 @@ export default function Generate3DModelPage() {
       <CanvasArea
         modelUrl={modelUrl}
         imageDataUri={imageDataUri}
-        isLoading={session.is_ai_inference_loading}
+        isLoading={session.isAiInferenceLoading}
         setPrompt={setPrompt}
         setError={setError}
-        remaining={remaining}
-        demoLimitLoading={demoLimitLoading}
         generationProgress={generationProgress}
       />
 
@@ -261,15 +259,13 @@ export default function Generate3DModelPage() {
         <ControlPanel
           imageDataUri={imageDataUri}
           prompt={prompt}
-          isLoading={session.is_ai_inference_loading}
+          isLoading={session.isAiInferenceLoading}
           error={error}
           setImageDataUri={setImageDataUri}
           setPrompt={setPrompt}
           setError={setError}
           submitPrompt={submitPrompt}
           modelUrl={modelUrl}
-          remaining={remaining}
-          demoLimitLoading={demoLimitLoading}
           title={title}
           setTitle={setTitle}
         />

@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 
+import { useSession } from '@/app/contexts/SessionContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MODEL_ASSET_PRICING } from '@/utils/constants';
 
 import ImageUploader from '../image-uploader';
 
@@ -12,8 +15,6 @@ interface ControlPanelProps {
   isLoading: boolean;
   error: string | null;
   modelUrl: string | null;
-  remaining: number | null;
-  demoLimitLoading: boolean;
   setImageDataUri: (uri: string) => void;
   setPrompt: (prompt: string) => void;
   setTitle: (title: string) => void;
@@ -28,8 +29,6 @@ export default function ControlPanel({
   isLoading,
   error,
   modelUrl,
-  remaining,
-  demoLimitLoading,
   setImageDataUri,
   setPrompt,
   setTitle,
@@ -38,6 +37,7 @@ export default function ControlPanel({
 }: ControlPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isDisabled = !!modelUrl;
+  const session = useSession();
 
   const uploadImage = (file: File) => {
     const reader = new FileReader();
@@ -138,7 +138,19 @@ export default function ControlPanel({
       {/* Generate Button */}
       <div>
         <Button
-          onClick={() => submitPrompt(prompt)}
+          onClick={() => {
+            if (session.demoLimit > 0 && (session.walletBalance ?? 0) > 0) {
+              submitPrompt(prompt);
+            } else if (session.demoLimit <= 0) {
+              toast.error('Demo limit reached.');
+            } else if (
+              (session.walletBalance ?? 0) -
+                MODEL_ASSET_PRICING.userBilledPrice <
+              0
+            ) {
+              toast.error('Insufficient wallet balance.');
+            }
+          }}
           className="w-full bg-gray-100 text-gray-700 py-2 rounded-full flex items-center justify-center space-x-2"
           disabled={isDisabled || isLoading || !imageDataUri || !title}
         >

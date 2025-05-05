@@ -141,7 +141,7 @@ export function MessageItem<M extends BaseMessage>({
               </div>
             )}
             {message.role == 'assistant' && message.imageUrl && (
-              <div className="h-[300px]">
+              <div className="h-[300px] min-w-[300px]">
                 <img
                   src={message.imageUrl}
                   alt="Generated"

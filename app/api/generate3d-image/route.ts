@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { checkDemoLimit } from '@/app/utils/demoLimit';
+import { MODEL_ASSET_PRICING } from '@/utils/constants';
+import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
 import { createClient } from '@/utils/supabase/server';
 
 const MESHY_API_KEY = process.env.MESHY_API!;
@@ -60,12 +62,33 @@ export async function POST(req: Request) {
       should_remesh,
       should_texture,
       texture_prompt,
+      circle_wallet_id,
     } = await req.json();
+
+    const response = await circleDeveloperSdk.getWalletTokenBalance({
+      id: circle_wallet_id,
+      includeAll: true,
+    });
+
+    const parsedAmount = response.data?.tokenBalances?.find(
+      ({ token }: { token: { symbol?: string } }) => token.symbol === 'USDC',
+    )?.amount;
+
+    if (
+      !parsedAmount ||
+      parseInt(parsedAmount) - MODEL_ASSET_PRICING.userBilledPrice < 0
+    ) {
+      console.log('Insufficient wallet balance');
+      return NextResponse.json(
+        { error: 'Insufficient wallet balance' },
+        { status: 400 },
+      );
+    }
 
     const { canGenerate, remaining } = await checkDemoLimit(user.id);
     if (!canGenerate) {
       return NextResponse.json(
-        { error: 'Demo limit reached. Please upgrade to continue.' },
+        { error: 'Demo limit reached.' },
         { status: 429 },
       );
     }

@@ -4,7 +4,7 @@ import AiTabs from '@/components/AiTabs'; // Corrected path
 
 export default function AILayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ai-layout flex flex-col h-full pt-5">
+    <div className="flex flex-col h-full pt-2">
       {' '}
       {/* Ensure pt-5 doesn't cause overlap */}
       <div className="flex flex-row h-full w-full">
