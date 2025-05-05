@@ -56,7 +56,6 @@ export function useWalletBalance(
 
       if (parsedBalance === null || parsedBalance === undefined) {
         console.log('Wallet has no balance');
-        toast.info('Wallet has no balance');
         session.setWalletBalance(0);
         return;
       }

@@ -21,6 +21,7 @@ export function useDemoLimit() {
       } else {
         setError('Failed to check demo limit.');
       }
+      setError(null);
     } catch (error) {
       console.error('Error checking demo limit:', error);
       setError('Error checking demo limit.');

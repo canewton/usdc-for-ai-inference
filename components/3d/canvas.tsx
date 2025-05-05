@@ -99,11 +99,11 @@ export default function CanvasArea({
 
   return (
     <MainAiSection>
-      <div className="flex-grow flex flex-col items-center justify-center bg-white p-4 relative">
+      <div className="flex-grow flex flex-col items-center justify-center bg-white p-4">
         {/* Show canvas if model is selected, otherwise display initial screen. */}
         {modelUrl ? (
           <div className="w-full h-full flex flex-col items-center relative">
-            <div className="absolute top-2 left-2 flex items-center space-x-2 z-20 pointer-events-auto">
+            <div className="absolute top-2 left-2 flex items-center space-x-2 pointer-events-auto">
               <img
                 src={ModelIcon.src}
                 alt="Orbit/rotate icon"
@@ -141,7 +141,7 @@ export default function CanvasArea({
               </Canvas>
               <button
                 onClick={handleDownload}
-                className="absolute top-2 right-2 z-10 p-2 bg-transparent text-[#1AA3FF] rounded-full hover:bg-blue-100 disabled:text-gray-400 transition-colors"
+                className="absolute top-2 right-2 p-2 bg-transparent text-[#1AA3FF] rounded-full hover:bg-blue-100 disabled:text-gray-400 transition-colors"
                 disabled={isLoading}
                 aria-label="Download 3D Model"
               >
