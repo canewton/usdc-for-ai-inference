@@ -190,7 +190,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
         </div>
 
         <div className="flex items-center space-x-[50px]">
-          {user && (
+          {user && !profile?.is_admin && (
             <p className="text-sm text-gray-400">
               Demo AI generations remaining: {session.demoLimit}
             </p>
