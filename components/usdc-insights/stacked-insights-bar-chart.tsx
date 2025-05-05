@@ -104,7 +104,24 @@ export const StackedInsightsBarChart = ({
             axisLine={false}
             tick={{ fontSize: 12, fill: '#666' }}
             tickFormatter={tickFormatter}
-            allowDecimals={false}
+            allowDecimals={true}
+            domain={[
+              0,
+              Math.min(
+                Math.ceil(
+                  Math.max(
+                    ...data.map(
+                      (d) =>
+                        (d.value1 || 0) +
+                        (d.value2 || 0) +
+                        (d.value3 || 0) +
+                        (d.value4 || 0),
+                    ),
+                  ),
+                ),
+                0.4,
+              ),
+            ]}
           />
           <Tooltip
             content={tooltip != undefined ? tooltip : <CustomTooltip />}
@@ -141,7 +158,7 @@ export const StackedInsightsBarChart = ({
             <Bar
               dataKey="value4"
               fill={colors[3]}
-              radius={stacked ? [4, 4, 0, 0] : [4, 4, 0, 0]}
+              radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
               stackId={stacked ? 'stack' : undefined}
               name="Image to Video"
             />
