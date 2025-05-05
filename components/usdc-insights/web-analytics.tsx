@@ -20,32 +20,27 @@ export const WebAnalytics = () => {
       (transactions ?? []).map((tx) => [tx.circle_transaction_id, tx]),
     );
 
-    const billingTransactions: BillingTransaction[] = (projects ?? []).map(
-      (project) => {
-        const transaction = transactionMap.get(project.circle_transaction_id);
-
-        if (!transaction) {
-          hasNull = true;
-        }
-
-        return {
-          id: project.id,
-          ai_model: project.ai_model,
-          project_name: project.project_name,
-          transaction_type: transaction?.transaction_type,
-          amount: transaction?.amount,
-          status: transaction?.status,
-          created_at: project.created_at,
-          expanded: false,
-        };
-      },
+    const filteredProjects = (projects ?? []).filter(
+      (project) => transactionMap.get(project.circle_transaction_id) != null,
     );
 
-    if (hasNull) {
-      return null;
-    } else {
-      return billingTransactions;
-    }
+    const billingTransactions: BillingTransaction[] = (
+      filteredProjects ?? []
+    ).map((project) => {
+      const transaction = transactionMap.get(project.circle_transaction_id);
+      return {
+        id: project.id,
+        ai_model: project.ai_model,
+        project_name: project.project_name,
+        transaction_type: transaction?.transaction_type,
+        amount: transaction?.amount,
+        status: transaction?.status,
+        created_at: project.created_at,
+        expanded: false,
+      };
+    });
+
+    return billingTransactions;
   };
 
   const updateBillingTransactions = async () => {

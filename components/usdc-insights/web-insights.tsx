@@ -225,7 +225,11 @@ export const WebInsights: React.FC<Props> = (props) => {
               setSelectedPeriod={setSelectedPeriodSales}
             />
           </div>
-          <StackedInsightsBarChart data={salesData} stacked={true} />
+          <StackedInsightsBarChart
+            data={salesData}
+            stacked={true}
+            tickFormatter={(value) => `$${value}`}
+          />
         </InsightBox>
       </div>
       <InsightBox className="pl-0 mb-6">

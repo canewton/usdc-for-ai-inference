@@ -88,6 +88,13 @@ export const StackedInsightsBarChart = ({
   tickFormatter,
   tooltip,
 }: Props) => {
+  const dataMax = Math.max(
+    ...data.map(
+      (d) =>
+        (d.value1 || 0) + (d.value2 || 0) + (d.value3 || 0) + (d.value4 || 0),
+    ),
+  );
+  const yDomainMax = dataMax < 0.4 ? 0.4 : Math.ceil(dataMax);
   return (
     <div className="h-[200px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -104,24 +111,8 @@ export const StackedInsightsBarChart = ({
             axisLine={false}
             tick={{ fontSize: 12, fill: '#666' }}
             tickFormatter={tickFormatter}
-            allowDecimals={true}
-            domain={[
-              0,
-              Math.min(
-                Math.ceil(
-                  Math.max(
-                    ...data.map(
-                      (d) =>
-                        (d.value1 || 0) +
-                        (d.value2 || 0) +
-                        (d.value3 || 0) +
-                        (d.value4 || 0),
-                    ),
-                  ),
-                ),
-                0.4,
-              ),
-            ]}
+            allowDecimals={dataMax <= 0.4}
+            domain={[0, yDomainMax > 5 ? 'auto' : yDomainMax]}
           />
           <Tooltip
             content={tooltip != undefined ? tooltip : <CustomTooltip />}
