@@ -32,7 +32,7 @@ export const ScanToPayDialog: FunctionComponent<Props> = (props) => {
         </DialogHeader>
         <div className="grid py-4">
           <p className="text-center text-muted-foreground mb-4">
-            Scan this QR code to copy the wallet ID
+            Scan this QR code to copy the wallet address
           </p>
           <WalletQRCode walletId={props.wallet?.wallet_address} />
         </div>
