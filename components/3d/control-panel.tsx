@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useSession } from '@/app/contexts/SessionContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MODEL_ASSET_PRICING } from '@/utils/constants';
 
 import ImageUploader from '../image-uploader';
 
@@ -138,10 +139,16 @@ export default function ControlPanel({
       <div>
         <Button
           onClick={() => {
-            if (session.demoLimit > 0) {
+            if (session.demoLimit > 0 && (session.walletBalance ?? 0) > 0) {
               submitPrompt(prompt);
-            } else {
+            } else if (session.demoLimit <= 0) {
               toast.error('Demo limit reached.');
+            } else if (
+              (session.walletBalance ?? 0) -
+                MODEL_ASSET_PRICING.userBilledPrice <
+              0
+            ) {
+              toast.error('Insufficient wallet balance.');
             }
           }}
           className="w-full bg-gray-100 text-gray-700 py-2 rounded-full flex items-center justify-center space-x-2"

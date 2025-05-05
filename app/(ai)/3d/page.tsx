@@ -89,6 +89,7 @@ export default function Generate3DModelPage() {
         },
         body: JSON.stringify({
           image_url: imageDataUri,
+          circle_wallet_id: session.circleWalletId,
           ...(selectedPrompt !== ''
             ? { should_texture: true, texture_prompt: selectedPrompt }
             : {}),

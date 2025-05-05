@@ -59,6 +59,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
       output_quality: quality,
       provider,
       chat_id: chatIdRef.current ?? currChat,
+      circle_wallet_id: session.circleWalletId,
     },
     onFinish: async (generation: ImageGeneration) => {
       session.setDemoLimit(session.demoLimit - 1);
@@ -144,7 +145,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
     chatInput,
     setMessages,
     handleSubmit: async (e: React.FormEvent<HTMLFormElement>) => {
-      if (session.demoLimit > 0) {
+      if (session.demoLimit > 0 && (session.walletBalance ?? 0) > 0) {
         setMessages([
           ...messages,
           {
@@ -158,8 +159,13 @@ export function ImageChat({ currChat }: ImageChatProps) {
           },
         ]);
         await handleSubmit(e);
-      } else {
+      } else if (session.demoLimit <= 0) {
         toast.error('Demo limit reached.');
+      } else if (
+        (session.walletBalance ?? 0) - IMAGE_MODEL_PRICING.userBilledPrice <
+        0
+      ) {
+        toast.error('Insufficient wallet balance.');
       }
     },
     chatIdRef,

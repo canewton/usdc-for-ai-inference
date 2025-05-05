@@ -57,7 +57,8 @@ export function Chat({ currChat }: ChatProps) {
     api: '/api/generatetext',
     body: {
       provider: provider,
-      maxTokens: maxTokens,
+      max_tokens: maxTokens,
+      circle_wallet_id: session.circleWalletId,
     },
     onFinish: async (message: any, { usage }: any) => {
       session.setDemoLimit(session.demoLimit - 1);
@@ -142,15 +143,21 @@ export function Chat({ currChat }: ChatProps) {
     chatInput,
     setMessages,
     handleSubmit: async (e: React.FormEvent<HTMLFormElement>) => {
-      if (session.demoLimit > 0) {
+      if (session.demoLimit > 0 && (session.walletBalance ?? 0) > 0) {
         await handleSubmit(e, {
           body: {
             provider: provider,
             maxTokens: maxTokens,
           },
         });
-      } else {
+      } else if (session.demoLimit <= 0) {
         toast.error('Demo limit reached.');
+      } else if (
+        (session.walletBalance ?? 0) -
+          maxTokens * TEXT_MODEL_PRICING[provider].userBilledInputPrice <
+        0
+      ) {
+        toast.error('Insufficient wallet balance.');
       }
     },
     chatIdRef,

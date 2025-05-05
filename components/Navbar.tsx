@@ -220,16 +220,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
                     </div>
                     <button
                       className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center"
-                      onClick={() => {
-                        signOutAction().then(() => {
-                          session.setAi3dGenerations([]);
-                          session.setImageChats([]);
-                          session.setTextChats([]);
-                          session.setWalletBalance(null);
-                          session.setDemoLimit(0);
-                          session.setIsAiInferenceLoading(false);
-                        });
-                      }}
+                      onClick={signOutAction}
                     >
                       Sign Out
                     </button>

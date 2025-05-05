@@ -5,6 +5,8 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { checkDemoLimit } from '@/app/utils/demoLimit';
+import { TEXT_MODEL_PRICING } from '@/utils/constants';
+import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
 import { createClient } from '@/utils/supabase/server';
 
 // Allow streaming responses up to 120 seconds
@@ -32,7 +34,30 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse req body
-    const { messages, provider, maxTokens } = await request.json();
+    const { messages, provider, max_tokens, circle_wallet_id } =
+      await request.json();
+
+    const response = await circleDeveloperSdk.getWalletTokenBalance({
+      id: circle_wallet_id,
+      includeAll: true,
+    });
+
+    const parsedAmount = response.data?.tokenBalances?.find(
+      ({ token }: { token: { symbol?: string } }) => token.symbol === 'USDC',
+    )?.amount;
+
+    if (
+      !parsedAmount ||
+      parseInt(parsedAmount) -
+        TEXT_MODEL_PRICING[provider].userBilledInputPrice <
+        0
+    ) {
+      console.log('Insufficient wallet balance');
+      return NextResponse.json(
+        { error: 'Insufficient wallet balance' },
+        { status: 400 },
+      );
+    }
 
     console.log('Messages:', messages);
 
@@ -40,7 +65,7 @@ export async function POST(request: NextRequest) {
     const result = streamText({
       model: openai(provider),
       messages,
-      maxTokens,
+      maxTokens: max_tokens,
     });
 
     // Return result
