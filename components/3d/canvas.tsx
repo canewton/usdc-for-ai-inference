@@ -4,10 +4,10 @@ import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { Suspense, useEffect, useRef, useState } from 'react';
 
-import Blurs from '@/public/blurs.svg';
 import WalletIcon from '@/public/digital-wallet.svg';
 import ModelIcon from '@/public/group.svg';
 import UsdcIcon from '@/public/usdc.svg';
+import { MODEL_ASSET_PRICING } from '@/utils/constants';
 
 import { AiGenerationIntro } from '../ai-generation-intro';
 import LoadingBar from '../loading-bar';
@@ -160,30 +160,25 @@ export default function CanvasArea({
             </Suspense>
           </div>
         ) : (
-          <div
-            className="relative w-full h-full bg-contain bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${Blurs.src})` }}
-          >
-            <div className="absolute inset-0 flex flex-col items-center justify-start">
-              <AiGenerationIntro
-                title="What will you create?"
-                description="Generate 3D assets from your own images for $0.02 each"
+          <>
+            <AiGenerationIntro
+              title="What will you create?"
+              description={`Generate 3D assets from your own images for $${MODEL_ASSET_PRICING.userBilledPrice} each`}
+            />
+            <div className="mt-4">
+              <PromptSuggestions
+                onSelect={handleLocalInputChange}
+                suggestions={promptSuggestions}
               />
-              <div className="relative z-20 mt-4">
-                <PromptSuggestions
-                  onSelect={handleLocalInputChange}
-                  suggestions={promptSuggestions}
-                />
-              </div>
-              <div className="w-full mt-4">
-                <p
-                  className={`text-center text-sm text-gray-500 ${imageDataUri ? 'invisible' : 'visible'}`}
-                >
-                  Please upload an image in the control panel first.
-                </p>
-              </div>
             </div>
-          </div>
+            <div className="w-full mt-4">
+              <p
+                className={`text-center text-sm text-gray-500 ${imageDataUri ? 'invisible' : 'visible'}`}
+              >
+                Please upload an image in the control panel first.
+              </p>
+            </div>
+          </>
         )}
       </div>
     </MainAiSection>

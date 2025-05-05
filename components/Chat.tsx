@@ -27,7 +27,7 @@ import { TEXT_MODEL_PRICING } from '@/utils/constants';
 import { AiGenerationIntro } from './ai-generation-intro';
 
 const promptSuggestions = [
-  { title: 'Explain how to load my wallet', icon: WalletIcon },
+  { title: 'What are the benefits of USDC', icon: WalletIcon },
   { title: 'Tell me about USDC security', icon: UsdcIcon },
   { title: 'Surprise me', icon: SparkIcon },
 ];

@@ -227,7 +227,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
           ) : (
             <AiGenerationIntro
               title="What can you create?"
-              description="Generate images for $0.01 each"
+              description={`Generate images for $${IMAGE_MODEL_PRICING.userBilledPrice} each`}
             />
           )}
           <div className="w-full max-w-[800px]">
