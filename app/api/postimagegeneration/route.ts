@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
+import { aiGenerationPayment } from '@/app/utils/aiGenerationPayment';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
 import { aiModel } from '@/types/ai.types';
 import { IMAGE_MODEL_PRICING } from '@/utils/constants';
@@ -29,33 +29,11 @@ export async function POST(request: NextRequest) {
 
     const { prompt, chat_id, provider, url } = await request.json();
 
-    let profile: any = null;
-    let wallet: any = null;
-    if (user) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('auth_user_id', user.id)
-        .single();
-      profile = profileData;
-    }
-
-    if (profile) {
-      // Get wallet
-      const { data: walletData } = await supabase
-        .schema('public')
-        .from('wallets')
-        .select()
-        .eq('profile_id', profile.id)
-        .single();
-      wallet = walletData;
-    }
-
-    const aiProject = await circleWalletTransfer(
+    const aiProject = await aiGenerationPayment(
+      user,
       prompt,
       aiModel.TEXT_TO_IMAGE,
-      wallet.circle_wallet_id,
-      `${IMAGE_MODEL_PRICING.userBilledPrice}`,
+      IMAGE_MODEL_PRICING.userBilledPrice,
     );
 
     const { data, error: dbError } = await supabase
@@ -79,7 +57,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     console.error('Generation error:', error);
     return NextResponse.json(

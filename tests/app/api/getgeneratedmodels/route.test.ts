@@ -92,7 +92,7 @@ describe('GET /api/getgeneratedmodels', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual({ models: mockGeneratedModels });
+    expect(data).toEqual(mockGeneratedModels);
     expect(mockSupabase.from).toHaveBeenCalledWith('3d_generations');
   });
 
@@ -131,7 +131,7 @@ describe('GET /api/getgeneratedmodels', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual({ models: mockGeneratedModels });
+    expect(data).toEqual(mockGeneratedModels);
     expect(mockSupabase.from).toHaveBeenCalledWith('3d_generations');
   });
 

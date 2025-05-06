@@ -13,9 +13,11 @@ const mockSupabase = {
     jest.fn(() => ({
       select: jest.fn(() => ({
         eq: jest.fn(() => ({
-          in: jest.fn(() => ({
-            mockResolvedValue: jest.fn(),
-            mockRejectedValue: jest.fn(),
+          eq: jest.fn(() => ({
+            order: jest.fn(() => ({
+              mockResolvedValue: jest.fn(),
+              mockRejectedValue: jest.fn(),
+            })),
           })),
         })),
       })),
@@ -73,9 +75,11 @@ describe('GET /api/getgeneratedimages', () => {
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
-          in: jest.fn().mockResolvedValue({
-            data: mockGeneratedImages,
-            error: null,
+          eq: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue({
+              data: mockGeneratedImages,
+              error: null,
+            }),
           }),
         }),
       }),
@@ -86,7 +90,7 @@ describe('GET /api/getgeneratedimages', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual({ images: mockGeneratedImages });
+    expect(data).toEqual(mockGeneratedImages);
     expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 
@@ -123,7 +127,7 @@ describe('GET /api/getgeneratedimages', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual({ images: mockGeneratedImages });
+    expect(data).toEqual(mockGeneratedImages);
     expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 
@@ -139,9 +143,11 @@ describe('GET /api/getgeneratedimages', () => {
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
-          in: jest.fn().mockResolvedValue({
-            data: null,
-            error: new Error('Database error'),
+          eq: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue({
+              data: null,
+              error: new Error('Database error'),
+            }),
           }),
         }),
       }),

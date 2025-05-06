@@ -12,9 +12,11 @@ const mockSupabase = {
   from: jest.fn(() => ({
     select: jest.fn(() => ({
       eq: jest.fn(() => ({
-        order: jest.fn(() => ({
-          mockResolvedValue: jest.fn(),
-          mockRejectedValue: jest.fn(),
+        eq: jest.fn(() => ({
+          order: jest.fn(() => ({
+            mockResolvedValue: jest.fn(),
+            mockRejectedValue: jest.fn(),
+          })),
         })),
       })),
     })),
@@ -64,9 +66,11 @@ describe('GET /api/getchats', () => {
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
-          order: jest.fn().mockResolvedValue({
-            data: mockGeneratedChats,
-            error: null,
+          eq: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue({
+              data: mockGeneratedChats,
+              error: null,
+            }),
           }),
         }),
       }),
@@ -77,7 +81,7 @@ describe('GET /api/getchats', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual({ chats: mockGeneratedChats });
+    expect(data).toEqual(mockGeneratedChats);
     expect(mockSupabase.from).toHaveBeenCalledWith('chats');
   });
 
@@ -93,9 +97,11 @@ describe('GET /api/getchats', () => {
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
-          order: jest.fn().mockResolvedValue({
-            data: null,
-            error: new Error('Database error'),
+          eq: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue({
+              data: null,
+              error: new Error('Database error'),
+            }),
           }),
         }),
       }),

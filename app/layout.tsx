@@ -3,10 +3,10 @@ import './globals.css';
 
 import { Geist } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
-import { Toaster } from 'sonner'; // Import Sonner Toaster
+import { Toaster } from 'sonner';
 
-import Navbar from '@/components/Navbar'; // Corrected path
-import type { Profile, Wallet } from '@/types/database.types'; // Assuming types/database.types.ts exists
+import Navbar from '@/components/Navbar';
+import type { Profile, Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/server';
 
 import { SessionProvider } from './contexts/SessionContext';
