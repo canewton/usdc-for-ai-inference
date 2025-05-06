@@ -114,17 +114,17 @@ export default function Generate3DModelPage() {
     }
   };
 
-  usePolling(
-    `/api/generation3d-status?taskId=${taskId}`,
-    {
+  usePolling({
+    url: `/api/generation3d-status?taskId=${taskId}`,
+    body: {
       taskId,
       texture_prompt: prompt,
       image_url: imageDataUri,
       title: title,
     },
-    5000,
-    taskId !== null,
-    (input: any) => {
+    interval: 5000,
+    isPolling: taskId !== null,
+    onCheckPollingFinished: (input: any) => {
       if (input.status === 'SUCCEEDED') {
         setModelUrl(input.url);
         setTaskId(null);
@@ -144,7 +144,7 @@ export default function Generate3DModelPage() {
       }
       return false;
     },
-  );
+  });
 
   const handleSelectHistoryItem = (id: string) => {
     const selectedItem = history.find((item) => item.id === id);

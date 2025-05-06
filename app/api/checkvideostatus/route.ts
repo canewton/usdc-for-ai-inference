@@ -20,20 +20,6 @@ export async function POST(req: Request) {
 
     const { task_id } = await req.json();
 
-    const { data: videoGeneration, error: dbError } = await supabase
-      .from('video_generations')
-      .select('*')
-      .eq('task_id', task_id)
-      .eq('user_id', user.id);
-
-    if (dbError) {
-      console.error('Error fetching video generation:', dbError);
-      return NextResponse.json(
-        { error: 'Video generation not found' },
-        { status: 404 },
-      );
-    }
-
     const response = await fetch(`${NOVITA_API_URL}?task_id=${task_id}`, {
       method: 'GET',
       headers: {
@@ -58,6 +44,8 @@ export async function POST(req: Request) {
         { status: 500 },
       );
     }
+
+    console.log('Response from Novita API:', task_id, data.task);
 
     const taskStatus = data.task?.status;
     const videos = data.videos || [];
@@ -96,7 +84,11 @@ export async function POST(req: Request) {
           .eq('user_id', user.id);
       }
     }
-    return NextResponse.json({ taskStatus, videos });
+    return NextResponse.json({
+      taskStatus,
+      videos,
+      progressPercent: data.task?.progress_percent,
+    });
   } catch (error) {
     console.error('Could not retrieve video:', error);
     return NextResponse.json(

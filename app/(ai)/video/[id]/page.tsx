@@ -3,8 +3,10 @@
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
+import { usePolling } from '@/app/hooks/usePolling';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatSidebar } from '@/components/ChatSidebar';
+import LoadingBar from '@/components/loading-bar';
 import MainAiSection from '@/components/MainAiSection';
 import RightAiSidebar from '@/components/RightAiSidebar';
 import type { Chat } from '@/types/database.types';
@@ -34,6 +36,7 @@ export default function VideoChatPage() {
 
   const [chatHistory, setChatHistory] = useState<Chat[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(id || null);
+  const [generationProgress, setGenerationProgress] = useState<number>(0);
 
   // Fetch current video data
   useEffect(() => {
@@ -90,40 +93,19 @@ export default function VideoChatPage() {
     fetchChatHistory();
   }, []);
 
-  // Poll video processing status
-  useEffect(() => {
-    if (!videoData) return;
-
-    const shouldPoll =
-      videoData.processing_status === 'TASK_STATUS_PROCESSING' ||
-      videoData.processing_status === 'pending';
-
-    if (!shouldPoll) return;
-
-    let timeoutId: NodeJS.Timeout;
-
-    const pollStatus = async () => {
-      try {
-        const response = await fetch('/api/checkvideostatus', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ task_id: videoData.task_id }),
-        });
-
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error || 'Failed to check video status');
-        }
-
-        const data = await response.json();
-        const isStillProcessing =
-          data.taskStatus === 'TASK_STATUS_PROCESSING' ||
-          data.taskStatus === 'pending';
-
-        if (isStillProcessing) {
-          timeoutId = setTimeout(pollStatus, 333);
-        }
-
+  usePolling({
+    url: '/api/checkvideostatus',
+    body: { task_id: videoData?.task_id },
+    interval: 2000,
+    isPolling:
+      videoData?.processing_status === 'TASK_STATUS_PROCESSING' ||
+      videoData?.processing_status === 'TASK_STATUS_QUEUED' ||
+      videoData?.processing_status === 'pending',
+    onCheckPollingFinished: (data) => {
+      if (
+        data.taskStatus !== 'TASK_STATUS_PROCESSING' &&
+        data.taskStatus !== 'TASK_STATUS_QUEUED'
+      ) {
         setVideoData((prev) =>
           prev
             ? {
@@ -136,17 +118,14 @@ export default function VideoChatPage() {
               }
             : prev,
         );
-      } catch (err: any) {
-        console.error('Error polling video status:', err);
+        return true;
+      } else {
+        setGenerationProgress(data.progressPercent);
       }
-    };
 
-    pollStatus();
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [videoData]);
+      return false;
+    },
+  });
 
   // ChatSidebar handlers
   const handleNewChat = () => {
@@ -195,17 +174,13 @@ export default function VideoChatPage() {
         ) : !videoData ? (
           <div>No video data found.</div>
         ) : videoData.processing_status === 'TASK_STATUS_PROCESSING' ||
-          videoData.processing_status === 'pending' ? (
-          <div className="flex flex-col items-center justify-center w-full h-full py-8">
-            <div className="bg-white border border-gray-200 shadow-md rounded-lg p-6 max-w-lg text-center">
-              <p className="text-xl font-semibold mb-4">
-                Generating your video...
-              </p>
-              <p className="text-gray-600 text-sm">
-                Did you know USDC transactions can settle in seconds worldwide.
-                All day, every day.
-              </p>
-            </div>
+          videoData.processing_status === 'pending' ||
+          videoData.processing_status === 'TASK_STATUS_QUEUED' ? (
+          <div className="flex-grow flex flex-col items-center justify-center bg-white p-4 relative">
+            <LoadingBar
+              progress={generationProgress}
+              message={'Generating your video'}
+            />
           </div>
         ) : (
           <div className="flex justify-center items-center w-full h-full py-8">

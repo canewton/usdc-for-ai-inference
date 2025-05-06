@@ -1,12 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 
-export function usePolling(
-  url: string,
-  body: any,
+export interface PollingOptions {
+  url: string;
+  body: any;
+  interval?: number;
+  isPolling?: boolean;
+  onCheckPollingFinished: (result: any) => boolean;
+}
+
+export function usePolling({
+  url,
+  body,
   interval = 5000,
   isPolling = false,
-  onCheckPollingFinished: (result: any) => boolean,
-) {
+  onCheckPollingFinished,
+}: PollingOptions) {
   const [data, setData] = useState<any>(null);
   const [isFinished, setIsFinished] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
