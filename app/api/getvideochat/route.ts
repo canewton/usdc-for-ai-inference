@@ -1,11 +1,11 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-
 import { createClient } from '@/utils/supabase/server';
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { videoId } = await request.json();
+    const body = await request.json();
+    const videoId = body.videoId;
 
     if (!videoId) {
       return NextResponse.json(
@@ -26,12 +26,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: videoGeneration, error: dbError } = await supabase
+    // Try to find the video by id first (primary key)
+    let { data: videoGeneration, error: dbError } = await supabase
       .from('video_generations')
       .select('*')
-      .eq('task_id', videoId)
+      .eq('id', videoId)
       .eq('user_id', user.id)
       .single();
+
+    // If not found by id, try to find by task_id as fallback
+    if (dbError && dbError.code === 'PGRST116') {
+      const { data: videoByTask, error: taskError } = await supabase
+        .from('video_generations')
+        .select('*')
+        .eq('task_id', videoId)
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!taskError) {
+        videoGeneration = videoByTask;
+        dbError = null;
+      }
+    }
 
     if (dbError) {
       console.error('Error fetching video generation:', dbError);

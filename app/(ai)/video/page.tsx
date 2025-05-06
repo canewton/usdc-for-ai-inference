@@ -3,13 +3,14 @@
 import { Link } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import MainAiSection from '@/components/MainAiSection';
 import RightAiSidebar from '@/components/RightAiSidebar';
-import VideoHistory from '@/components/VideoHistory';
+import { ChatSidebar } from '@/components/ChatSidebar';
+import type { Chat } from '@/types/database.types';
 import Blurs from '@/public/blurs.svg';
 
 export default function Home() {
@@ -23,8 +24,55 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSeedInfo, setShowSeedInfo] = useState(false);
 
+  const [chatHistory, setChatHistory] = useState<Chat[]>([]);
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+
   const router = useRouter();
   const session = useSession();
+
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      try {
+        const response = await fetch('/api/videos', { method: 'GET' });
+        if (!response.ok) throw new Error('Failed to fetch chat history');
+        const data = await response.json();
+        const formatted: Chat[] = (data.videoGenerations || []).map((item: any) => ({
+          id: item.id,
+          title: item.prompt || 'Untitled',
+          created_at: item.created_at || new Date().toISOString(),
+          user_id: item.user_id || '',
+        }));
+        setChatHistory(formatted);
+      } catch (err) {
+        console.error('Chat history error:', err);
+      }
+    };
+
+    fetchChatHistory();
+  }, []);
+
+  const handleNewChat = () => {
+    setCurrentChatId(null);
+    setPrompt('');
+    setImage(null);
+    setImagePreview(null);
+  };
+
+  const handleSelectChat = (id: string) => {
+    setCurrentChatId(id);
+    router.push(`/video/${id}`);
+  };
+
+  const handleDeleteChat = async (id: string) => {
+    try {
+      const res = await fetch(`/api/deletevideo?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete chat');
+      setChatHistory((prev) => prev.filter((chat) => chat.id !== id));
+      if (currentChatId === id) setCurrentChatId(null);
+    } catch (err) {
+      console.error('Delete chat error:', err);
+    }
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -103,7 +151,6 @@ export default function Home() {
         const responseData = await response.json();
         const { task_id } = responseData;
 
-        // Redirect to the new video details page
         router.push(`/video/${task_id}`);
       };
     } catch (error: any) {
@@ -135,12 +182,17 @@ export default function Home() {
 
       {/* Left history section */}
       <AiHistoryPortal>
-        <VideoHistory />
+        <ChatSidebar
+          chats={chatHistory}
+          currentChatId={currentChatId}
+          onNewChat={handleNewChat}
+          onSelectChat={handleSelectChat}
+          onDeleteChat={handleDeleteChat}
+        />
       </AiHistoryPortal>
 
       {/* Middle section */}
       <MainAiSection>
-        {/* Home page content */}
         <div className="relative w-full h-full">
           <img
             src={Blurs.src}

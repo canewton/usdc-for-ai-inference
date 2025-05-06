@@ -99,6 +99,7 @@ export async function POST(req: Request) {
       enable_frame_interpolation: true,
     };
 
+    console.log(NOVITA_API_KEY);
     const response = await fetch(NOVITA_API_URL, {
       method: 'POST',
       headers: {
