@@ -1,11 +1,12 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
 import { createClient } from '@/utils/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const videoId = body.videoId;
+    const { videoId } = body;
 
     if (!videoId) {
       return NextResponse.json(
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
         .eq('task_id', videoId)
         .eq('user_id', user.id)
         .single();
-      
+
       if (!taskError) {
         videoGeneration = videoByTask;
         dbError = null;

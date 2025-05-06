@@ -7,11 +7,11 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
+import { ChatSidebar } from '@/components/ChatSidebar';
 import MainAiSection from '@/components/MainAiSection';
 import RightAiSidebar from '@/components/RightAiSidebar';
-import { ChatSidebar } from '@/components/ChatSidebar';
-import type { Chat } from '@/types/database.types';
 import Blurs from '@/public/blurs.svg';
+import type { Chat } from '@/types/database.types';
 
 export default function Home() {
   const [image, setImage] = useState<File | null>(null);
@@ -36,12 +36,14 @@ export default function Home() {
         const response = await fetch('/api/videos', { method: 'GET' });
         if (!response.ok) throw new Error('Failed to fetch chat history');
         const data = await response.json();
-        const formatted: Chat[] = (data.videoGenerations || []).map((item: any) => ({
-          id: item.id,
-          title: item.prompt || 'Untitled',
-          created_at: item.created_at || new Date().toISOString(),
-          user_id: item.user_id || '',
-        }));
+        const formatted: Chat[] = (data.videoGenerations || []).map(
+          (item: any) => ({
+            id: item.id,
+            title: item.prompt || 'Untitled',
+            created_at: item.created_at || new Date().toISOString(),
+            user_id: item.user_id || '',
+          }),
+        );
         setChatHistory(formatted);
       } catch (err) {
         console.error('Chat history error:', err);
@@ -65,7 +67,9 @@ export default function Home() {
 
   const handleDeleteChat = async (id: string) => {
     try {
-      const res = await fetch(`/api/deletevideo?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/deletevideo?id=${id}`, {
+        method: 'DELETE',
+      });
       if (!res.ok) throw new Error('Failed to delete chat');
       setChatHistory((prev) => prev.filter((chat) => chat.id !== id));
       if (currentChatId === id) setCurrentChatId(null);

@@ -4,9 +4,9 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import AiHistoryPortal from '@/components/AiHistoryPortal';
+import { ChatSidebar } from '@/components/ChatSidebar';
 import MainAiSection from '@/components/MainAiSection';
 import RightAiSidebar from '@/components/RightAiSidebar';
-import { ChatSidebar } from '@/components/ChatSidebar';
 import type { Chat } from '@/types/database.types';
 
 interface VideoData {
@@ -73,12 +73,14 @@ export default function VideoChatPage() {
         const response = await fetch('/api/videos', { method: 'GET' });
         if (!response.ok) throw new Error('Failed to fetch chat history');
         const data = await response.json();
-        const formatted: Chat[] = (data.videoGenerations || []).map((item: any) => ({
-          id: item.id,
-          title: item.prompt || 'Untitled',
-          created_at: item.created_at || new Date().toISOString(),
-          user_id: item.user_id || '',
-        }));
+        const formatted: Chat[] = (data.videoGenerations || []).map(
+          (item: any) => ({
+            id: item.id,
+            title: item.prompt || 'Untitled',
+            created_at: item.created_at || new Date().toISOString(),
+            user_id: item.user_id || '',
+          }),
+        );
         setChatHistory(formatted);
       } catch (err) {
         console.error('Chat history error:', err);
@@ -115,7 +117,8 @@ export default function VideoChatPage() {
 
         const data = await response.json();
         const isStillProcessing =
-          data.taskStatus === 'TASK_STATUS_PROCESSING' || data.taskStatus === 'pending';
+          data.taskStatus === 'TASK_STATUS_PROCESSING' ||
+          data.taskStatus === 'pending';
 
         if (isStillProcessing) {
           timeoutId = setTimeout(pollStatus, 333);
@@ -158,7 +161,9 @@ export default function VideoChatPage() {
 
   const handleDeleteChat = async (chatId: string) => {
     try {
-      const res = await fetch(`/api/deletevideo?id=${chatId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/deletevideo?id=${chatId}`, {
+        method: 'DELETE',
+      });
       if (!res.ok) throw new Error('Failed to delete chat');
       setChatHistory((prev) => prev.filter((chat) => chat.id !== chatId));
       if (currentChatId === chatId) {
@@ -193,10 +198,12 @@ export default function VideoChatPage() {
           videoData.processing_status === 'pending' ? (
           <div className="flex flex-col items-center justify-center w-full h-full py-8">
             <div className="bg-white border border-gray-200 shadow-md rounded-lg p-6 max-w-lg text-center">
-              <p className="text-xl font-semibold mb-4">Generating your video...</p>
+              <p className="text-xl font-semibold mb-4">
+                Generating your video...
+              </p>
               <p className="text-gray-600 text-sm">
-                Did you know USDC transactions can settle in seconds worldwide. All day,
-                every day.
+                Did you know USDC transactions can settle in seconds worldwide.
+                All day, every day.
               </p>
             </div>
           </div>
@@ -226,7 +233,9 @@ export default function VideoChatPage() {
                     />
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-500 text-center">No image available</div>
+                  <div className="text-sm text-gray-500 text-center">
+                    No image available
+                  </div>
                 )}
               </div>
             </div>

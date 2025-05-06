@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { createClient } from '@/utils/supabase/server';
 
 export async function DELETE(req: NextRequest) {
@@ -29,12 +31,17 @@ export async function DELETE(req: NextRequest) {
       .single();
 
     if (fetchError || !videoData || videoData.user_id !== user.id) {
-      return NextResponse.json({ error: 'Video not found or unauthorized' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Video not found or unauthorized' },
+        { status: 404 },
+      );
     }
 
     // Delete associated storage file if available
     if (videoData.video_url) {
-      const filePath = videoData.video_url.split('/storage/v1/object/public/video-gen/')[1];
+      const filePath = videoData.video_url.split(
+        '/storage/v1/object/public/video-gen/',
+      )[1];
       if (filePath) {
         const { error: storageError } = await supabase.storage
           .from('video-gen')

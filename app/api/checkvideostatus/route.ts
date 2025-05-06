@@ -4,12 +4,10 @@ import { createClient } from '@/utils/supabase/server';
 
 const NOVITA_API_URL = 'https://api.novita.ai/v3/async/task-result';
 const NOVITA_API_KEY = process.env.NEXT_PUBLIC_NOVITA_API_KEY;
-console.log('NOVITA_API_KEY', NOVITA_API_KEY);
 
 export async function POST(req: Request) {
   const supabase = await createClient();
   try {
-   
     const {
       data: { user },
       error,
