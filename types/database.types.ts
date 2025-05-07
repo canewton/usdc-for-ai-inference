@@ -78,6 +78,20 @@ export interface Ai3dGeneration {
   task_id: string;
 }
 
+export interface VideoGeneration {
+  id: string;
+  created_at: string;
+  prompt: string;
+  user_id: string;
+  model_name: string;
+  seed: number;
+  prompt_image_path: string;
+  video_url: string | null;
+  task_id: string;
+  processing_status: string;
+  error_message: string | null;
+}
+
 export type Database = {
   public: {
     Tables: {

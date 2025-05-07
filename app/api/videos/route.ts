@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ videoGenerations });
+    return NextResponse.json(videoGenerations);
   } catch (error) {
     console.error('Error retrieving videos:', error);
     return NextResponse.json(

@@ -99,9 +99,9 @@ export default function CanvasArea({
   if (isLoading) {
     return (
       <MainAiSection>
-        <Spinner/>
+        <Spinner />
       </MainAiSection>
-    )
+    );
   }
 
   return (

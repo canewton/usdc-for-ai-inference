@@ -12,7 +12,7 @@ import { ChatSidebar } from '@/components/ChatSidebar';
 import ImageUploader from '@/components/image-uploader';
 import MainAiSection from '@/components/MainAiSection';
 import RightAiSidebar from '@/components/RightAiSidebar';
-import type { Chat } from '@/types/database.types';
+import type { Chat, VideoGeneration } from '@/types/database.types';
 import { VIDEO_MODEL_PRICING } from '@/utils/constants';
 
 import { AiGenerationIntro } from './ai-generation-intro';
@@ -20,16 +20,6 @@ import LoadingBar from './loading-bar';
 import { Spinner } from './Spinner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-
-interface VideoData {
-  task_id: string;
-  video_url: string;
-  prompt: string;
-  seed: number | string;
-  model_name: string;
-  prompt_image_path: string;
-  processing_status: string;
-}
 
 interface VideoGeneratorProps {
   currVideo: string;
@@ -52,7 +42,7 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
   const [imageHeight, setImageHeight] = useState<number>(0);
 
   const [title, setTitle] = useState('');
-  const [videoData, setVideoData] = useState<VideoData | null>(null);
+  const [videoData, setVideoData] = useState<VideoGeneration | null>(null);
   const [generationProgress, setGenerationProgress] = useState<number>(0);
   const isInputDisabled = currVideo !== '' && currVideo !== null;
 
@@ -65,15 +55,7 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
         const response = await fetch('/api/videos', { method: 'GET' });
         if (!response.ok) throw new Error('Failed to fetch chat history');
         const data = await response.json();
-        const formatted: Chat[] = (data.videoGenerations || []).map(
-          (item: any) => ({
-            id: item.id,
-            title: item.prompt || 'Untitled',
-            created_at: item.created_at || new Date().toISOString(),
-            user_id: item.user_id || '',
-          }),
-        );
-        setChatHistory(formatted);
+        session.setVideoGenerations(data);
       } catch (err) {
         toast.error('Error fetching chat history.');
         console.error('Chat history error:', err);
@@ -82,6 +64,18 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
 
     fetchChatHistory();
   }, []);
+
+  useEffect(() => {
+    const formatted: Chat[] = (session.videoGenerations || []).map(
+      (item: any) => ({
+        id: item.id,
+        title: item.prompt || 'Untitled',
+        created_at: item.created_at || new Date().toISOString(),
+        user_id: item.user_id || '',
+      }),
+    );
+    setChatHistory(formatted);
+  }, [session.videoGenerations]);
 
   useEffect(() => {
     const fetchVideoData = async () => {
@@ -96,7 +90,7 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
           const errData = await response.json();
           throw new Error(errData.error || 'Failed to load video data');
         }
-        const data: VideoData = await response.json();
+        const data: VideoGeneration = await response.json();
         setVideoData(data);
         setModel(data.model_name);
         setTitle(data.prompt);
@@ -301,7 +295,7 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
           ) : (
             <div className="flex justify-center items-center w-full h-full py-8">
               <video
-                src={videoData.video_url}
+                src={videoData.video_url ?? ''}
                 controls
                 className="max-w-3xl w-full h-auto rounded shadow-lg object-contain"
               />
