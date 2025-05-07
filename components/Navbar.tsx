@@ -46,7 +46,6 @@ export default function Navbar({ user, profile }: NavbarProps) {
   const pathname = usePathname();
   const [showDropdown, setShowDropdown] = useState('');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [refetched, setRefetched] = useState(false);
   const [dropdownHovered, setDropdownHovered] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
@@ -81,12 +80,11 @@ export default function Navbar({ user, profile }: NavbarProps) {
   useEffect(() => {
     if (user && !profile?.is_admin) {
       refetch();
-      setRefetched(true);
     }
-  }, [user, profile]);
+  }, [user, profile, user?.id]);
 
   useEffect(() => {
-    if (user && !profile?.is_admin && error && refetched) {
+    if (user && !profile?.is_admin && error) {
       toast.error(error);
     }
   }, [user, profile, error]);
