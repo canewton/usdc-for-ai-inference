@@ -13,11 +13,11 @@ interface ControlPanelProps {
   prompt: string;
   title: string;
   isLoading: boolean;
-  modelUrl: string | null;
   setImageDataUri: (uri: string) => void;
   setPrompt: (prompt: string) => void;
   setTitle: (title: string) => void;
   submitPrompt: (prompt: string) => void;
+  isDisabled: boolean;
 }
 
 export default function ControlPanel({
@@ -25,14 +25,13 @@ export default function ControlPanel({
   prompt,
   title,
   isLoading,
-  modelUrl,
   setImageDataUri,
   setPrompt,
   setTitle,
   submitPrompt,
+  isDisabled = false,
 }: ControlPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isDisabled = !!modelUrl;
   const session = useSession();
 
   const uploadImage = (file: File) => {

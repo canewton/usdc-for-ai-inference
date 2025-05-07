@@ -14,6 +14,7 @@ import { AiGenerationIntro } from '../ai-generation-intro';
 import LoadingBar from '../loading-bar';
 import MainAiSection from '../MainAiSection';
 import PromptSuggestions from '../PromptSuggestions';
+import { Spinner } from '../Spinner';
 
 const promptSuggestions = [
   { title: 'Worn leather with subtle creases', icon: WalletIcon },
@@ -26,6 +27,7 @@ interface CanvasAreaProps {
   isLoading: boolean;
   setPrompt: (prompt: string) => void;
   generationProgress: number;
+  taskId: string | null;
 }
 
 export default function CanvasArea({
@@ -34,6 +36,7 @@ export default function CanvasArea({
   isLoading,
   setPrompt,
   generationProgress,
+  taskId,
 }: CanvasAreaProps) {
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const modelTooltip =
@@ -80,7 +83,7 @@ export default function CanvasArea({
     setPrompt(suggestion.title);
   };
 
-  if (isLoading) {
+  if (!modelUrl && taskId !== null) {
     return (
       <MainAiSection>
         <div className="flex-grow flex flex-col items-center justify-center bg-white p-4 relative">
@@ -91,6 +94,14 @@ export default function CanvasArea({
         </div>
       </MainAiSection>
     );
+  }
+
+  if (isLoading) {
+    return (
+      <MainAiSection>
+        <Spinner/>
+      </MainAiSection>
+    )
   }
 
   return (

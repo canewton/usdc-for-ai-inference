@@ -30,6 +30,7 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
   const [currentChatId, setCurrentChatId] = useState<string | null>(
     curr3dModel || null,
   );
+  const [submittedPrompt, setSubmittedPrompt] = useState<boolean>(false);
 
   const router = useRouter();
   const session = useSession();
@@ -121,7 +122,7 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
       toast.error('Session or image data is missing.');
       return;
     }
-    session.setIsAiInferenceLoading(true);
+    setSubmittedPrompt(true);
 
     try {
       const response = await fetch('/api/generate3d-image', {
@@ -170,14 +171,12 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
       if (input.status === 'SUCCEEDED') {
         setModelUrl(input.url);
         setTaskId(null);
-        session.setIsAiInferenceLoading(false);
         session.setDemoLimit(session.demoLimit - 1);
         fetchHistory();
         return true;
       } else if (input.status === 'FAILED') {
         toast.error('Generation failed.');
         setTaskId(null);
-        session.setIsAiInferenceLoading(false);
         session.setDemoLimit(session.demoLimit - 1);
         return true;
       } else {
@@ -257,9 +256,10 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
       <CanvasArea
         modelUrl={modelUrl}
         imageDataUri={imageDataUri}
-        isLoading={session.isAiInferenceLoading}
+        isLoading={loading}
         setPrompt={setPrompt}
         generationProgress={generationProgress}
+        taskId={taskId}
       />
 
       {/* --- Right Sidebar --- */}
@@ -267,13 +267,13 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
         <ControlPanel
           imageDataUri={imageDataUri}
           prompt={prompt}
-          isLoading={session.isAiInferenceLoading}
+          isLoading={!modelUrl && taskId !== null}
           setImageDataUri={setImageDataUri}
           setPrompt={setPrompt}
           submitPrompt={submitPrompt}
-          modelUrl={modelUrl}
           title={title}
           setTitle={setTitle}
+          isDisabled={!!(modelUrl || taskId || submittedPrompt)}
         />
       </RightAiSidebar>
     </>
