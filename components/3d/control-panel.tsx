@@ -13,12 +13,10 @@ interface ControlPanelProps {
   prompt: string;
   title: string;
   isLoading: boolean;
-  error: string | null;
   modelUrl: string | null;
   setImageDataUri: (uri: string) => void;
   setPrompt: (prompt: string) => void;
   setTitle: (title: string) => void;
-  setError: (error: string | null) => void;
   submitPrompt: (prompt: string) => void;
 }
 
@@ -27,12 +25,10 @@ export default function ControlPanel({
   prompt,
   title,
   isLoading,
-  error,
   modelUrl,
   setImageDataUri,
   setPrompt,
   setTitle,
-  setError,
   submitPrompt,
 }: ControlPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,10 +40,9 @@ export default function ControlPanel({
     reader.onloadend = () => {
       const dataUri = reader.result as string;
       setImageDataUri(dataUri);
-      setError(null);
     };
     reader.onerror = () => {
-      setError('Error reading the image file.');
+      toast.error('Error reading the image file.');
     };
     reader.readAsDataURL(file);
   };
@@ -55,7 +50,6 @@ export default function ControlPanel({
   const resetGenerationState = () => {
     setPrompt('');
     setImageDataUri('');
-    setError(null);
   };
 
   useEffect(() => {
@@ -159,9 +153,6 @@ export default function ControlPanel({
             {isLoading ? 'Generating...' : 'Generate your asset'}
           </span>
         </Button>
-        {error && (
-          <p className="text-red-500 mt-2 text-sm text-center">{error}</p>
-        )}
       </div>
     </div>
   );

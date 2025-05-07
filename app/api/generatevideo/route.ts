@@ -24,7 +24,8 @@ export async function POST(req: Request) {
 
     const requestBody = await req.json();
 
-    const { model_name, image_file, seed, prompt } = requestBody;
+    const { model_name, image_file, seed, prompt, image_file_resize_mode } =
+      requestBody;
 
     let profile: any = null;
     let wallet: any = null;
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
       prompt,
       aiModel.IMAGE_TO_VIDEO,
       wallet.circle_wallet_id,
-      model_name === 'SVD-XT' ? '0.20' : '0.15',
+      model_name === 'SVD-XT' ? '0.02' : '0.1',
     );
 
     const fileData = image_file;
@@ -91,7 +92,7 @@ export async function POST(req: Request) {
       image_file: image_file,
       frames_num: model_name === 'SVD-XT' ? 25 : 14,
       frames_per_second: 6,
-      image_file_resize_mode: 'ORIGINAL_RESOLUTION',
+      image_file_resize_mode,
       steps: 20,
       seed: seed || Math.floor(Math.random() * 1000000),
       motion_bucket_id: 1,

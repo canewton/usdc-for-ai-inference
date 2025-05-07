@@ -18,7 +18,6 @@ export default function Generate3DModelPage() {
   const [prompt, setPrompt] = useState('');
   const [imageDataUri, setImageDataUri] = useState('');
   const [modelUrl, setModelUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<ModelHistoryItem[]>([]);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [generationProgress, setGenerationProgress] = useState<number>(0);
@@ -36,12 +35,12 @@ export default function Generate3DModelPage() {
       if (response.ok) {
         session.setAi3dGenerations(data);
       } else {
-        setError('Failed to load history.');
+        toast.error('Failed to load history.');
         setHistory([]);
       }
     } catch (err) {
       console.error('Error fetching history:', err);
-      setError('An error occurred while loading history.');
+      toast.error('An error occurred while loading history.');
       setHistory([]);
     }
   };
@@ -75,11 +74,10 @@ export default function Generate3DModelPage() {
 
   const submitPrompt = async (selectedPrompt: string) => {
     if (!imageDataUri) {
-      setError('Session or image data is missing.');
+      toast.error('Session or image data is missing.');
       return;
     }
     session.setIsAiInferenceLoading(true);
-    setError(null);
 
     try {
       const response = await fetch('/api/generate3d-image', {
@@ -109,32 +107,31 @@ export default function Generate3DModelPage() {
       const data: any = await response.json();
       setTaskId(data.taskId);
     } catch (err: any) {
-      setError(`An error occurred: ${err.message || 'Unknown error'}`);
+      toast.error('An error occurred while generating the model.');
       console.error('Generation error:', err);
     }
   };
 
-  usePolling(
-    `/api/generation3d-status?taskId=${taskId}`,
-    {
+  usePolling({
+    url: `/api/generation3d-status?taskId=${taskId}`,
+    body: {
       taskId,
       texture_prompt: prompt,
       image_url: imageDataUri,
       title: title,
     },
-    5000,
-    taskId !== null,
-    (input: any) => {
+    interval: 5000,
+    isPolling: taskId !== null,
+    onCheckPollingFinished: (input: any) => {
       if (input.status === 'SUCCEEDED') {
         setModelUrl(input.url);
         setTaskId(null);
-        setError(null);
         session.setIsAiInferenceLoading(false);
         session.setDemoLimit(session.demoLimit - 1);
         fetchHistory();
         return true;
       } else if (input.status === 'FAILED') {
-        setError('Generation failed.');
+        toast.error('Generation failed.');
         setTaskId(null);
         session.setIsAiInferenceLoading(false);
         session.setDemoLimit(session.demoLimit - 1);
@@ -144,16 +141,15 @@ export default function Generate3DModelPage() {
       }
       return false;
     },
-  );
+  });
 
   const handleSelectHistoryItem = (id: string) => {
     const selectedItem = history.find((item) => item.id === id);
     if (selectedItem?.url) {
       setModelUrl(selectedItem.url);
-      setError(null);
     } else {
       console.warn(`History item with id ${id} not found or has no URL.`);
-      setError(`Could not load selected history item (ID: ${id}).`);
+      toast.error(`Could not load selected history item (ID: ${id}).`);
     }
   };
 
@@ -161,7 +157,6 @@ export default function Generate3DModelPage() {
     setModelUrl(null);
     setPrompt('');
     setImageDataUri('');
-    setError(null);
   };
 
   const handleNewChat = () => {
@@ -171,7 +166,6 @@ export default function Generate3DModelPage() {
   const handleDelete = async (modelId: string) => {
     const itemToDelete = history.find((item) => item.id === modelId);
     const urlToDelete = itemToDelete?.url;
-    setError(null);
 
     try {
       const response = await fetch(`/api/deletemodel?modelid=${modelId}`, {
@@ -185,13 +179,11 @@ export default function Generate3DModelPage() {
           setModelUrl(null);
         }
       } else {
-        setError(data.error || 'Failed to delete model');
+        toast.error('Failed to delete model');
         console.error('Deletion failed:', data);
       }
     } catch (err: any) {
-      setError(
-        `An error occurred while deleting: ${err.message || 'Unknown error'}`,
-      );
+      toast.error('An error occurred while deleting the model.');
       console.error('Delete error:', err);
     }
   };
@@ -250,7 +242,6 @@ export default function Generate3DModelPage() {
         imageDataUri={imageDataUri}
         isLoading={session.isAiInferenceLoading}
         setPrompt={setPrompt}
-        setError={setError}
         generationProgress={generationProgress}
       />
 
@@ -260,10 +251,8 @@ export default function Generate3DModelPage() {
           imageDataUri={imageDataUri}
           prompt={prompt}
           isLoading={session.isAiInferenceLoading}
-          error={error}
           setImageDataUri={setImageDataUri}
           setPrompt={setPrompt}
-          setError={setError}
           submitPrompt={submitPrompt}
           modelUrl={modelUrl}
           title={title}
