@@ -47,17 +47,6 @@ export default function ControlPanel({
     reader.readAsDataURL(file);
   };
 
-  const resetGenerationState = () => {
-    setPrompt('');
-    setImageDataUri('');
-  };
-
-  useEffect(() => {
-    if (isDisabled) {
-      resetGenerationState();
-    }
-  }, [isDisabled, modelUrl]);
-
   useEffect(() => {
     if (!imageDataUri && fileInputRef.current) {
       fileInputRef.current.value = '';

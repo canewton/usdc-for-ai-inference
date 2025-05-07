@@ -66,15 +66,16 @@ export interface ImageGeneration {
 export interface Ai3dGeneration {
   id: string;
   created_at: string;
-  prompt: string;
-  url: string;
+  prompt: string | null;
+  url: string | null;
   provider: string;
   user_id: string;
   mode: string;
-  circle_transaction_id: string;
+  circle_transaction_id: string | null;
   image_url: string;
   status: string;
   title: string;
+  task_id: string;
 }
 
 export type Database = {

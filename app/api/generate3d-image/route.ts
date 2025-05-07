@@ -58,11 +58,10 @@ export async function POST(req: Request) {
      */
     const {
       image_url,
-      enable_pbr,
-      should_remesh,
       should_texture,
       texture_prompt,
       circle_wallet_id,
+      title,
     } = await req.json();
 
     const response = await circleDeveloperSdk.getWalletTokenBalance({
@@ -98,8 +97,6 @@ export async function POST(req: Request) {
       headers: HEADERS,
       body: JSON.stringify({
         image_url,
-        enable_pbr,
-        should_remesh,
         should_texture,
         texture_prompt,
       }),
@@ -112,7 +109,31 @@ export async function POST(req: Request) {
     const meshyResponse: MeshyResponse = await generatePreviewResponse.json();
     const taskId: string = meshyResponse.result;
 
-    return NextResponse.json({ taskId }, { status: 200 });
+    const { data, error: dbError } = await supabase
+      .from('3d_generations')
+      .insert([
+        {
+          image_url,
+          prompt: texture_prompt,
+          user_id: user.id,
+          provider: 'Meshy',
+          mode: 'Preview',
+          title,
+          task_id: taskId,
+        },
+      ])
+      .select('*')
+      .single();
+
+    if (dbError) {
+      console.error('Error saving 3d generation:', error);
+      return NextResponse.json(
+        { error: 'Error saving 3d generation' },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error('Error generating 3D model:', error);
     return NextResponse.json(

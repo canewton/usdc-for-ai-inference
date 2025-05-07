@@ -165,7 +165,10 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
       });
       if (!res.ok) throw new Error('Failed to delete chat');
       setChatHistory((prev) => prev.filter((chat) => chat.id !== id));
-      if (currentChatId === id) setCurrentChatId(null);
+      if (currentChatId === id) {
+        setCurrentChatId(null);
+        router.push('/video');
+      }
     } catch (err) {
       console.error('Delete chat error:', err);
     }
