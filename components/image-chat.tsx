@@ -227,7 +227,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
           ) : (
             <AiGenerationIntro
               title="What can you create?"
-              description={`Generate images for $${IMAGE_MODEL_PRICING.userBilledPrice} each`}
+              description={`Generate images`}
             />
           )}
           <div className="w-full max-w-[800px]">
@@ -290,7 +290,9 @@ export function ImageChat({ currChat }: ImageChatProps) {
               onChange={(e) => setProvider(e.target.value)}
               className="border border-gray-200 rounded-lg p-3 bg-white text-body"
             >
-              <option value="flux-schnell">FLUX.1</option>
+              <option value="flux-schnell">
+                FLUX.1 - ${IMAGE_MODEL_PRICING.userBilledPrice}
+              </option>
             </select>
           </div>
         </div>

@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import WalletIcon from '@/public/digital-wallet.svg';
 import ModelIcon from '@/public/group.svg';
 import UsdcIcon from '@/public/usdc.svg';
-import { MODEL_ASSET_PRICING } from '@/utils/constants';
 
 import { AiGenerationIntro } from '../ai-generation-intro';
 import LoadingBar from '../loading-bar';
@@ -170,7 +169,7 @@ export default function CanvasArea({
           <>
             <AiGenerationIntro
               title="What will you create?"
-              description={`Generate 3D assets from your own images for $${MODEL_ASSET_PRICING.userBilledPrice} each`}
+              description={`Generate 3D assets from your own images`}
             />
             <div className="mt-4">
               <PromptSuggestions

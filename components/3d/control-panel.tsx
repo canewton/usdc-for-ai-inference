@@ -100,7 +100,7 @@ export default function ControlPanel({
           }}
           disabled={isDisabled}
         >
-          <option>OpenAI</option>
+          <option>OpenAI - ${MODEL_ASSET_PRICING.userBilledPrice}</option>
         </select>
       </div>
 
