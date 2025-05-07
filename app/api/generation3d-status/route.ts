@@ -21,7 +21,7 @@ interface TaskStatusResponse {
 }
 
 export async function POST(request: Request) {
-  const { taskId, texture_prompt, image_url, title } = await request.json();
+  const { taskId, title } = await request.json();
   const supabase = await createClient();
   const {
     data: { user },
@@ -98,22 +98,15 @@ export async function POST(request: Request) {
         .getPublicUrl(fileName);
       const storedModelUrl = publicURLData.publicUrl;
 
-      // inserting into DB
       const { data, error: dbError } = await supabase
         .from('3d_generations')
-        .insert([
-          {
-            image_url,
-            prompt: texture_prompt,
-            user_id: user.id,
-            url: storedModelUrl,
-            provider: 'Meshy',
-            mode: 'Preview',
-            circle_transaction_id: aiProject.circle_transaction_id,
-            status: taskData.status,
-            title: title,
-          },
-        ])
+        .update({
+          url: storedModelUrl,
+          circle_transaction_id: aiProject.circle_transaction_id,
+          status: taskData.status,
+        })
+        .eq('task_id', taskId)
+        .eq('user_id', user.id)
         .select('*')
         .single();
 

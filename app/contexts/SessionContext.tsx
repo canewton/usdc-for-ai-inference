@@ -3,7 +3,11 @@
 import React, { useState } from 'react';
 import { createContext, useContext } from 'react';
 
-import type { Ai3dGeneration, Chat } from '@/types/database.types';
+import type {
+  Ai3dGeneration,
+  Chat,
+  VideoGeneration,
+} from '@/types/database.types';
 
 type SessionContextType = {
   walletId: string | null;
@@ -17,6 +21,8 @@ type SessionContextType = {
   setAi3dGenerations: (generations: Ai3dGeneration[]) => void;
   imageChats: Chat[];
   setImageChats: (chats: Chat[]) => void;
+  videoGenerations: VideoGeneration[];
+  setVideoGenerations: (generations: VideoGeneration[]) => void;
   textChats: Chat[];
   setTextChats: (chats: Chat[]) => void;
   walletBalance: number | null;
@@ -35,6 +41,8 @@ export const SessionContext = createContext<SessionContextType>({
   setAi3dGenerations: () => {},
   imageChats: [],
   setImageChats: () => {},
+  videoGenerations: [],
+  setVideoGenerations: () => {},
   textChats: [],
   setTextChats: () => {},
   walletBalance: null,
@@ -64,6 +72,9 @@ export function SessionProvider({
   const [demoLimit, setDemoLimit] = useState(0);
   const [ai3dGenerations, setAi3dGenerations] = useState<Ai3dGeneration[]>([]);
   const [imageChats, setImageChats] = useState<Chat[]>([]);
+  const [videoGenerations, setVideoGenerations] = useState<VideoGeneration[]>(
+    [],
+  );
   const [textChats, setTextChats] = useState<Chat[]>([]);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
 
@@ -81,6 +92,8 @@ export function SessionProvider({
         setAi3dGenerations,
         imageChats,
         setImageChats,
+        videoGenerations,
+        setVideoGenerations,
         textChats,
         setTextChats,
         walletBalance,

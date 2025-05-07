@@ -19,12 +19,13 @@ export async function GET(request: NextRequest) {
     const modelids = url.searchParams.get('modelids');
 
     if (modelids) {
-      const ids = JSON.parse(modelids);
+      const idsArray = modelids.split(',').map((id) => id.trim());
+
       const { data: models, error } = await supabase
         .from('3d_generations')
         .select('*')
         .eq('user_id', user.id)
-        .in('id', ids)
+        .in('id', idsArray)
         .order('created_at', { ascending: false });
 
       if (error) {

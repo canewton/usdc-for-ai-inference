@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(videoGeneration);
+    return NextResponse.json(videoGeneration, { status: 200 });
   } catch (error) {
     console.error('Error retrieving video details:', error);
     return NextResponse.json(

@@ -1,9 +1,11 @@
 'use client';
 
+import { useParams } from 'next/navigation';
 import React from 'react';
 
 import { Model3dGenerator } from '@/components/model-3d-generator';
 
 export default function Generate3DModelPage() {
-  return <Model3dGenerator curr3dModel="" />;
+  const { id } = useParams() as { id: string };
+  return <Model3dGenerator curr3dModel={id} />;
 }

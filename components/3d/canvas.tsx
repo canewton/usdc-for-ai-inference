@@ -8,12 +8,12 @@ import { toast } from 'sonner';
 import WalletIcon from '@/public/digital-wallet.svg';
 import ModelIcon from '@/public/group.svg';
 import UsdcIcon from '@/public/usdc.svg';
-import { MODEL_ASSET_PRICING } from '@/utils/constants';
 
 import { AiGenerationIntro } from '../ai-generation-intro';
 import LoadingBar from '../loading-bar';
 import MainAiSection from '../MainAiSection';
 import PromptSuggestions from '../PromptSuggestions';
+import { Spinner } from '../Spinner';
 
 const promptSuggestions = [
   { title: 'Worn leather with subtle creases', icon: WalletIcon },
@@ -26,6 +26,7 @@ interface CanvasAreaProps {
   isLoading: boolean;
   setPrompt: (prompt: string) => void;
   generationProgress: number;
+  taskId: string | null;
 }
 
 export default function CanvasArea({
@@ -34,6 +35,7 @@ export default function CanvasArea({
   isLoading,
   setPrompt,
   generationProgress,
+  taskId,
 }: CanvasAreaProps) {
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
   const modelTooltip =
@@ -80,7 +82,7 @@ export default function CanvasArea({
     setPrompt(suggestion.title);
   };
 
-  if (isLoading) {
+  if (!modelUrl && taskId !== null) {
     return (
       <MainAiSection>
         <div className="flex-grow flex flex-col items-center justify-center bg-white p-4 relative">
@@ -89,6 +91,14 @@ export default function CanvasArea({
             message={'Generating your 3D model'}
           />
         </div>
+      </MainAiSection>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <MainAiSection>
+        <Spinner />
       </MainAiSection>
     );
   }
@@ -159,7 +169,7 @@ export default function CanvasArea({
           <>
             <AiGenerationIntro
               title="What will you create?"
-              description={`Generate 3D assets from your own images for $${MODEL_ASSET_PRICING.userBilledPrice} each`}
+              description={`Generate 3D assets from your own images`}
             />
             <div className="mt-4">
               <PromptSuggestions
