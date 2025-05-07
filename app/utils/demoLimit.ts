@@ -21,11 +21,17 @@ export async function checkDemoLimit(
     .select('id')
     .eq('user_id', userId);
 
-  if (chatError || imageError || modelError) {
+  const { data: videoGenerations, error: videoError } = await supabase
+    .from('video_generations')
+    .select('id')
+    .eq('user_id', userId);
+
+  if (chatError || imageError || modelError || videoError) {
     console.error('Error checking demo limit:', {
       chatError,
       imageError,
       modelError,
+      videoError,
     });
     return { canGenerate: true, remaining: 5 }; // Default to allowing if there's an error
   }
@@ -33,7 +39,8 @@ export async function checkDemoLimit(
   const totalGenerations =
     (chatGenerations?.length || 0) +
     (imageGenerations?.length || 0) +
-    (modelGenerations?.length || 0);
+    (modelGenerations?.length || 0) +
+    (videoGenerations?.length || 0);
 
   const remaining = Math.max(
     0,

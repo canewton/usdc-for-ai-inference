@@ -4,10 +4,12 @@ import { Link } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import AiHistoryPortal from '@/components/AiHistoryPortal';
 import { ChatSidebar } from '@/components/ChatSidebar';
+import ImageUploader from '@/components/image-uploader';
 import MainAiSection from '@/components/MainAiSection';
 import RightAiSidebar from '@/components/RightAiSidebar';
 import Blurs from '@/public/blurs.svg';
@@ -15,17 +17,18 @@ import type { Chat } from '@/types/database.types';
 
 export default function Home() {
   const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [model, setModel] = useState('SVD-XT');
   const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [seed, setSeed] = useState('-1');
-  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSeedInfo, setShowSeedInfo] = useState(false);
 
   const [chatHistory, setChatHistory] = useState<Chat[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const [imageWidth, setImageWidth] = useState<number>(0);
+  const [imageHeight, setImageHeight] = useState<number>(0);
 
   const router = useRouter();
   const session = useSession();
@@ -57,7 +60,7 @@ export default function Home() {
     setCurrentChatId(null);
     setPrompt('');
     setImage(null);
-    setImagePreview(null);
+    setImagePreview('');
   };
 
   const handleSelectChat = (id: string) => {
@@ -78,8 +81,13 @@ export default function Home() {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImageUpload = (
+    file: File,
+    imageWidth: number,
+    imageHeight: number,
+  ) => {
+    setImageHeight(imageHeight);
+    setImageWidth(imageWidth);
     if (file) {
       setImage(file);
       const reader = new FileReader();
@@ -88,42 +96,14 @@ export default function Home() {
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      setImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleRemoveImage = () => {
-    setImage(null);
-    setImagePreview(null);
   };
 
   const handleGenerateVideo = async () => {
-    if (!image) {
-      alert('Please upload an image.');
+    if (!image || imageWidth === 0 || imageHeight === 0) {
+      toast.error('Please upload an image.');
       return;
     }
-
     setLoading(true);
-    setError(null);
 
     try {
       const reader = new FileReader();
@@ -144,6 +124,10 @@ export default function Home() {
                 ? Math.floor(Math.random() * 10000)
                 : parseInt(seed),
             prompt: prompt,
+            image_file_resize_mode:
+              imageWidth <= 1024 && imageHeight <= 576
+                ? 'ORIGINAL_RESOLUTION'
+                : 'CROP_TO_ASPECT_RATIO',
           }),
         });
 
@@ -158,11 +142,9 @@ export default function Home() {
         router.push(`/video/${task_id}`);
       };
     } catch (error: any) {
-      console.error('Error:', error);
       setLoading(false);
-      setError(
-        error.message ||
-          'Failed to process payment or generate video. Please try again.',
+      toast.error(
+        'Failed to process payment or generate video. Please try again.',
       );
     }
   };
@@ -219,64 +201,13 @@ export default function Home() {
         <div className="space-y-6 w-full">
           <div className="flex flex-col mb-6">
             <div className="text-gray-600 mb-2">Image</div>
-            <div
-              onClick={handleImageClick}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center h-40 cursor-pointer hover:border-blue-500 transition-colors"
-            >
-              {imagePreview ? (
-                <div className="relative w-full h-full">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-full object-contain"
-                  />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemoveImage();
-                    }}
-                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs"
-                  >
-                    X
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="mb-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-sm text-gray-500 text-center">
-                    Click or drag to upload image
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Supported files: png, jpg, jpeg
-                  </p>
-                  <p className="text-xs text-gray-400">Max size: 20MB</p>
-                </>
-              )}
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageUpload}
-                accept="image/*"
-                className="hidden"
-              />
-            </div>
+            <ImageUploader
+              inputRef={fileInputRef}
+              preview={imagePreview}
+              setPreview={setImagePreview}
+              maxSizeMB={20}
+              onImageUpload={handleImageUpload}
+            />
           </div>
 
           <div className="flex flex-col mb-4 relative">
@@ -389,12 +320,6 @@ export default function Home() {
               </>
             )}
           </button>
-
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-              {error}
-            </div>
-          )}
         </div>
       </RightAiSidebar>
     </>

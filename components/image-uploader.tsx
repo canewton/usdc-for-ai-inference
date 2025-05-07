@@ -1,12 +1,13 @@
 import { Upload, X } from 'lucide-react';
+import Image from 'next/image';
 import type { ChangeEvent, DragEvent } from 'react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 export interface ImageUploaderProps {
   inputRef: React.RefObject<HTMLInputElement | null>;
   preview: string;
   setPreview: (preview: string) => void;
-  onImageUpload?: (file: File) => void;
+  onImageUpload?: (file: File, imageWidth: number, imageHeight: number) => void;
   maxSizeMB?: number;
   acceptedFormats?: string[];
   isDisabled?: boolean;
@@ -24,6 +25,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [imageWidth, setImageWidth] = useState<number | undefined>(undefined);
+  const [imageHeight, setImageHeight] = useState<number | undefined>(undefined);
+  const [uploadedImage, setUploadedImage] = useState<boolean>(false);
 
   const validateFile = (
     file: File,
@@ -77,6 +81,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   const processFile = (file: File) => {
     setError(null);
+    setImage(file);
 
     const validationError = validateFile(file, maxSizeMB, acceptedFormats);
     if (validationError) {
@@ -84,14 +89,16 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       return;
     }
 
-    setImage(file);
     const objectUrl = URL.createObjectURL(file);
     setPreview(objectUrl);
-
-    if (onImageUpload) {
-      onImageUpload(file);
-    }
   };
+
+  useEffect(() => {
+    if (onImageUpload && image && imageWidth && imageHeight && !uploadedImage) {
+      onImageUpload(image, imageWidth, imageHeight);
+      setUploadedImage(true);
+    }
+  }, [image, imageWidth, imageHeight, onImageUpload]);
 
   const handleButtonClick = () => {
     inputRef.current?.click();
@@ -100,6 +107,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const removeImage = () => {
     setImage(null);
     setPreview('');
+    setUploadedImage(false);
     if (inputRef.current) {
       inputRef.current.value = '';
     }
@@ -171,10 +179,15 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       ) : (
         <div className="relative border rounded-lg overflow-hidden">
           <div className="relative w-full aspect-square">
-            <img
+            <Image
               src={preview}
               alt="Image preview"
               className="w-full h-full object-contain"
+              onLoadingComplete={(img) => {
+                setImageWidth(img.naturalWidth);
+                setImageHeight(img.naturalHeight);
+              }}
+              fill={true}
             />
           </div>
 
