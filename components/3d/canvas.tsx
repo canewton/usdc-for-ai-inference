@@ -3,6 +3,7 @@
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { Suspense, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import WalletIcon from '@/public/digital-wallet.svg';
 import ModelIcon from '@/public/group.svg';
@@ -24,7 +25,6 @@ interface CanvasAreaProps {
   imageDataUri: string;
   isLoading: boolean;
   setPrompt: (prompt: string) => void;
-  setError: (error: string | null) => void;
   generationProgress: number;
 }
 
@@ -33,7 +33,6 @@ export default function CanvasArea({
   imageDataUri,
   isLoading,
   setPrompt,
-  setError,
   generationProgress,
 }: CanvasAreaProps) {
   const [trustHovered, setTrustHovered] = useState<boolean>(false);
@@ -72,11 +71,8 @@ export default function CanvasArea({
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      setError(null);
     } catch (error) {
-      setError(
-        `Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
+      toast.error(`Download failed.}`);
     }
   };
 

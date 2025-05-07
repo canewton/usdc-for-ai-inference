@@ -170,7 +170,7 @@ export default function Navbar({ user, profile }: NavbarProps) {
                     {showDropdown === tab.name && tab.dropdown && (
                       <div
                         ref={dropdownRef}
-                        className="absolute left-1/2 transform -translate-x-1/2 mt-6 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]" // Increased z-index
+                        className="absolute left-1/2 transform -translate-x-1/2 mt-6 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]"
                         onMouseLeave={() => {
                           setShowDropdown('');
                           setDropdownHovered(false);

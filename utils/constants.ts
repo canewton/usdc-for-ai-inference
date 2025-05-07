@@ -5,6 +5,17 @@ export const IMAGE_MODEL_PRICING = {
   userBilledPrice: 0.01,
 };
 
+export const VIDEO_MODEL_PRICING = {
+  'SVD-XT': {
+    novitaPrice: 0.01,
+    userBilledPrice: 0.02,
+  },
+  SVD: {
+    novitaPrice: 0.01,
+    userBilledPrice: 0.01,
+  },
+};
+
 export const MODEL_ASSET_PRICING = {
   replicatePrice: 0.01,
   userBilledPrice: 0.02,
