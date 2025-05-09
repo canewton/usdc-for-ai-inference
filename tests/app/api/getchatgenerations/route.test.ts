@@ -81,7 +81,7 @@ describe('GET /api/getgeneratedmodels', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual({ chats: mockGeneratedChats });
+    expect(data).toEqual(mockGeneratedChats);
     expect(mockSupabase.from).toHaveBeenCalledWith('chat_generations');
   });
 
