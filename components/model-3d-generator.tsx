@@ -37,7 +37,7 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch('/api/getgeneratedmodels', {
+      const response = await fetch('/api/3d-generation', {
         method: 'GET',
       });
       const data: Ai3dGeneration[] = await response.json();
@@ -86,10 +86,9 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
     const fetch3dModelData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `/api/getgeneratedmodels?modelids=${curr3dModel}`,
-          { method: 'GET' },
-        );
+        const response = await fetch(`/api/3d-generation/${curr3dModel}`, {
+          method: 'GET',
+        });
         if (!response.ok) {
           const errData = await response.json();
           throw new Error(errData.error || 'Failed to load video data');
@@ -125,7 +124,7 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
     setSubmittedPrompt(true);
 
     try {
-      const response = await fetch('/api/generate3d-image', {
+      const response = await fetch('/api/3d-generation/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -159,7 +158,7 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
   };
 
   usePolling({
-    url: `/api/generation3d-status?taskId=${taskId}`,
+    url: '/api/3d-generation/generation-status',
     body: {
       taskId,
       title: title,

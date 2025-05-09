@@ -59,8 +59,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Messages:', messages);
-
     // Get result
     const result = streamText({
       model: openai(provider),

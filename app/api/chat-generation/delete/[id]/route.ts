@@ -3,7 +3,10 @@ import { NextResponse } from 'next/server';
 
 import { createClient } from '@/utils/supabase/server';
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
   try {
     const supabase = await createClient();
 
@@ -16,31 +19,14 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json({ error: 'Missing id' }, { status: 400 });
-    }
-
-    // Get the timestamp for this row
-    const { data: row, error: rowError } = await supabase
-      .from('chat_generations')
-      .select('created_at')
-      .eq('id', id)
-      .single();
-
-    if (rowError) {
-      return NextResponse.json({ error: rowError.message }, { status: 500 });
-    }
-    console.log(row.created_at);
-
-    // Delete all rows created after this row
+    const { id } = params;
     const { data, error: dbError } = await supabase
       .from('chat_generations')
       .delete()
+      .eq('id', id)
       .eq('user_id', user.id)
-      .gte('created_at', row.created_at);
+      .select('*')
+      .single();
 
     if (dbError) {
       return NextResponse.json({ error: dbError.message }, { status: 500 });

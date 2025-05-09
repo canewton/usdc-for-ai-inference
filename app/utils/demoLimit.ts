@@ -3,48 +3,58 @@ import { createClient } from '@/utils/supabase/server';
 export async function checkDemoLimit(
   userId: string,
 ): Promise<{ canGenerate: boolean; remaining: number }> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  // Count all types of generations
-  const { data: chatGenerations, error: chatError } = await supabase
-    .from('chat_generations')
-    .select('id')
-    .eq('user_id', userId);
+    let profile: any = null;
+    let wallet: any = null;
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('auth_user_id', userId)
+      .single();
+    profile = profileData;
 
-  const { data: imageGenerations, error: imageError } = await supabase
-    .from('image_generations')
-    .select('id')
-    .eq('user_id', userId);
+    if (profileError) {
+      throw new Error('Failed to fetch user profile');
+    }
 
-  const { data: modelGenerations, error: modelError } = await supabase
-    .from('3d_generations')
-    .select('id')
-    .eq('user_id', userId);
+    if (profile) {
+      // Get wallet
+      const { data: walletData, error: walletError } = await supabase
+        .from('wallets')
+        .select()
+        .eq('profile_id', profile.id)
+        .single();
+      wallet = walletData;
 
-  const { data: videoGenerations, error: videoError } = await supabase
-    .from('video_generations')
-    .select('id')
-    .eq('user_id', userId);
+      if (walletError) {
+        throw new Error('Failed to fetch user wallet');
+      }
+    }
 
-  if (chatError || imageError || modelError || videoError) {
-    console.error('Error checking demo limit:', {
-      chatError,
-      imageError,
-      modelError,
-      videoError,
-    });
-    return { canGenerate: true, remaining: 5 }; // Default to allowing if there's an error
+    if (!wallet) {
+      return { canGenerate: true, remaining: 5 };
+    }
+
+    const { data: aiProjects, error: projectsError } = await supabase
+      .from('ai_projects')
+      .select('id')
+      .eq('circle_wallet_id', wallet.circle_wallet_id);
+
+    if (projectsError) {
+      throw new Error('Failed to fetch AI projects');
+    }
+
+    const totalGenerations = aiProjects?.length;
+
+    const remaining = Math.max(
+      0,
+      parseInt(process.env.USER_AI_GENERATION_LIMIT ?? '5') - totalGenerations,
+    );
+    return { canGenerate: true, remaining };
+  } catch (error) {
+    console.error('Error checking demo limit:', error);
+    return { canGenerate: true, remaining: 5 };
   }
-
-  const totalGenerations =
-    (chatGenerations?.length || 0) +
-    (imageGenerations?.length || 0) +
-    (modelGenerations?.length || 0) +
-    (videoGenerations?.length || 0);
-
-  const remaining = Math.max(
-    0,
-    parseInt(process.env.USER_AI_GENERATION_LIMIT ?? '5') - totalGenerations,
-  );
-  return { canGenerate: true, remaining };
 }

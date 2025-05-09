@@ -52,7 +52,9 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
   useEffect(() => {
     const fetchChatHistory = async () => {
       try {
-        const response = await fetch('/api/videos', { method: 'GET' });
+        const response = await fetch('/api/video-generation', {
+          method: 'GET',
+        });
         if (!response.ok) throw new Error('Failed to fetch chat history');
         const data = await response.json();
         session.setVideoGenerations(data);
@@ -81,10 +83,8 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
     const fetchVideoData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/getvideochat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId: currVideo }),
+        const response = await fetch(`/api/video-generation/${currVideo}`, {
+          method: 'GET',
         });
         if (!response.ok) {
           const errData = await response.json();
@@ -109,7 +109,7 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
   }, [currVideo]);
 
   usePolling({
-    url: '/api/checkvideostatus',
+    url: '/api/video-generation/generation-status',
     body: { task_id: videoData?.task_id },
     interval: 2000,
     isPolling:
@@ -154,7 +154,7 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
 
   const handleDeleteChat = async (id: string) => {
     try {
-      const res = await fetch(`/api/deletevideo?id=${id}`, {
+      const res = await fetch(`/api/video-generation/delete/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to delete chat');
@@ -198,7 +198,7 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
       reader.onloadend = async () => {
         const base64Image = reader.result?.toString().split(',')[1];
 
-        const response = await fetch('./api/generatevideo', {
+        const response = await fetch('./api/video-generation/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -13,7 +13,7 @@ export class ChatController {
 
   async delete(id: string): Promise<Chat | null> {
     try {
-      const response = await fetch(`/api/deletechat?id=${id}`, {
+      const response = await fetch(`/api/chat/delete/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ export class ChatController {
     chatType: 'chat' | 'image' | '3d' | 'video',
   ): Promise<Chat[] | null> {
     try {
-      const response = await fetch(`/api/getchats?chat_type=${chatType}`, {
+      const response = await fetch(`/api/chat?chat_type=${chatType}`, {
         method: 'GET',
       });
       const data = await response.json();
@@ -49,7 +49,7 @@ export class ChatController {
     chatType: 'chat' | 'image' | '3d' | 'video',
   ): Promise<Chat | null> {
     try {
-      const response = await fetch('/api/postchat', {
+      const response = await fetch('/api/chat/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

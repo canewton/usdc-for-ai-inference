@@ -11,7 +11,7 @@ export class ChatGenerationController {
 
   async create(body: string): Promise<ChatGeneration | null> {
     try {
-      const response = await fetch('/api/postchatgeneration', {
+      const response = await fetch('/api/chat-generation/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ export class ChatGenerationController {
   async fetch(id: string): Promise<ChatGeneration[] | null> {
     if (!id.trim()) return null;
     try {
-      const response = await fetch(`/api/getchatgenerations?id=${id}`, {
+      const response = await fetch(`/api/chat-generation/${id}`, {
         method: 'GET',
       });
       const data = await response.json();
@@ -46,7 +46,7 @@ export class ChatGenerationController {
 
   async delete(id: string): Promise<ChatGeneration | null> {
     try {
-      const response = await fetch(`/api/deletechatgenerations?id=${id}`, {
+      const response = await fetch(`/api/chat-generation/delete/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

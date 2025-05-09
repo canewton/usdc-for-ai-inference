@@ -16,25 +16,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const url = new URL(request.url);
-    const chat_type = url.searchParams.get('chat_type');
-
-    const { data: chats, error } = await supabase
-      .from('chats')
+    const { data, error } = await supabase
+      .from('video_generations')
       .select('*')
-      .eq('user_id', user.id)
-      .eq('chat_type', chat_type)
-      .order('created_at', { ascending: false });
+      .eq('user_id', user.id);
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('Error fetching video generations:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch chats' },
+        { error: 'Error fetching videos' },
         { status: 500 },
       );
     }
 
-    return NextResponse.json(chats, { status: 200 });
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

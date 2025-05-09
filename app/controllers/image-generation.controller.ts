@@ -11,7 +11,7 @@ export class ImageGenerationController {
 
   async create(body: string): Promise<ImageGeneration | null> {
     try {
-      const response = await fetch('/api/postimagegeneration', {
+      const response = await fetch('/api/image-generation/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ export class ImageGenerationController {
   async fetch(id: string): Promise<ImageGeneration[] | null> {
     if (!id.trim()) return null;
     try {
-      const response = await fetch(`/api/getgeneratedimages?imageids=${id}`, {
+      const response = await fetch(`/api/image-generation/${id}`, {
         method: 'GET',
       });
       const data = await response.json();

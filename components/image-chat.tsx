@@ -53,7 +53,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
     stop,
     setInput,
   } = useAiGeneration<ImageGeneration, ImageMessage>({
-    api: '/api/generateimage',
+    api: '/api/image-generation/generate',
     body: {
       aspect_ratio: aspectRatio,
       output_quality: quality,

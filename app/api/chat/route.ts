@@ -1,3 +1,4 @@
+import { data } from 'autoprefixer';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -16,31 +17,39 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parse query param
     const url = new URL(request.url);
-    const chat_id = url.searchParams.get('id');
-    if (chat_id) {
-      const { data: chats, error } = await supabase
-        .from('chat_generations')
+    const chat_type = url.searchParams.get('chat_type');
+
+    if (!chat_type) {
+      const { data, error } = await supabase
+        .from('chats')
         .select('*')
-        .eq('user_id', user.id)
-        .eq('chat_id', chat_id)
-        .order('created_at', { ascending: true });
+        .eq('user_id', user.id);
 
       if (error) {
-        console.error('Database error:', error);
+        console.error('Error fetching chats:', error);
         return NextResponse.json(
-          { error: 'Failed to fetch chat generations' },
+          { error: 'Error fetching chats' },
           { status: 500 },
         );
       }
-      return NextResponse.json(chats, { status: 200 });
     } else {
-      return NextResponse.json(
-        { error: 'Missing id parameter' },
-        { status: 400 },
-      );
+      const { data, error } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('chat_type', chat_type);
+
+      if (error) {
+        console.error('Error fetching chats:', error);
+        return NextResponse.json(
+          { error: 'Error fetching chats' },
+          { status: 500 },
+        );
+      }
     }
+
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

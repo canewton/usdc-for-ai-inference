@@ -1,9 +1,13 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { deleteDatabaseBucketItem } from '@/app/utils/deleteDatabaseBucketItem';
 import { createClient } from '@/utils/supabase/server';
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
   try {
     const supabase = await createClient();
 
@@ -16,33 +20,26 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const url = new URL(request.url);
-    const modelid = url.searchParams.get('modelid');
-
-    if (!modelid) {
-      return NextResponse.json({ error: 'Missing model_id' }, { status: 400 });
-    }
-
-    const { data, error: deletedbError } = await supabase
-      .from('3d_generations')
+    const { id } = params;
+    const { data, error: dbError } = await supabase
+      .from('image_generations')
       .delete()
-      .eq('id', modelid)
+      .eq('id', id)
       .eq('user_id', user.id)
       .select('*')
       .single();
 
-    if (deletedbError) {
-      return NextResponse.json(
-        { error: deletedbError.message },
-        { status: 500 },
-      );
+    if (dbError) {
+      return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
 
+    deleteDatabaseBucketItem(data.url);
+
     return NextResponse.json(data, { status: 200 });
-  } catch (error: any) {
-    console.error('3D Generation error:', error);
+  } catch (error) {
+    console.error('Unexpected error:', error);
     return NextResponse.json(
-      { error: error.message || '3D Generation failed' },
+      { error: 'Internal server error' },
       { status: 500 },
     );
   }

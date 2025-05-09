@@ -54,7 +54,7 @@ export function Chat({ currChat }: ChatProps) {
     stop,
     setInput,
   } = useChat({
-    api: '/api/generatetext',
+    api: '/api/chat-generation/generate',
     body: {
       provider: provider,
       max_tokens: maxTokens,
