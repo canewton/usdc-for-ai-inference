@@ -1,5 +1,5 @@
-import { Chat } from '@/components/Chat';
+import { TextChat } from '@/components/ai/common/text-chat';
 
 export default function ChatPage() {
-  return <Chat currChat={''} />;
+  return <TextChat currChat={''} />;
 }

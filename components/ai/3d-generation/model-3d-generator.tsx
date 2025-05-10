@@ -7,12 +7,12 @@ import { useSession } from '@/app/contexts/SessionContext';
 import { usePolling } from '@/app/hooks/usePolling';
 import type { Ai3dGeneration, Chat } from '@/types/database.types';
 
-import CanvasArea from './3d/canvas';
-import ControlPanel from './3d/control-panel';
-import type { ModelHistoryItem } from './3d/types';
-import AiHistoryPortal from './AiHistoryPortal';
-import { ChatSidebar } from './ChatSidebar';
-import RightAiSidebar from './RightAiSidebar';
+import { AiHistoryPortal } from '../common/ai-history-portal';
+import { ChatSidebar } from '../common/chat-sidebar';
+import { RightAiSidebar } from '../common/right-ai-sidebar';
+import CanvasArea from './canvas';
+import ControlPanel from './control-panel';
+import type { ModelHistoryItem } from './types';
 
 interface Model3dGeneratorProps {
   curr3dModel: string;
@@ -93,18 +93,15 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
           const errData = await response.json();
           throw new Error(errData.error || 'Failed to load video data');
         }
-        const dataArr: Ai3dGeneration[] = await response.json();
-        const data = dataArr[0];
+        const data: Ai3dGeneration = await response.json();
         setPrompt(data.prompt ?? '');
         setTitle(data.title);
         setImageDataUri(data.image_url);
         setTitle(data.title);
         setTaskId(data.task_id);
         setModelUrl(data.url);
-
-        console.log('taskid:', data.task_id);
-        console.log('url:', data.url);
       } catch (err: any) {
+        console.error('Error fetching 3d generation data:', err);
         toast.error('Error fetching 3d generation data.');
       } finally {
         setLoading(false);

@@ -7,7 +7,7 @@ interface AiHistoryPortalProps {
   children: React.ReactNode;
 }
 
-export default function AiHistoryPortal({ children }: AiHistoryPortalProps) {
+export function AiHistoryPortal({ children }: AiHistoryPortalProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

@@ -5,7 +5,7 @@ import { Geist } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 
-import Navbar from '@/components/Navbar';
+import Navbar from '@/components/navbar';
 import type { Profile, Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/server';
 

@@ -13,7 +13,7 @@ export interface ImageUploaderProps {
   isDisabled?: boolean;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({
+export const ImageUploader: React.FC<ImageUploaderProps> = ({
   preview,
   setPreview,
   inputRef,
@@ -212,5 +212,3 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     </div>
   );
 };
-
-export default ImageUploader;

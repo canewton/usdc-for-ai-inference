@@ -7,7 +7,7 @@ interface PromptSuggestionsProps {
   disabled?: boolean;
 }
 
-const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({
+export const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({
   onSelect,
   suggestions,
   disabled = false,
@@ -45,5 +45,3 @@ const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({
     </div>
   );
 };
-
-export default PromptSuggestions;

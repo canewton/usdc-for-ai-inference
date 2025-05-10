@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { BaseMessage } from '@/utils/types';
 
-import { MessageItem } from './MessageItem';
+import { MessageItem } from './message-item';
 
 interface ChatMessagesProps<M> {
   messages: M[];

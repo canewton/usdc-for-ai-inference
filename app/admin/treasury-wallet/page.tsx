@@ -1,5 +1,5 @@
 import { TreasuryTransactions } from '@/components/usdc-insights/treasury-transactions';
-import { WalletBalance } from '@/components/usdc-insights/wallet-balance';
+import { WalletBalance } from '@/components/usdc-wallet/wallet-balance';
 import { createClient } from '@/utils/supabase/server';
 
 import { USDCIcon } from '../../icons/USDCIcon';

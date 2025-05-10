@@ -7,7 +7,7 @@ interface LoadingBarProps {
   message?: string;
 }
 
-const LoadingBar: React.FC<LoadingBarProps> = ({
+export const LoadingBar: React.FC<LoadingBarProps> = ({
   progress = 0,
   message = 'Loading',
 }) => {
@@ -61,5 +61,3 @@ const LoadingBar: React.FC<LoadingBarProps> = ({
     </div>
   );
 };
-
-export default LoadingBar;

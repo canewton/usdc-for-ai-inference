@@ -1,6 +1,7 @@
 import type { FunctionComponent } from 'react';
 
 import { ScanIcon } from '@/app/icons/ScanIcon';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,10 +9,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { WalletQRCode } from '@/components/wallet-qr-code';
+import { WalletQRCode } from '@/components/usdc-wallet/wallet-qr-code';
 import type { Wallet } from '@/types/database.types';
-
-import { Button } from './ui/button';
 
 interface Props {
   wallet: Wallet;

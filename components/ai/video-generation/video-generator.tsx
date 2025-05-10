@@ -7,19 +7,19 @@ import { toast } from 'sonner';
 
 import { useSession } from '@/app/contexts/SessionContext';
 import { usePolling } from '@/app/hooks/usePolling';
-import AiHistoryPortal from '@/components/AiHistoryPortal';
-import { ChatSidebar } from '@/components/ChatSidebar';
-import ImageUploader from '@/components/image-uploader';
-import MainAiSection from '@/components/MainAiSection';
-import RightAiSidebar from '@/components/RightAiSidebar';
+import { AiHistoryPortal } from '@/components/ai/common/ai-history-portal';
+import { ChatSidebar } from '@/components/ai/common/chat-sidebar';
+import { ImageUploader } from '@/components/ai/common/image-uploader';
+import { LoadingBar } from '@/components/ai/common/loading-bar';
+import { MainAiSection } from '@/components/ai/common/main-ai-section';
+import { RightAiSidebar } from '@/components/ai/common/right-ai-sidebar';
+import { Spinner } from '@/components/spinner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import type { Chat, VideoGeneration } from '@/types/database.types';
 import { VIDEO_MODEL_PRICING } from '@/utils/constants';
 
-import { AiGenerationIntro } from './ai-generation-intro';
-import LoadingBar from './loading-bar';
-import { Spinner } from './Spinner';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
+import { AiGenerationIntro } from '../common/ai-generation-intro';
 
 interface VideoGeneratorProps {
   currVideo: string;

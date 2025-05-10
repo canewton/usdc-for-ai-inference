@@ -2,11 +2,10 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
 import { useSession } from '@/app/contexts/SessionContext';
+import { ImageUploader } from '@/components/ai/common/image-uploader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
-
-import ImageUploader from '../image-uploader';
 
 interface ControlPanelProps {
   imageDataUri: string;

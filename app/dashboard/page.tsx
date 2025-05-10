@@ -1,12 +1,12 @@
 import { redirect } from 'next/navigation';
 
-import { RequestUsdcButton } from '@/components/request-usdc-button';
-import { ScanToPayDialog } from '@/components/scan-to-pay-dialog';
-import { USDCButton } from '@/components/usdc-button';
 import { TransactionHistory } from '@/components/usdc-insights/transaction-history';
-import { TransferUSDCButton } from '@/components/usdc-insights/transfer-usdc-button';
-import { WalletBalance } from '@/components/usdc-insights/wallet-balance';
-import { WalletInformationDialog } from '@/components/usdc-insights/wallet-information-dialog';
+import { RequestUsdcButton } from '@/components/usdc-wallet/request-usdc-button';
+import { ScanToPayDialog } from '@/components/usdc-wallet/scan-to-pay-dialog';
+import { TransferUSDCButton } from '@/components/usdc-wallet/transfer-usdc-button';
+import { USDCButton } from '@/components/usdc-wallet/usdc-button';
+import { WalletBalance } from '@/components/usdc-wallet/wallet-balance';
+import { WalletInformationDialog } from '@/components/usdc-wallet/wallet-information-dialog';
 import { createClient } from '@/utils/supabase/server';
 
 import { USDCIcon } from '../icons/USDCIcon';

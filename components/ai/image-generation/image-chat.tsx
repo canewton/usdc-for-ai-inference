@@ -7,13 +7,13 @@ import { useSession } from '@/app/contexts/SessionContext';
 import { ImageGenerationController } from '@/app/controllers/image-generation.controller';
 import { useAiGeneration } from '@/app/hooks/useAiGeneration';
 import { useChatFunctionality } from '@/app/hooks/useChatFunctionality';
-import AiHistoryPortal from '@/components/AiHistoryPortal';
-import { ChatMessages } from '@/components/ChatMessages';
-import { ChatSidebar } from '@/components/ChatSidebar';
-import MainAiSection from '@/components/MainAiSection';
-import PromptSuggestions from '@/components/PromptSuggestions';
-import RightAiSidebar from '@/components/RightAiSidebar';
-import { TextInput } from '@/components/TextInput';
+import { AiHistoryPortal } from '@/components/ai/common/ai-history-portal';
+import { ChatMessages } from '@/components/ai/common/chat-messages';
+import { ChatSidebar } from '@/components/ai/common/chat-sidebar';
+import { MainAiSection } from '@/components/ai/common/main-ai-section';
+import { PromptSuggestions } from '@/components/ai/common/prompt-suggestions';
+import { RightAiSidebar } from '@/components/ai/common/right-ai-sidebar';
+import { TextInput } from '@/components/ai/common/text-input';
 import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
 import TrustIcon from '@/public/trust.svg';
@@ -22,7 +22,7 @@ import type { ImageGeneration } from '@/types/database.types';
 import { IMAGE_MODEL_PRICING } from '@/utils/constants';
 import type { ImageMessage } from '@/utils/types';
 
-import { AiGenerationIntro } from './ai-generation-intro';
+import { AiGenerationIntro } from '../common/ai-generation-intro';
 
 const promptSuggestions = [
   { title: 'A global-themed USDC card', icon: WalletIcon },

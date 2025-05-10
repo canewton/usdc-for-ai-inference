@@ -9,13 +9,13 @@ import { toast } from 'sonner';
 import { useSession } from '@/app/contexts/SessionContext';
 import { ChatGenerationController } from '@/app/controllers/chat-generation.controller';
 import { useChatFunctionality } from '@/app/hooks/useChatFunctionality';
-import AiHistoryPortal from '@/components/AiHistoryPortal';
-import { ChatMessages } from '@/components/ChatMessages';
-import { ChatSidebar } from '@/components/ChatSidebar';
-import MainAiSection from '@/components/MainAiSection';
-import PromptSuggestions from '@/components/PromptSuggestions';
-import RightAiSidebar from '@/components/RightAiSidebar';
-import { TextInput } from '@/components/TextInput';
+import { AiHistoryPortal } from '@/components/ai/common/ai-history-portal';
+import { ChatMessages } from '@/components/ai/common/chat-messages';
+import { ChatSidebar } from '@/components/ai/common/chat-sidebar';
+import { MainAiSection } from '@/components/ai/common/main-ai-section';
+import { PromptSuggestions } from '@/components/ai/common/prompt-suggestions';
+import { RightAiSidebar } from '@/components/ai/common/right-ai-sidebar';
+import { TextInput } from '@/components/ai/common/text-input';
 import { Slider } from '@/components/ui/slider';
 import WalletIcon from '@/public/digital-wallet.svg';
 import SparkIcon from '@/public/spark.svg';
@@ -36,7 +36,7 @@ interface ChatProps {
   currChat: string;
 }
 
-export function Chat({ currChat }: ChatProps) {
+export const TextChat = ({ currChat }: ChatProps) => {
   const [provider, setProvider] = useState('gpt-4o-mini');
   const [maxTokens, setMaxTokens] = useState(2000);
   const chatIdRef = useRef<string | null>(null);
@@ -280,4 +280,4 @@ export function Chat({ currChat }: ChatProps) {
       </RightAiSidebar>
     </>
   );
-}
+};

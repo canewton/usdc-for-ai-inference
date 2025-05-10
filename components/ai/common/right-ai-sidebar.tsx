@@ -5,7 +5,7 @@ import React from 'react';
 
 import { useSession } from '@/app/contexts/SessionContext';
 
-import { WalletBalance } from './usdc-insights/wallet-balance';
+import { WalletBalance } from '../../usdc-wallet/wallet-balance';
 
 interface RightAiSidebarProps {
   children: React.ReactNode;
@@ -18,7 +18,7 @@ interface Wallet {
   circle_wallet_id: string;
 }
 
-export default function RightAiSidebar({
+export function RightAiSidebar({
   children,
   refreshTrigger = 0,
 }: RightAiSidebarProps) {
