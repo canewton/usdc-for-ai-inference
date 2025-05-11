@@ -24,8 +24,7 @@ export async function GET(
       .from('chat_generations')
       .select('*')
       .eq('user_id', user.id)
-      .eq('id', id)
-      .single();
+      .eq('chat_id', id);
 
     if (error) {
       console.error('Error fetching chat generation:', error);

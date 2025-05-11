@@ -118,7 +118,7 @@ export function ImageChat({ currChat }: ImageChatProps) {
   } = useChatFunctionality<ImageGeneration, ImageMessage>({
     pageBaseUrl: 'image',
     currChat,
-    fetchGeneration: ImageGenerationController.getInstance().fetch,
+    fetchGenerationById: ImageGenerationController.getInstance().fetchById,
     generationToMessages: (chatGenerations: ImageGeneration) => {
       return [
         {

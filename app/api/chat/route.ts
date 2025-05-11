@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
           { status: 500 },
         );
       }
+
+      return NextResponse.json(data, { status: 200 });
     } else {
       const { data, error } = await supabase
         .from('chats')
@@ -47,9 +49,9 @@ export async function GET(request: NextRequest) {
           { status: 500 },
         );
       }
-    }
 
-    return NextResponse.json(data, { status: 200 });
+      return NextResponse.json(data, { status: 200 });
+    }
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(

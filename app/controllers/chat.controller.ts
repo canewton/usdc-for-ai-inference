@@ -20,7 +20,7 @@ export class ChatController {
         },
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) throw new Error(result.text());
       return result;
     } catch (error) {
       console.error('Delete request failed:', error);
@@ -36,13 +36,28 @@ export class ChatController {
         method: 'GET',
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) throw new Error(data.text());
       return data;
     } catch (error) {
       console.error('Error fetching chats:', error);
       return null;
     }
   }
+
+  async fetchById(id: string): Promise<Chat | null> {
+      if (!id.trim()) return null;
+      try {
+        const response = await fetch(`/api/chat/${id}`, {
+          method: 'GET',
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.text());
+        return data;
+      } catch (error) {
+        console.error('Fetch chat messages error:', error);
+        return null;
+      }
+    }
 
   async create(
     title: string,
@@ -60,7 +75,7 @@ export class ChatController {
         }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) throw new Error(data.text());
       return data;
     } catch (error) {
       console.error('Error saving chat:', error);

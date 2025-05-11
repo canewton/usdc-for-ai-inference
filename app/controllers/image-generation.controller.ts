@@ -18,9 +18,9 @@ export class ImageGenerationController {
         },
         body,
       });
-      if (!response.ok) throw new Error(await response.text());
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.text());
       else {
-        const data = await response.json();
         return data;
       }
     } catch (error) {
@@ -29,20 +29,34 @@ export class ImageGenerationController {
     }
   }
 
-  async fetch(id: string): Promise<ImageGeneration[] | null> {
-    if (!id.trim()) return null;
+  async fetch(): Promise<ImageGeneration[] | null> {
     try {
-      const response = await fetch(`/api/image-generation/${id}`, {
+      const response = await fetch(`/api/image-generation`, {
         method: 'GET',
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) throw new Error(data.text());
       return data;
     } catch (error) {
       console.error('Fetch chat messages error:', error);
       return null;
     }
   }
+
+  async fetchById(id: string): Promise<ImageGeneration[] | null> {
+      if (!id.trim()) return null;
+      try {
+        const response = await fetch(`/api/image-generation/${id}`, {
+          method: 'GET',
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.text());
+        return data;
+      } catch (error) {
+        console.error('Fetch chat messages error:', error);
+        return null;
+      }
+    }
 
   async delete(id: string): Promise<ImageGeneration | null> {
     try {
@@ -54,7 +68,7 @@ export class ImageGenerationController {
       });
 
       const result = await response.json();
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) throw new Error(result.text());
       return result;
     } catch (error) {
       console.error('Delete request failed:', error);
