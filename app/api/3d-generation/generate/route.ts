@@ -107,7 +107,7 @@ export async function POST(req: Request) {
     }
 
     const { data: publicUrlData } = supabase.storage
-      .from('video-prompts')
+      .from('3d-prompts')
       .getPublicUrl(fileName);
     const { publicUrl } = publicUrlData;
 
