@@ -13,12 +13,12 @@ import { ImageUploader } from '@/components/ai/common/image-uploader';
 import { LoadingBar } from '@/components/ai/common/loading-bar';
 import { MainAiSection } from '@/components/ai/common/main-ai-section';
 import { RightAiSidebar } from '@/components/ai/common/right-ai-sidebar';
-import { Spinner } from '@/components/spinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Chat, VideoGeneration } from '@/types/database.types';
 import { VIDEO_MODEL_PRICING } from '@/utils/constants';
 
+import { Spinner } from '../../spinner';
 import { AiGenerationIntro } from '../common/ai-generation-intro';
 
 interface VideoGeneratorProps {

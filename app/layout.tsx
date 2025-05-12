@@ -5,10 +5,10 @@ import { Geist } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 
+import Navbar from '@/components/navbar';
 import type { Profile, Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/server';
 
-import Navbar from '../components/navbar';
 import { SessionProvider } from './contexts/SessionContext';
 
 const defaultUrl = process.env.NEXT_PUBLIC_VERCEL_URL

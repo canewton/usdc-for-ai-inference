@@ -9,10 +9,11 @@ import { AiGenerationIntro } from '@/components/ai/common/ai-generation-intro';
 import { LoadingBar } from '@/components/ai/common/loading-bar';
 import { MainAiSection } from '@/components/ai/common/main-ai-section';
 import { PromptSuggestions } from '@/components/ai/common/prompt-suggestions';
-import { Spinner } from '@/components/spinner';
 import WalletIcon from '@/public/digital-wallet.svg';
 import ModelIcon from '@/public/group.svg';
 import UsdcIcon from '@/public/usdc.svg';
+
+import { Spinner } from '../../spinner';
 
 const promptSuggestions = [
   { title: 'Worn leather with subtle creases', icon: WalletIcon },
