@@ -8,7 +8,7 @@ import { createClient } from '@/utils/supabase/server';
 import { encodedRedirect } from '@/utils/utils'; // Assuming utils/utils.ts exists
 
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-  ? process.env.NEXT_PUBLIC_VERCEL_URL
+  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
   : 'http://localhost:3000';
 
 export const signUpAction = async (formData: FormData) => {

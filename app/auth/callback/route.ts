@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-  ? process.env.NEXT_PUBLIC_VERCEL_URL
+  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
   : 'http://localhost:3000';
 
 export async function GET(request: Request) {

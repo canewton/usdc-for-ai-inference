@@ -12,7 +12,7 @@ import { createClient } from '@/utils/supabase/server';
 import { SessionProvider } from './contexts/SessionContext';
 
 const defaultUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-  ? `${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
   : 'http://localhost:3000';
 
 export const metadata = {
