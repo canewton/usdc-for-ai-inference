@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
       const { data, error } = await supabase
         .from('chats')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching chats:', error);
@@ -39,7 +40,8 @@ export async function GET(request: NextRequest) {
         .from('chats')
         .select('*')
         .eq('user_id', user.id)
-        .eq('chat_type', chat_type);
+        .eq('chat_type', chat_type)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching chats:', error);

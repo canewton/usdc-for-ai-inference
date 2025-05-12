@@ -120,69 +120,30 @@ export async function POST(req: Request) {
 
     const { task_id } = data;
 
-    const promptInput = prompt || 'Test';
+    const { data: dbData, error: dbError } = await supabase
+      .from('video_generations')
+      .insert({
+        user_id: user.id,
+        prompt,
+        model_name,
+        seed,
+        prompt_image_path: publicUrl,
+        task_id,
+        processing_status: 'pending',
+      })
+      .select('*')
+      .single();
 
-    await saveVideoGeneration({
-      user_id: user.id,
-      prompt: promptInput,
-      model_name,
-      seed: input.seed,
-      prompt_image_path: publicUrl,
-      task_id,
-      processing_status: 'pending',
-    });
+    if (dbError) {
+      console.error('Error saving video generation:', dbError);
+    }
 
-    return NextResponse.json({ task_id });
+    return NextResponse.json(dbData);
   } catch (error) {
     console.error('Generation error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Generation failed' },
       { status: 500 },
     );
-  }
-}
-
-interface VideoGenerationParams {
-  user_id: string;
-  prompt: string;
-  model_name: string;
-  seed: number;
-  prompt_image_path: string;
-  task_id: string;
-  processing_status: string;
-  error_message?: string | null;
-  video_url?: string | null;
-}
-
-async function saveVideoGeneration({
-  user_id,
-  prompt,
-  model_name,
-  seed,
-  prompt_image_path,
-  task_id,
-  processing_status,
-  error_message = null,
-  video_url = null,
-}: VideoGenerationParams) {
-  const supabase = await createClient();
-  try {
-    const { error } = await supabase.from('video_generations').insert({
-      user_id,
-      prompt,
-      model_name,
-      seed,
-      prompt_image_path,
-      task_id,
-      processing_status,
-      error_message,
-      video_url,
-    });
-
-    if (error) {
-      console.error('Error saving video generation:', error);
-    }
-  } catch (err) {
-    console.error('Exception saving video generation:', err);
   }
 }

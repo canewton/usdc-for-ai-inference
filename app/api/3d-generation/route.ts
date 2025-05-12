@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from('3d_generations')
       .select('*')
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching 3d generations:', error);
