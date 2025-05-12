@@ -194,7 +194,7 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/deletemodel?modelid=${id}`, {
+      const res = await fetch(`/api/3d-generation/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to delete model');
