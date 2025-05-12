@@ -1,9 +1,9 @@
 import Link from 'next/link';
 
 import { forgotPasswordAction } from '@/app/actions';
-import type { Message } from '@/components/form-message';
-import { FormMessage } from '@/components/form-message';
-import { SubmitButton } from '@/components/submit-button';
+import type { Message } from '@/components/common/form-message';
+import { FormMessage } from '@/components/common/form-message';
+import { SubmitButton } from '@/components/common/submit-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 

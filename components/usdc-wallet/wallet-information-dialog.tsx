@@ -1,7 +1,7 @@
 import { WalletIcon } from 'lucide-react';
 import type { FunctionComponent } from 'react';
 
-import { CopyButton } from '@/components/copy-button';
+import { CopyButton } from '@/components/common/copy-button';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
