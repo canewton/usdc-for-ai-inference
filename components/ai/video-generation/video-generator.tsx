@@ -222,15 +222,13 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
           throw new Error(errorData.error || 'Failed to generate video');
         }
 
-        const responseData = await response.json();
-        const { task_id } = responseData;
-
-        router.push(`/video/${task_id}`);
+        const data = await response.json();
+        router.push(`/video/${data.id}`);
       };
     } catch (error: any) {
       setLoading(false);
       toast.error(
-        'Failed to process payment or generate video. Please try again.',
+        'Error generating video. This AI model may be unable to process your uploaded image.',
       );
     }
   };

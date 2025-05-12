@@ -150,6 +150,9 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
 
       router.push(`/3d/${data.id}`);
     } catch (err: any) {
+      toast.error(
+        'Error generating 3d model. This AI model may be unable to process your uploaded image.',
+      );
       console.error('Generation error:', err);
     }
   };
