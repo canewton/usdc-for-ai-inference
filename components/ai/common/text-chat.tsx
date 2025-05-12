@@ -25,7 +25,6 @@ import type { ChatGeneration } from '@/types/database.types';
 import { TEXT_MODEL_PRICING } from '@/utils/constants';
 
 import { AiGenerationIntro } from './ai-generation-intro';
-import { ChatController } from '@/app/controllers/chat.controller';
 
 const promptSuggestions = [
   { title: 'What are the benefits of USDC', icon: WalletIcon },

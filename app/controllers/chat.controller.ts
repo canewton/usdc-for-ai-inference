@@ -45,19 +45,19 @@ export class ChatController {
   }
 
   async fetchById(id: string): Promise<Chat | null> {
-      if (!id.trim()) return null;
-      try {
-        const response = await fetch(`/api/chat/${id}`, {
-          method: 'GET',
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.text());
-        return data;
-      } catch (error) {
-        console.error('Fetch chat messages error:', error);
-        return null;
-      }
+    if (!id.trim()) return null;
+    try {
+      const response = await fetch(`/api/chat/${id}`, {
+        method: 'GET',
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.text());
+      return data;
+    } catch (error) {
+      console.error('Fetch chat messages error:', error);
+      return null;
     }
+  }
 
   async create(
     title: string,

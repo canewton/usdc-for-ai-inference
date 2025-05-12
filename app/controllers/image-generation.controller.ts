@@ -44,19 +44,19 @@ export class ImageGenerationController {
   }
 
   async fetchById(id: string): Promise<ImageGeneration[] | null> {
-      if (!id.trim()) return null;
-      try {
-        const response = await fetch(`/api/image-generation/${id}`, {
-          method: 'GET',
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.text());
-        return data;
-      } catch (error) {
-        console.error('Fetch chat messages error:', error);
-        return null;
-      }
+    if (!id.trim()) return null;
+    try {
+      const response = await fetch(`/api/image-generation/${id}`, {
+        method: 'GET',
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.text());
+      return data;
+    } catch (error) {
+      console.error('Fetch chat messages error:', error);
+      return null;
     }
+  }
 
   async delete(id: string): Promise<ImageGeneration | null> {
     try {

@@ -34,6 +34,7 @@ export async function DELETE(
     }
 
     deleteDatabaseBucketItem(data.url);
+    deleteDatabaseBucketItem(data.image_url);
 
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {

@@ -1,4 +1,3 @@
-import { data } from 'autoprefixer';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 

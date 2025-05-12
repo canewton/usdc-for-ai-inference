@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 
 import { checkDemoLimit } from '@/app/utils/demoLimit';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
@@ -16,12 +17,6 @@ const HEADERS = {
 
 interface MeshyResponse {
   result: string;
-}
-
-interface TaskStatusResponse {
-  status: string;
-  progress: number;
-  model_urls?: { glb: string };
 }
 
 // returns model url
@@ -92,6 +87,30 @@ export async function POST(req: Request) {
       );
     }
 
+    const base64Data = image_url.split(';base64,').pop();
+    const fileBuffer = Buffer.from(base64Data, 'base64');
+    const fileName = `${user.id}_${uuidv4()}.webp`;
+
+    const { error: storageError } = await supabase.storage
+      .from('3d-prompts')
+      .upload(fileName, fileBuffer, {
+        contentType: 'image/webp',
+        cacheControl: '3600',
+      });
+
+    if (storageError) {
+      console.error('Error uploading to Supabase:', storageError);
+      return NextResponse.json(
+        { error: 'Failed to upload image' },
+        { status: 500 },
+      );
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('video-prompts')
+      .getPublicUrl(fileName);
+    const { publicUrl } = publicUrlData;
+
     const generatePreviewResponse = await fetch(MESHY_API_URL, {
       method: 'POST',
       headers: HEADERS,
@@ -113,7 +132,7 @@ export async function POST(req: Request) {
       .from('3d_generations')
       .insert([
         {
-          image_url,
+          image_url: publicUrl,
           prompt: texture_prompt,
           user_id: user.id,
           provider: 'Meshy',
@@ -126,7 +145,7 @@ export async function POST(req: Request) {
       .single();
 
     if (dbError) {
-      console.error('Error saving 3d generation:', error);
+      console.error('Error saving 3d generation:', dbError);
       return NextResponse.json(
         { error: 'Error saving 3d generation' },
         { status: 500 },
