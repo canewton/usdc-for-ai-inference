@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useSession } from '@/app/contexts/SessionContext';
 import { ChatGenerationController } from '@/app/controllers/chat-generation.controller';
 import { useChatFunctionality } from '@/app/hooks/useChatFunctionality';
+import { AiGenerationIntro } from '@/components/ai/common/ai-generation-intro';
 import { AiHistoryPortal } from '@/components/ai/common/ai-history-portal';
 import { ChatMessages } from '@/components/ai/common/chat-messages';
 import { ChatSidebar } from '@/components/ai/common/chat-sidebar';
@@ -23,8 +24,6 @@ import TrustIcon from '@/public/trust.svg';
 import UsdcIcon from '@/public/usdc.svg';
 import type { ChatGeneration } from '@/types/database.types';
 import { TEXT_MODEL_PRICING } from '@/utils/constants';
-
-import { AiGenerationIntro } from './ai-generation-intro';
 
 const promptSuggestions = [
   { title: 'What are the benefits of USDC', icon: WalletIcon },
@@ -101,6 +100,10 @@ export const TextChat = ({ currChat }: ChatProps) => {
           },
         ]);
       }
+    },
+    onError: (error: Error) => {
+      toast.error('Failed to generate AI response');
+      console.error('Error during AI inference:', error);
     },
   });
 

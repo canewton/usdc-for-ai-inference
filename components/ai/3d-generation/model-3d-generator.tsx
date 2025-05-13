@@ -137,22 +137,22 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
         if (response.status === 429) {
           toast.error('Demo limit reached.');
         } else {
-          toast.error(errorData.error || 'Failed to generate model');
+          toast.error(
+            'Error generating video. This AI model may be unable to process your uploaded image.',
+          );
         }
-        throw new Error(errorData.error || 'Failed to generate model');
+        setSubmittedPrompt(false);
+        const errorData = await response.json();
+        throw new Error(errorData.error);
       }
 
       const data: any = await response.json();
 
       router.push(`/3d/${data.id}`);
     } catch (err: any) {
-      toast.error(
-        'Error generating 3d model. This AI model may be unable to process your uploaded image.',
-      );
       console.error('Generation error:', err);
     }
   };

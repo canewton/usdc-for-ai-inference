@@ -103,6 +103,10 @@ export function ImageChat({ currChat }: ImageChatProps) {
         ]);
       }
     },
+    onError: (error: string) => {
+      toast.error('Failed to generate image');
+      console.error('Error:', error);
+    },
   });
 
   useEffect(() => {

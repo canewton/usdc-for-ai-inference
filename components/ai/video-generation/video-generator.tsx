@@ -222,18 +222,22 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to generate video');
+          if (response.status === 429) {
+            toast.error('Demo limit reached.');
+          } else {
+            toast.error(
+              'Error generating video. This AI model may be unable to process your uploaded image.',
+            );
+          }
+          setLoading(false);
+        } else {
+          const data = await response.json();
+          router.push(`/video/${data.id}`);
         }
-
-        const data = await response.json();
-        router.push(`/video/${data.id}`);
       };
     } catch (error: any) {
       setLoading(false);
-      toast.error(
-        'Error generating video. This AI model may be unable to process your uploaded image.',
-      );
+      console.error('Generation error:', error);
     }
   };
 
