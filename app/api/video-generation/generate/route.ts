@@ -120,11 +120,13 @@ export async function POST(req: Request) {
 
     const { task_id } = data;
 
+    const promptInput = prompt || 'Test';
+
     const { data: dbData, error: dbError } = await supabase
       .from('video_generations')
       .insert({
         user_id: user.id,
-        prompt,
+        prompt: promptInput,
         model_name,
         seed: input.seed,
         prompt_image_path: publicUrl,
@@ -138,7 +140,7 @@ export async function POST(req: Request) {
       console.error('Error saving video generation:', dbError);
     }
 
-    return NextResponse.json(dbData);
+    return NextResponse.json(dbData, { status: 200 });
   } catch (error) {
     console.error('Generation error:', error);
     return NextResponse.json(
