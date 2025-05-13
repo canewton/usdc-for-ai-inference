@@ -30,7 +30,7 @@ export async function GET(
     if (error) {
       console.error('Error fetching chat:', error);
       return NextResponse.json(
-        { error: 'Error fetching chats' },
+        { error: 'Error fetching chat' },
         { status: 500 },
       );
     }

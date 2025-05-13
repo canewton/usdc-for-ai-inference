@@ -1,22 +1,18 @@
 import type { NextRequest } from 'next/server';
 
-import { POST } from '@/app/api/postimagegeneration/route';
-import { aiGenerationPayment } from '@/app/utils/aiGenerationPayment';
-import { checkDemoLimit } from '@/app/utils/demoLimit';
+import { GET } from '@/app/api/image-generation/route';
 import { createClient } from '@/utils/supabase/server';
 
 jest.mock('@/utils/supabase/server');
-jest.mock('@/app/utils/aiGenerationPayment');
-jest.mock('@/app/utils/demoLimit');
 
 const mockSupabase = {
   auth: {
     getUser: jest.fn(),
   },
   from: jest.fn(() => ({
-    insert: jest.fn(() => ({
-      select: jest.fn(() => ({
-        single: jest.fn(() => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        order: jest.fn(() => ({
           mockResolvedValue: jest.fn(),
           mockRejectedValue: jest.fn(),
         })),
@@ -26,28 +22,16 @@ const mockSupabase = {
 };
 
 (createClient as jest.Mock).mockReturnValue(mockSupabase);
-(checkDemoLimit as jest.Mock).mockReturnValue({
-  canGenerate: true,
-  remaining: 5,
-});
-(aiGenerationPayment as jest.Mock).mockReturnValue({
-  circle_transaction_id: 'transaction-id',
-});
 
-describe('GET /api/postimagegeneration', () => {
+describe('GET /api/image-generation', () => {
   let mockRequest: NextRequest;
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockRequest = {
-      json: jest.fn().mockResolvedValue({
-        prompt: 'make a cake',
-        chat_id: '1',
-        provider: 'gpt-4o',
-        url: 'http://example.com',
-      }),
+      json: jest.fn(),
       headers: new Headers(),
-      url: 'http://localhost/api/postimagegeneration',
+      url: 'http://localhost/api/image-generation',
     } as unknown as NextRequest;
   });
 
@@ -57,14 +41,14 @@ describe('GET /api/postimagegeneration', () => {
       error: new Error('Not authenticated'),
     });
 
-    const response = await POST(mockRequest);
+    const response = await GET(mockRequest);
     const data = await response.json();
 
     expect(response.status).toBe(401);
     expect(data.error).toBe('Unauthorized');
   });
 
-  it('should return 201 with generated image for an authenticated user', async () => {
+  it('should return 200 with image generations for an authenticated user', async () => {
     mockRequest.headers.set('Authorization', 'Bearer valid-token');
     const mockUser = { id: 'user-id' };
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -72,44 +56,43 @@ describe('GET /api/postimagegeneration', () => {
       error: null,
     });
 
-    const mockGeneratedImage = {
-      id: '1',
-      name: 'Image A',
-      created_at: '2023-04-01T00:00:00Z',
-    };
+    const mockGeneratedChatGenerations = [
+      { id: '1', name: 'image A', created_at: '2023-04-01T00:00:00Z' },
+      { id: '2', name: 'image B', created_at: '2023-04-02T00:00:00Z' },
+    ];
 
     mockSupabase.from.mockReturnValue({
-      insert: jest.fn().mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
-            data: mockGeneratedImage,
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          order: jest.fn().mockResolvedValue({
+            data: mockGeneratedChatGenerations,
             error: null,
           }),
         }),
       }),
     });
 
-    const response = await POST(mockRequest);
-
+    const response = await GET(mockRequest);
     const data = await response.json();
 
-    expect(response.status).toBe(201);
-    expect(data).toEqual(mockGeneratedImage);
+    expect(response.status).toBe(200);
+    expect(data).toEqual(mockGeneratedChatGenerations);
     expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 
-  it('should return 500 if there is an error posting generated image', async () => {
-    mockRequest.headers.set('Authorization', 'Bearer valid-token');
+  it('should return 500 if there is an error fetching image generations', async () => {
     const mockUser = { id: 'user-id' };
+    mockRequest.headers.set('Authorization', 'Bearer valid-token');
+
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: mockUser },
       error: null,
     });
 
     mockSupabase.from.mockReturnValue({
-      insert: jest.fn().mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          single: jest.fn().mockResolvedValue({
+      select: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
+          order: jest.fn().mockResolvedValue({
             data: null,
             error: new Error('Database error'),
           }),
@@ -117,13 +100,11 @@ describe('GET /api/postimagegeneration', () => {
       }),
     });
 
-    const response = await POST(mockRequest);
+    const response = await GET(mockRequest);
     const data = await response.json();
 
     expect(response.status).toBe(500);
-    expect(data.error).toEqual(
-      'Error inserting record into Supabase: Database error',
-    );
+    expect(data.error).toBe('Error fetching images');
     expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 });

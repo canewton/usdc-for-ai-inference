@@ -56,7 +56,6 @@ export async function middleware(request: NextRequest) {
   );
 
   // Refresh session if expired - required for Server Components
-  // https://supabase.com/docs/guides/auth/auth-helpers/nextjs#managing-session-with-middleware
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -106,7 +105,7 @@ export async function middleware(request: NextRequest) {
 
     // Check admin status for admin routes
     if (isAdminRoute || isAuthRoute) {
-      if (!profile?.is_admin) {
+      if (profile && !profile.is_admin) {
         // Redirect non-admins trying to access admin routes
         return NextResponse.redirect(new URL('/dashboard', request.url));
       } else {
