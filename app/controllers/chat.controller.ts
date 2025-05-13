@@ -13,14 +13,14 @@ export class ChatController {
 
   async delete(id: string): Promise<Chat | null> {
     try {
-      const response = await fetch(`/api/deletechat?id=${id}`, {
+      const response = await fetch(`/api/chat/delete/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) throw new Error(result.text());
       return result;
     } catch (error) {
       console.error('Delete request failed:', error);
@@ -32,14 +32,29 @@ export class ChatController {
     chatType: 'chat' | 'image' | '3d' | 'video',
   ): Promise<Chat[] | null> {
     try {
-      const response = await fetch(`/api/getchats?chat_type=${chatType}`, {
+      const response = await fetch(`/api/chat?chat_type=${chatType}`, {
         method: 'GET',
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) throw new Error(data.text());
       return data;
     } catch (error) {
       console.error('Error fetching chats:', error);
+      return null;
+    }
+  }
+
+  async fetchById(id: string): Promise<Chat | null> {
+    if (!id.trim()) return null;
+    try {
+      const response = await fetch(`/api/chat/${id}`, {
+        method: 'GET',
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.text());
+      return data;
+    } catch (error) {
+      console.error('Fetch chat messages error:', error);
       return null;
     }
   }
@@ -49,7 +64,7 @@ export class ChatController {
     chatType: 'chat' | 'image' | '3d' | 'video',
   ): Promise<Chat | null> {
     try {
-      const response = await fetch('/api/postchat', {
+      const response = await fetch('/api/chat/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +75,7 @@ export class ChatController {
         }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(await response.text());
+      if (!response.ok) throw new Error(data.text());
       return data;
     } catch (error) {
       console.error('Error saving chat:', error);

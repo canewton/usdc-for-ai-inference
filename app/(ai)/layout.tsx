@@ -1,6 +1,6 @@
 // app/(ai)/layout.tsx
 
-import AiTabs from '@/components/AiTabs'; // Corrected path
+import AiTabs from '@/components/ai/common/ai-table'; // Corrected path
 
 export default function AILayout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,7 +1,7 @@
 'use client';
 import { useParams } from 'next/navigation';
 
-import { ImageChat } from '@/components/image-chat';
+import { ImageChat } from '@/components/ai/image-generation/image-chat';
 
 export default function ChatPage() {
   const params = useParams();

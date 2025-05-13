@@ -6,6 +6,7 @@ export interface PollingOptions {
   interval?: number;
   isPolling?: boolean;
   onCheckPollingFinished: (result: any) => boolean;
+  onError?: (error: any) => void;
 }
 
 export function usePolling({
@@ -14,6 +15,7 @@ export function usePolling({
   interval = 5000,
   isPolling = false,
   onCheckPollingFinished,
+  onError,
 }: PollingOptions) {
   const [data, setData] = useState<any>(null);
   const [isFinished, setIsFinished] = useState(false);
@@ -41,6 +43,12 @@ export function usePolling({
       }
     } catch (err) {
       console.error('Polling error:', err);
+      setIsFinished(true);
+      if (onError) {
+        onError(err);
+      } else {
+        console.error('No error handler provided:', err);
+      }
     }
   };
 

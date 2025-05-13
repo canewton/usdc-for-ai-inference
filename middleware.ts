@@ -67,6 +67,7 @@ export async function middleware(request: NextRequest) {
   const protectedRoutes = ['/dashboard', '/admin', '/chat', '/3d', '/video'];
   const adminRoutes = ['/admin'];
   const userOnlyRoutes = ['/dashboard', '/3d', '/chat', '/image', '/video'];
+  const authRoutes = ['/sign-in', '/sign-up', '/forgot-password'];
 
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route),
@@ -75,6 +76,7 @@ export async function middleware(request: NextRequest) {
   const isUserOnlyRoute = userOnlyRoutes.some(
     (route) => pathname === route || pathname.startsWith(route),
   );
+  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
   if (!user && isProtectedRoute) {
     // Redirect unauthenticated users trying to access protected routes
@@ -103,10 +105,12 @@ export async function middleware(request: NextRequest) {
     }
 
     // Check admin status for admin routes
-    if (isAdminRoute) {
+    if (isAdminRoute || isAuthRoute) {
       if (!profile?.is_admin) {
         // Redirect non-admins trying to access admin routes
         return NextResponse.redirect(new URL('/dashboard', request.url));
+      } else {
+        return NextResponse.redirect(new URL('/admin', request.url));
       }
     }
   }

@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { GET } from '@/app/api/getchatgenerations/route';
+import { GET } from '@/app/api/chat-generation/route';
 import { createClient } from '@/utils/supabase/server';
 
 jest.mock('@/utils/supabase/server');

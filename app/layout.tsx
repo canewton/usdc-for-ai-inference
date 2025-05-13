@@ -5,14 +5,14 @@ import { Geist } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 
-import Navbar from '@/components/Navbar';
+import Navbar from '@/components/common/navbar';
 import type { Profile, Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/server';
 
 import { SessionProvider } from './contexts/SessionContext';
 
 const defaultUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-  ? `${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
   : 'http://localhost:3000';
 
 export const metadata = {

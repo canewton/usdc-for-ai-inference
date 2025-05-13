@@ -12,7 +12,7 @@ import { ChatController } from '../controllers/chat.controller';
 interface ChatFunctionalityProps<G, M> {
   pageBaseUrl: 'chat' | 'image';
   currChat: string;
-  fetchGeneration: (id: string) => Promise<G[] | null>;
+  fetchGenerationById: (id: string) => Promise<G[] | null>;
   generationToMessages: (generation: G) => M[];
   messages: M[];
   chatInput: string;
@@ -24,7 +24,7 @@ interface ChatFunctionalityProps<G, M> {
 export function useChatFunctionality<G, M extends BaseMessage>({
   pageBaseUrl,
   currChat,
-  fetchGeneration,
+  fetchGenerationById,
   generationToMessages,
   messages,
   chatInput,
@@ -59,7 +59,7 @@ export function useChatFunctionality<G, M extends BaseMessage>({
   }, [session.textChats, session.imageChats]);
 
   const onSelectChat = async (id: string) => {
-    const messages = await fetchGeneration(id);
+    const messages = await fetchGenerationById(id);
 
     if (!messages) {
       console.error('Failed to fetch chat messages');
@@ -150,7 +150,7 @@ export function useChatFunctionality<G, M extends BaseMessage>({
   useEffect(() => {
     // Get messages if chat changes
     if (!currChatId || messages.length == 1) return;
-    fetchGeneration(currChatId).then((messages) => {
+    fetchGenerationById(currChatId).then((messages) => {
       if (!messages) {
         console.error('Failed to fetch chat messages');
         return;
