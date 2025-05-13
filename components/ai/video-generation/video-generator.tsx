@@ -139,6 +139,10 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
 
       return false;
     },
+    onError: (error) => {
+      console.error('Polling error:', error);
+      toast.error('An error occurred while generating your video.');
+    },
   });
 
   const handleNewChat = () => {
@@ -197,7 +201,7 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
       reader.onloadend = async () => {
         const base64Image = reader.result?.toString().split(',')[1];
 
-        const response = await fetch('./api/video-generation/generate', {
+        const response = await fetch('/api/video-generation/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

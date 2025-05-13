@@ -183,6 +183,11 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
       }
       return false;
     },
+    onError: (error) => {
+      console.error('Polling error:', error);
+      setTaskId(null);
+      toast.error('An error occurred while generating your 3d model.');
+    },
   });
 
   const handleNewChat = () => {

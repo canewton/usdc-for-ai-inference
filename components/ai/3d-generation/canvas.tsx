@@ -73,7 +73,8 @@ export default function CanvasArea({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      toast.error(`Download failed.}`);
+      console.error('Download error:', error);
+      toast.error(`Download failed.`);
     }
   };
 

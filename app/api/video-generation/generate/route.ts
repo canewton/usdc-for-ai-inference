@@ -126,7 +126,7 @@ export async function POST(req: Request) {
         user_id: user.id,
         prompt,
         model_name,
-        seed,
+        seed: input.seed,
         prompt_image_path: publicUrl,
         task_id,
         processing_status: 'pending',
