@@ -4,12 +4,14 @@ interface AiGenerationHook<G> {
   api: string;
   body: any;
   onFinish?: (generation: G) => Promise<void>;
+  onError?: (error: string) => void;
 }
 
 export function useAiGeneration<G, M>({
   api,
   body,
   onFinish,
+  onError,
 }: AiGenerationHook<G>) {
   const [messages, setMessages] = useState<M[]>([]);
   const [input, setInput] = useState<string>('');
@@ -40,11 +42,19 @@ export function useAiGeneration<G, M>({
         },
         body: JSON.stringify({ prompt: input, ...body }),
       });
-      const data: G = await response.json();
-      if (onFinish) {
-        await onFinish(data);
+
+      if (!response.ok) {
+        setIsLoading(false);
+        if (onError) {
+          onError('Failed to generate image');
+        }
+      } else {
+        const data: G = await response.json();
+        if (onFinish) {
+          await onFinish(data);
+        }
+        setInput('');
       }
-      setInput('');
     } catch (error) {
       console.error('Error:', error);
     } finally {
