@@ -132,6 +132,7 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
               }
             : prev,
         );
+        session.setDemoLimit(session.demoLimit - 1);
         return true;
       } else {
         setGenerationProgress(data.progressPercent);

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 
-import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
+import { aiGenerationPayment } from '@/app/utils/aiGenerationPayment';
+import { createDatabaseBucketItem } from '@/app/utils/createDatabaseBucketItem';
 import { aiModel } from '@/types/ai.types';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
@@ -45,63 +47,32 @@ export async function POST(request: Request) {
     const taskData: TaskStatusResponse = await response.json();
 
     if (taskData.status === 'SUCCEEDED') {
-      let profile: any = null;
-      let wallet: any = null;
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('auth_user_id', user.id)
-        .single();
-      profile = profileData;
-
-      if (profile) {
-        // Get wallet
-        const { data: walletData } = await supabase
-          .schema('public')
-          .from('wallets')
-          .select()
-          .eq('profile_id', profile.id)
-          .single();
-        wallet = walletData;
-      }
-
-      const aiProject = await circleWalletTransfer(
+      const aiProject = await aiGenerationPayment(
+        user,
         title,
         aiModel.IMAGE_TO_3D,
-        wallet.circle_wallet_id,
-        `${MODEL_ASSET_PRICING.userBilledPrice}`,
+        MODEL_ASSET_PRICING.userBilledPrice,
       );
 
       if (!taskData.model_urls?.glb) {
         throw new Error('model URL missing.');
       }
-      let modelUrl: string = taskData.model_urls.glb;
-      let modelResponse = await fetch(modelUrl);
-      let modelBlob = await modelResponse.blob();
+      const modelUrl: string = taskData.model_urls.glb;
+      const modelResponse = await fetch(modelUrl);
+      const modelBlob = await modelResponse.blob();
 
-      // upload .glb (3D model file type) file into supabase storage
-      const fileName = `3d-model-${Date.now()}.glb`;
-      const { error: storageError } = await supabase.storage
-        .from('user-3d')
-        .upload(fileName, modelBlob, {
-          contentType: 'model/gltf-binary',
-        });
-
-      if (storageError) {
-        throw new Error(
-          `Error uploading model to Supabase: ${storageError.message}`,
-        );
-      }
-
-      const { data: publicURLData } = supabase.storage
-        .from('user-3d')
-        .getPublicUrl(fileName);
-      const storedModelUrl = publicURLData.publicUrl;
+      const imageData = await createDatabaseBucketItem(
+        modelBlob,
+        'user-3d',
+        `${user.id}_${uuidv4()}.glb`,
+        'model/gltf-binary',
+      );
+      const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${imageData?.data?.fullPath}`;
 
       const { data, error: dbError } = await supabase
         .from('3d_generations')
         .update({
-          url: storedModelUrl,
+          url: publicUrl,
           circle_transaction_id: aiProject.circle_transaction_id,
           status: taskData.status,
         })

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
+import { createDatabaseBucketItem } from '@/app/utils/createDatabaseBucketItem';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
 import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
@@ -89,27 +90,14 @@ export async function POST(req: Request) {
 
     const base64Data = image_url.split(';base64,').pop();
     const fileBuffer = Buffer.from(base64Data, 'base64');
-    const fileName = `${user.id}_${uuidv4()}.webp`;
-
-    const { error: storageError } = await supabase.storage
-      .from('3d-prompts')
-      .upload(fileName, fileBuffer, {
-        contentType: 'image/webp',
-        cacheControl: '3600',
-      });
-
-    if (storageError) {
-      console.error('Error uploading to Supabase:', storageError);
-      return NextResponse.json(
-        { error: 'Failed to upload image' },
-        { status: 500 },
-      );
-    }
-
-    const { data: publicUrlData } = supabase.storage
-      .from('3d-prompts')
-      .getPublicUrl(fileName);
-    const { publicUrl } = publicUrlData;
+    const imageData = await createDatabaseBucketItem(
+      fileBuffer,
+      '3d-prompts',
+      `${user.id}_${uuidv4()}.webp`,
+      'image/webp',
+      '3600',
+    );
+    const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${imageData?.data?.fullPath}`;
 
     const generatePreviewResponse = await fetch(MESHY_API_URL, {
       method: 'POST',

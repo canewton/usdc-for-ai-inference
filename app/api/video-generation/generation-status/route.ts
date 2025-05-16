@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 
+import { createDatabaseBucketItem } from '@/app/utils/createDatabaseBucketItem';
 import { createClient } from '@/utils/supabase/server';
 
 const NOVITA_API_URL = 'https://api.novita.ai/v3/async/task-result';
@@ -54,30 +56,21 @@ export async function POST(req: Request) {
       const video = await fetch(videos[0].video_url);
       const videoBlob = await video.blob();
 
-      const fileName = `${Date.now()}-novita.mp4`;
-      const filePath = `videos/${fileName}`;
+      const imageData = await createDatabaseBucketItem(
+        videoBlob,
+        'video-gen',
+        `videos/${user.id}_${uuidv4()}.mp4`,
+        'video/mp4',
+        '3600',
+      );
+      const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${imageData?.data?.fullPath}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('video-gen')
-        .upload(filePath, videoBlob, {
-          cacheControl: '3600',
-          upsert: false,
-        });
-
-      let publicUrlData;
-      if (!uploadError) {
-        const { data } = supabase.storage
-          .from('video-gen')
-          .getPublicUrl(uploadData?.path);
-        publicUrlData = data;
-      }
-
-      if (publicUrlData) {
+      if (imageData?.data?.fullPath) {
         await supabase
           .from('video_generations')
           .update({
             processing_status: taskStatus.toLowerCase(),
-            video_url: publicUrlData.publicUrl,
+            video_url: publicUrl,
             error_message: null,
           })
           .eq('task_id', task_id)

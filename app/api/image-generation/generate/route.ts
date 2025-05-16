@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import Replicate from 'replicate';
 import { v4 as uuidv4 } from 'uuid';
 
+import { createDatabaseBucketItem } from '@/app/utils/createDatabaseBucketItem';
 import { checkDemoLimit } from '@/app/utils/demoLimit';
 import { IMAGE_MODEL_PRICING } from '@/utils/constants';
 import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
@@ -89,31 +90,14 @@ export async function POST(request: NextRequest) {
       );
     }
     const imageBlob = await imageResponse.blob();
-
-    const fileName = `${uuidv4()}.webp`;
-    const { error: storageError } = await supabase.storage
-      .from('user-images') // Ensure this bucket exists and policies are correct
-      .upload(fileName, imageBlob, {
-        contentType: 'image/webp',
-      });
-
-    if (storageError) {
-      console.error('Storage error:', storageError);
-      return NextResponse.json(
-        { error: 'Failed to upload image' },
-        { status: 500 },
-      );
-    }
-
-    const { data: publicURLData } = supabase.storage
-      .from('user-images') // Use same bucket name
-      .getPublicUrl(fileName);
-
-    if (!publicURLData.publicUrl) {
-      throw new Error('Failed to retrieve public URL for image');
-    }
-
-    const storedImageUrl = publicURLData.publicUrl;
+    const bucketData = await createDatabaseBucketItem(
+      imageBlob,
+      'user-images',
+      `${user.id}_${uuidv4()}.webp`,
+      'image/webp',
+      '3600',
+    );
+    const storedImageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucketData?.data?.fullPath}`;
 
     return NextResponse.json(
       {
