@@ -40,7 +40,8 @@ export async function POST(req: Request) {
           processing_status: 'error',
           error_message: data.error || 'Error from Novita API',
         })
-        .eq('task_id', task_id);
+        .eq('task_id', task_id)
+        .eq('user_id', user.id);
       return NextResponse.json(
         { error: 'Error from Novita API' },
         { status: 500 },
