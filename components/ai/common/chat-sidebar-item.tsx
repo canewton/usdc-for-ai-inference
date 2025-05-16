@@ -112,7 +112,8 @@ export const ChatSidebarItem = ({
               Cancel
             </button>
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 onDeleteChat(selectedChat?.id || '');
                 setOpen(false);
                 setSelectedChat(null);
