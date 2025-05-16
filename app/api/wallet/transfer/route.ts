@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import type { WalletTransferRequest } from '@/app/(ai)/server/circleWalletTransfer';
-import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
+import type { WalletTransferRequest } from '@/app/utils/circleWalletTransfer';
+import { circleWalletTransfer } from '@/app/utils/circleWalletTransfer';
 
 export async function POST(request: Request) {
   try {

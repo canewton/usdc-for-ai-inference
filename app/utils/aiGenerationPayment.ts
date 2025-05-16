@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 
-import { circleWalletTransfer } from '../(ai)/server/circleWalletTransfer';
+import { circleWalletTransfer } from './circleWalletTransfer';
 
 export async function aiGenerationPayment(
   user: any,
