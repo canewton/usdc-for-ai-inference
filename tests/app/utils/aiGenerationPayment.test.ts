@@ -3,15 +3,14 @@ import { circleWalletTransfer } from '@/app/utils/circleWalletTransfer';
 import { createClient } from '@/utils/supabase/server';
 
 jest.mock('@/utils/supabase/server');
+jest.mock('@/app/utils/circleWalletTransfer');
 
 const mockSupabase = {
   from: jest.fn(),
 };
 
 (createClient as jest.Mock).mockReturnValue(mockSupabase);
-(circleWalletTransfer as jest.Mock).mockReturnValue(
-  jest.fn().mockResolvedValue({ id: 1 }),
-);
+(circleWalletTransfer as jest.Mock).mockResolvedValue({ id: 1 });
 
 describe('aiGenerationPayment', () => {
   beforeEach(() => {
@@ -59,6 +58,6 @@ describe('aiGenerationPayment', () => {
       'test-type',
       10,
     );
-    expect(response).toBe({ id: 1 });
+    expect(response.id).toBe(1);
   });
 });

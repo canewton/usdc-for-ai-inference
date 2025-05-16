@@ -95,6 +95,10 @@ export async function POST(req: Request) {
 
     if (dbError) {
       console.error('Error saving video generation:', dbError);
+      return NextResponse.json(
+        { error: 'Error saving video generation' },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(dbData, { status: 200 });
