@@ -92,21 +92,17 @@ export async function middleware(request: NextRequest) {
 
     // Admin user specific redirects
     if (profile?.is_admin) {
-      // Redirect admin from root to admin dashboard
-      if (request.nextUrl.pathname === '/') {
+      if (request.nextUrl.pathname === '/' || isUserOnlyRoute) {
         return NextResponse.redirect(new URL('/admin', request.url));
       }
-
-      // Redirect admin from user-only routes to admin dashboard
-      if (isUserOnlyRoute) {
-        return NextResponse.redirect(new URL('/admin', request.url));
+    } else {
+      if (request.nextUrl.pathname === '/' || isAdminRoute) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
       }
     }
 
-    // Check admin status for admin routes
-    if (isAdminRoute || isAuthRoute) {
+    if (isAuthRoute) {
       if (profile && !profile.is_admin) {
-        // Redirect non-admins trying to access admin routes
         return NextResponse.redirect(new URL('/dashboard', request.url));
       } else {
         return NextResponse.redirect(new URL('/admin', request.url));
