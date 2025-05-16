@@ -10,7 +10,7 @@ import type { TimePeriod } from './time-period-options';
 import { TimePeriodOptions } from './time-period-options';
 
 export const ActiveUsers = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('1D');
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('7D');
   const supabase = createClient();
 
   const now = new Date();
@@ -26,11 +26,6 @@ export const ActiveUsers = () => {
   const [activeUsers, setActiveUsers] = useState<any>();
 
   async function fetchActiveUsers() {
-    const { count: activeToday } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .gte('last_active', oneDayAgo.toISOString());
-
     const { count: activeThisWeek } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
@@ -52,7 +47,6 @@ export const ActiveUsers = () => {
       .gte('last_active', oneYearAgo.toISOString());
 
     setActiveUsers({
-      '1D': activeToday,
       '7D': activeThisWeek,
       '1M': activeThisMonth,
       '3M': activeLastThreeMonths,

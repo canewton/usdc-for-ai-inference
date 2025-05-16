@@ -45,9 +45,7 @@ export const USDCMarketCapGraph = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const periods: TimePeriod[] = ['1D', '7D', '1M', '3M', '1Y'];
   const daysMap: Record<TimePeriod, number> = {
-    '1D': 1,
     '7D': 7,
     '1M': 30,
     '3M': 90,
@@ -72,15 +70,13 @@ export const USDCMarketCapGraph = () => {
           ([timestamp, value]: [number, number]) => ({
             date: format(
               fromUnixTime(timestamp / 1000),
-              selectedPeriod === '1D'
-                ? 'HH:mm'
-                : selectedPeriod === '7D'
+              selectedPeriod === '7D'
+                ? 'dd MMM'
+                : selectedPeriod === '1M'
                   ? 'dd MMM'
-                  : selectedPeriod === '1M'
+                  : selectedPeriod === '3M'
                     ? 'dd MMM'
-                    : selectedPeriod === '3M'
-                      ? 'dd MMM'
-                      : 'MMM yy',
+                    : 'MMM yy',
             ),
             value,
           }),
