@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
-import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
+import { aiGenerationPayment } from '@/app/utils/aiGenerationPayment';
+import { createDatabaseBucketItem } from '@/app/utils/createDatabaseBucketItem';
 import { aiModel } from '@/types/ai.types';
 import { createClient } from '@/utils/supabase/server';
 
@@ -22,70 +23,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const requestBody = await req.json();
-
     const { model_name, image_file, seed, prompt, image_file_resize_mode } =
-      requestBody;
+      await req.json();
 
-    let profile: any = null;
-    let wallet: any = null;
-    if (user) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('auth_user_id', user.id)
-        .single();
-      profile = profileData;
-    }
-
-    if (profile) {
-      // Get wallet
-      const { data: walletData } = await supabase
-        .schema('public')
-        .from('wallets')
-        .select()
-        .eq('profile_id', profile.id)
-        .single();
-      wallet = walletData;
-    }
-
-    await circleWalletTransfer(
+    await aiGenerationPayment(
+      user,
       prompt,
       aiModel.IMAGE_TO_VIDEO,
-      wallet.circle_wallet_id,
-      model_name === 'SVD-XT' ? '0.02' : '0.1',
+      model_name === 'SVD-XT' ? 0.02 : 0.1,
     );
 
-    const fileData = image_file;
-    const fileName = `${user.id}_${uuidv4()}.webp`;
-
-    const base64Data = fileData.split(';base64,').pop();
+    const base64Data = image_file.split(';base64,').pop();
     const fileBuffer = Buffer.from(base64Data, 'base64');
-
-    const { error: storageError } = await supabase.storage
-      .from('video-prompts')
-      .upload(fileName, fileBuffer, {
-        contentType: 'image/webp',
-        cacheControl: '3600',
-      });
-
-    if (storageError) {
-      console.error('Error uploading to Supabase:', storageError);
-      return NextResponse.json(
-        { error: 'Failed to upload image' },
-        { status: 500 },
-      );
-    }
-
-    const { data: publicUrlData } = supabase.storage
-      .from('video-prompts')
-      .getPublicUrl(fileName);
-
-    if (!publicUrlData.publicUrl) {
-      throw new Error('Failed to retrieve public URL for image');
-    }
-
-    const { publicUrl } = publicUrlData;
+    const imageData = await createDatabaseBucketItem(
+      fileBuffer,
+      'video-prompts',
+      `${user.id}_${uuidv4()}.webp`,
+      'image/webp',
+      '3600',
+    );
+    const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${imageData?.data?.fullPath}`;
 
     const input = {
       model_name: model_name,
@@ -138,6 +95,10 @@ export async function POST(req: Request) {
 
     if (dbError) {
       console.error('Error saving video generation:', dbError);
+      return NextResponse.json(
+        { error: 'Error saving video generation' },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(dbData, { status: 200 });

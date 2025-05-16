@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { GET } from '@/app/api/chat-generation/route';
+import { GET } from '@/app/api/video-generation/[id]/route';
 import { createClient } from '@/utils/supabase/server';
 
 jest.mock('@/utils/supabase/server');
@@ -13,7 +13,7 @@ const mockSupabase = {
     select: jest.fn(() => ({
       eq: jest.fn(() => ({
         eq: jest.fn(() => ({
-          order: jest.fn(() => ({
+          single: jest.fn(() => ({
             mockResolvedValue: jest.fn(),
             mockRejectedValue: jest.fn(),
           })),
@@ -25,7 +25,7 @@ const mockSupabase = {
 
 (createClient as jest.Mock).mockReturnValue(mockSupabase);
 
-describe('GET /api/getgeneratedmodels', () => {
+describe('GET /api/video-generation/[id]', () => {
   let mockRequest: NextRequest;
 
   beforeEach(() => {
@@ -33,7 +33,7 @@ describe('GET /api/getgeneratedmodels', () => {
     mockRequest = {
       json: jest.fn(),
       headers: new Headers(),
-      url: 'http://localhost/api/getgeneratedmodels?id=1&id=2',
+      url: 'http://localhost/api/video-generation/1',
     } as unknown as NextRequest;
   });
 
@@ -43,14 +43,14 @@ describe('GET /api/getgeneratedmodels', () => {
       error: new Error('Not authenticated'),
     });
 
-    const response = await GET(mockRequest);
+    const response = await GET(mockRequest, { params: { id: '1' } } as any);
     const data = await response.json();
 
     expect(response.status).toBe(401);
     expect(data.error).toBe('Unauthorized');
   });
 
-  it('should return 200 with generated chats for an authenticated user', async () => {
+  it('should return 200 with generated video for an authenticated user', async () => {
     mockRequest.headers.set('Authorization', 'Bearer valid-token');
     const mockUser = { id: 'user-id' };
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -58,17 +58,18 @@ describe('GET /api/getgeneratedmodels', () => {
       error: null,
     });
 
-    const mockGeneratedChats = [
-      { id: '1', name: 'Chat A', created_at: '2023-04-01T00:00:00Z' },
-      { id: '2', name: 'Chat B', created_at: '2023-04-02T00:00:00Z' },
-    ];
+    const mockGeneratedVideo = {
+      id: '1',
+      name: 'Model A',
+      created_at: '2023-04-01T00:00:00Z',
+    };
 
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
-            order: jest.fn().mockResolvedValue({
-              data: mockGeneratedChats,
+            single: jest.fn().mockResolvedValue({
+              data: mockGeneratedVideo,
               error: null,
             }),
           }),
@@ -76,16 +77,15 @@ describe('GET /api/getgeneratedmodels', () => {
       }),
     });
 
-    const response = await GET(mockRequest);
-
+    const response = await GET(mockRequest, { params: { id: '1' } } as any);
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual(mockGeneratedChats);
-    expect(mockSupabase.from).toHaveBeenCalledWith('chat_generations');
+    expect(data).toEqual(mockGeneratedVideo);
+    expect(mockSupabase.from).toHaveBeenCalledWith('video_generations');
   });
 
-  it('should return 500 if there is an error fetching generated models', async () => {
+  it('should return 500 if there is an error fetching generated videos', async () => {
     const mockUser = { id: 'user-id' };
     mockRequest.headers.set('Authorization', 'Bearer valid-token');
 
@@ -98,7 +98,7 @@ describe('GET /api/getgeneratedmodels', () => {
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
           eq: jest.fn().mockReturnValue({
-            order: jest.fn().mockResolvedValue({
+            single: jest.fn().mockResolvedValue({
               data: null,
               error: new Error('Database error'),
             }),
@@ -107,11 +107,11 @@ describe('GET /api/getgeneratedmodels', () => {
       }),
     });
 
-    const response = await GET(mockRequest);
+    const response = await GET(mockRequest, { params: { id: '1' } } as any);
     const data = await response.json();
 
     expect(response.status).toBe(500);
-    expect(data.error).toBe('Failed to fetch chat generations');
-    expect(mockSupabase.from).toHaveBeenCalledWith('chat_generations');
+    expect(data.error).toBe('Error fetching video');
+    expect(mockSupabase.from).toHaveBeenCalledWith('video_generations');
   });
 });

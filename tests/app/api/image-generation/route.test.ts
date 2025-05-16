@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { GET } from '@/app/api/chat/route';
+import { GET } from '@/app/api/image-generation/route';
 import { createClient } from '@/utils/supabase/server';
 
 jest.mock('@/utils/supabase/server');
@@ -12,11 +12,9 @@ const mockSupabase = {
   from: jest.fn(() => ({
     select: jest.fn(() => ({
       eq: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          order: jest.fn(() => ({
-            mockResolvedValue: jest.fn(),
-            mockRejectedValue: jest.fn(),
-          })),
+        order: jest.fn(() => ({
+          mockResolvedValue: jest.fn(),
+          mockRejectedValue: jest.fn(),
         })),
       })),
     })),
@@ -25,7 +23,7 @@ const mockSupabase = {
 
 (createClient as jest.Mock).mockReturnValue(mockSupabase);
 
-describe('GET /api/getchats', () => {
+describe('GET /api/image-generation', () => {
   let mockRequest: NextRequest;
 
   beforeEach(() => {
@@ -33,7 +31,7 @@ describe('GET /api/getchats', () => {
     mockRequest = {
       json: jest.fn(),
       headers: new Headers(),
-      url: 'http://localhost/api/getchats',
+      url: 'http://localhost/api/image-generation',
     } as unknown as NextRequest;
   });
 
@@ -50,7 +48,7 @@ describe('GET /api/getchats', () => {
     expect(data.error).toBe('Unauthorized');
   });
 
-  it('should return 200 with chats for an authenticated user', async () => {
+  it('should return 200 with image generations for an authenticated user', async () => {
     mockRequest.headers.set('Authorization', 'Bearer valid-token');
     const mockUser = { id: 'user-id' };
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -58,34 +56,31 @@ describe('GET /api/getchats', () => {
       error: null,
     });
 
-    const mockGeneratedChats = [
-      { id: '1', name: 'chat 1' },
-      { id: '2', name: 'chat 2' },
+    const mockGeneratedChatGenerations = [
+      { id: '1', name: 'image A', created_at: '2023-04-01T00:00:00Z' },
+      { id: '2', name: 'image B', created_at: '2023-04-02T00:00:00Z' },
     ];
 
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
-          eq: jest.fn().mockReturnValue({
-            order: jest.fn().mockResolvedValue({
-              data: mockGeneratedChats,
-              error: null,
-            }),
+          order: jest.fn().mockResolvedValue({
+            data: mockGeneratedChatGenerations,
+            error: null,
           }),
         }),
       }),
     });
 
     const response = await GET(mockRequest);
-
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual(mockGeneratedChats);
-    expect(mockSupabase.from).toHaveBeenCalledWith('chats');
+    expect(data).toEqual(mockGeneratedChatGenerations);
+    expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 
-  it('should return 500 if there is an error fetching generated models', async () => {
+  it('should return 500 if there is an error fetching image generations', async () => {
     const mockUser = { id: 'user-id' };
     mockRequest.headers.set('Authorization', 'Bearer valid-token');
 
@@ -97,11 +92,9 @@ describe('GET /api/getchats', () => {
     mockSupabase.from.mockReturnValue({
       select: jest.fn().mockReturnValue({
         eq: jest.fn().mockReturnValue({
-          eq: jest.fn().mockReturnValue({
-            order: jest.fn().mockResolvedValue({
-              data: null,
-              error: new Error('Database error'),
-            }),
+          order: jest.fn().mockResolvedValue({
+            data: null,
+            error: new Error('Database error'),
           }),
         }),
       }),
@@ -111,7 +104,7 @@ describe('GET /api/getchats', () => {
     const data = await response.json();
 
     expect(response.status).toBe(500);
-    expect(data.error).toBe('Failed to fetch chats');
-    expect(mockSupabase.from).toHaveBeenCalledWith('chats');
+    expect(data.error).toBe('Error fetching images');
+    expect(mockSupabase.from).toHaveBeenCalledWith('image_generations');
   });
 });

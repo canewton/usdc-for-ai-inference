@@ -1,8 +1,8 @@
-import { circleWalletTransfer } from '@/app/(ai)/server/circleWalletTransfer';
 import { POST } from '@/app/api/wallet/transfer/route';
+import { circleWalletTransfer } from '@/app/utils/circleWalletTransfer';
 
 // Mock the circleWalletTransfer function
-jest.mock('@/app/(ai)/server/circleWalletTransfer', () => ({
+jest.mock('@/app/utils/circleWalletTransfer', () => ({
   circleWalletTransfer: jest.fn(),
 }));
 

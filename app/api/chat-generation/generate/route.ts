@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
     // Return result
     return result.toDataStreamResponse();
   } catch (error) {
+    console.error('Error in chat generation:', error);
     return NextResponse.json(
       { error: 'Failed to generate text' },
       { status: 500 },

@@ -33,7 +33,7 @@ export async function DELETE(
       return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
 
-    deleteDatabaseBucketItem(data.url);
+    await deleteDatabaseBucketItem(data.url);
 
     return NextResponse.json(data, { status: 200 });
   } catch (error) {

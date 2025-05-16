@@ -29,7 +29,7 @@ export async function GET(
     if (error) {
       console.error('Error fetching image generation:', error);
       return NextResponse.json(
-        { error: 'Error fetching images' },
+        { error: 'Error fetching image generation' },
         { status: 500 },
       );
     }

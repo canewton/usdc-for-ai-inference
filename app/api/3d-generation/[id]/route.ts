@@ -30,7 +30,7 @@ export async function GET(
     if (error) {
       console.error('Error fetching 3d generation:', error);
       return NextResponse.json(
-        { error: 'Error fetching 3d models' },
+        { error: 'Error fetching 3d model' },
         { status: 500 },
       );
     }

@@ -22,7 +22,7 @@ export async function DELETE(
 
     const { id } = await params;
     const { data, error: dbError } = await supabase
-      .from('chat_generations')
+      .from('video_generations')
       .delete()
       .eq('id', id)
       .eq('user_id', user.id)
@@ -33,8 +33,8 @@ export async function DELETE(
       return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
 
-    deleteDatabaseBucketItem(data.video_url);
-    deleteDatabaseBucketItem(data.prompt_image_path);
+    await deleteDatabaseBucketItem(data.video_url);
+    await deleteDatabaseBucketItem(data.prompt_image_path);
 
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
