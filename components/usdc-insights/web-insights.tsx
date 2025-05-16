@@ -116,10 +116,6 @@ export const WebInsights: React.FC<Props> = (props) => {
     let startDate: Date;
 
     switch (range) {
-      case '1D':
-        startDate = new Date(now);
-        startDate.setDate(now.getDate());
-        break;
       case '7D':
         startDate = new Date(now);
         startDate.setDate(now.getDate() - 6);

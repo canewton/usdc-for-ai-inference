@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 
-export type TimePeriod = '1D' | '7D' | '1M' | '3M' | '1Y';
+export type TimePeriod = '7D' | '1M' | '3M' | '1Y';
 
 interface Props {
   periods?: TimePeriod[];
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const TimePeriodOptions = ({
-  periods = ['1D', '7D', '1M', '3M', '1Y'],
+  periods = ['7D', '1M', '3M', '1Y'],
   selectedPeriod,
   setSelectedPeriod,
 }: Props) => {
