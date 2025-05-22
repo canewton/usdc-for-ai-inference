@@ -13,8 +13,8 @@ const circleDeveloperSdk = initiateDeveloperControlledWalletsClient({
 });
 
 const supabase = createClient<Database>(
-  Deno.env.get('PUBLIC_SUPABASE_URL'),
-  Deno.env.get('PUBLIC_SUPABASE_ANON_KEY'),
+  Deno.env.get('SUPABASE_URL'),
+  Deno.env.get('SUPABASE_ANON_KEY'),
 );
 
 serve(async (req: any) => {

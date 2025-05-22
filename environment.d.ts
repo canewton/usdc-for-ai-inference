@@ -2,16 +2,18 @@ namespace NodeJS {
   interface ProcessEnv {
     NEXT_PUBLIC_SUPABASE_URL: string;
     NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
-    NEXT_PUBLIC_USDC_CONTRACT_ADDRESS: string;
-    NEXT_PUBLIC_AGENT_WALLET_ID: string;
-    NEXT_PUBLIC_AGENT_WALLET_ADDRESS: string;
-    SUPABASE_SERVICE_ROLE_KEY: string;
+    NEXT_PUBLIC_TREASURY_WALLET_ID: string;
+    NEXT_PUBLIC_TREASURY_WALLET_ADDRESS: string;
     CIRCLE_API_KEY: string;
     CIRCLE_ENTITY_SECRET: string;
     CIRCLE_BLOCKCHAIN: string;
-    GOOGLE_CLIENT_ID: string;
-    GOOGLE_CLIENT_SECRET: string;
+    REPLICATE_API_TOKEN: string;
     OPENAI_API_KEY: string;
-    OPENAI_ASSISTANT_ID: string;
+    MESHY_BASE_URL: string;
+    MESHY_API_KEY: string;
+    NOVITA_API_KEY: string;
+    ADMIN_PASSWORD: string;
+    ADMIN_USERNAME: string;
+    USER_AI_GENERATION_LIMIT: string;
   }
 }
