@@ -129,7 +129,7 @@ To set up your development environment for the Codelab Circle project, follow th
    ```
    > Note: You can find your project ID in your Supabase project settings under Project Settings > General
 
-11. **Run the generate-wallet.mjs script to craete the agent wallet and updated the environment variables**:
+11. **Run the generate-wallet.mjs script to create the agent wallet and updated the environment variables**:
 
    ```bash
    pnpm run generate-treasury-wallet
