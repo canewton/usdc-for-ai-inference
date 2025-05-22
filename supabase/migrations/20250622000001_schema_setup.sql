@@ -64,8 +64,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
 
 
-
--- Create improved handle_new_user function with error handling
+CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
 DECLARE 
     display_name TEXT;
     new_profile_id UUID;
@@ -90,12 +92,13 @@ BEGIN
     
     RETURN NEW;
 END;
+$$;
 
 -- Create the trigger
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW
-    EXECUTE FUNCTION handle_new_user();
+    EXECUTE FUNCTION "public"."handle_new_user"();
 
 
 ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
