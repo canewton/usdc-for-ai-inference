@@ -4,21 +4,14 @@ export type Message =
   | { message: string };
 
 export function FormMessage({ message }: { message: Message }) {
+  console.log('FormMessage', message);
   return (
-    <div className="flex flex-col gap-2 w-full max-w-md text-sm">
+    <div>
       {'success' in message && (
-        <div className="text-foreground border-l-2 border-foreground px-4">
-          {message.success}
-        </div>
+        <p className="text-green-600">{message.success}</p>
       )}
-      {'error' in message && (
-        <div className="text-destructive-foreground border-l-2 border-destructive-foreground px-4">
-          {message.error}
-        </div>
-      )}
-      {'message' in message && (
-        <div className="text-foreground border-l-2 px-4">{message.message}</div>
-      )}
+      {'error' in message && <p className="text-red-600">{message.error}</p>}
+      {'message' in message && <p>{message.message}</p>}
     </div>
   );
 }
