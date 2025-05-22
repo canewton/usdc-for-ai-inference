@@ -63,33 +63,26 @@ To set up your development environment for the Codelab Circle project, follow th
 8. **Rename `.env.example` to `.env.local` and update the following**:
 
    ```
-  # Supabase configuration (https://app.supabase.com/project/_/settings/api)
   NEXT_PUBLIC_SUPABASE_URL=
   NEXT_PUBLIC_SUPABASE_ANON_KEY=
   
-  # Treasury Wallet configuration
   NEXT_PUBLIC_TREASURY_WALLET_ID=<leave blank>
   NEXT_PUBLIC_TREASURY_WALLET_ADDRESS=<leave blank>
   
-  # Circle API configuration (https://console.circle.com/apikeys)
   CIRCLE_API_KEY=
   CIRCLE_ENTITY_SECRET=
   CIRCLE_BLOCKCHAIN=ARB-SEPOLIA
   
-  # Replicate (text-to-image) Key
   REPLICATE_API_TOKEN=
   
-  # Openai (text-to-text) Key
   OPENAI_API_KEY=
   
-  # Meshy (text-to-3d asset) configuration
   MESHY_BASE_URL=https://api.meshy.ai/openapi/v1/image-to-3d
   MESHY_API_KEY=
   
   #Novita.ai (image-to-video) Key
   NOVITA_API_KEY=
   
-  # Admin credentials
   ADMIN_PASSWORD=
   ADMIN_USERNAME=
   
