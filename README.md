@@ -113,7 +113,7 @@ To set up your development environment for the Codelab Circle project, follow th
 
 9. **Create a new project on [Supabase](https://app.supabase.com)**
 
-. Set up authentication:
+     Set up authentication:
    - Go to Authentication > Providers
    - Enable Email provider
    - Disable "Confirm Email" to allow immediate sign-ins
