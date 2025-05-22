@@ -7,7 +7,7 @@ import { aiModel } from '@/types/ai.types';
 import { createClient } from '@/utils/supabase/server';
 
 const NOVITA_API_URL = 'https://api.novita.ai/v3/async/img2video';
-const NOVITA_API_KEY = process.env.NEXT_PUBLIC_NOVITA_API_KEY;
+const { NOVITA_API_KEY } = process.env;
 
 export async function POST(req: Request) {
   const supabase = await createClient();

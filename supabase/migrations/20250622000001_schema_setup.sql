@@ -12,7 +12,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 
-CREATE EXTENSION IF NOT EXISTS "pgsodium" WITH SCHEMA "pgsodium";
+-- CREATE EXTENSION IF NOT EXISTS "pgsodium" WITH SCHEMA "pgsodium";
 
 
 
@@ -65,10 +65,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
 
 
-CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
+-- Create improved handle_new_user function with error handling
 DECLARE 
     display_name TEXT;
     new_profile_id UUID;
@@ -93,7 +90,12 @@ BEGIN
     
     RETURN NEW;
 END;
-$$;
+
+-- Create the trigger
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW
+    EXECUTE FUNCTION handle_new_user();
 
 
 ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
@@ -552,7 +554,7 @@ ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 CREATE PUBLICATION "supabase_realtime_messages_publication" WITH (publish = 'insert, update, delete, truncate');
 
 
-ALTER PUBLICATION "supabase_realtime_messages_publication" OWNER TO "supabase_admin";
+-- ALTER PUBLICATION "supabase_realtime_messages_publication" OWNER TO "supabase_admin";
 
 
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."ai_projects";

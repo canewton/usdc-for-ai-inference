@@ -75,8 +75,8 @@ export default async function RootLayout({
           apiKeyStatus={{
             text: process.env.OPENAI_API_KEY ? true : false,
             image: process.env.REPLICATE_API_TOKEN ? true : false,
-            model: process.env.MESHY_API_URL ? true : false,
-            video: process.env.NEXT_PUBLIC_NOVITA_API_KEY ? true : false,
+            model: process.env.MESHY_API_KEY ? true : false,
+            video: process.env.NOVITA_API_KEY ? true : false,
           }}
         >
           <ThemeProvider

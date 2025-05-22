@@ -7,7 +7,7 @@ import { aiModel } from '@/types/ai.types';
 import { MODEL_ASSET_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 
-const MESHY_API_KEY = process.env.MESHY_API!;
+const MESHY_API_KEY = process.env.MESHY_API_KEY!;
 const MESHY_API_URL =
   process.env.MESHY_BASE_URL || 'https://api.meshy.ai/openapi/v1/image-to-3d';
 
