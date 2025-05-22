@@ -61,8 +61,7 @@ To set up your development environment for the Codelab Circle project, follow th
      ```
 
 8. **Rename `.env.example` to `.env.local` and update the following**:
-
-   ```
+```
   NEXT_PUBLIC_SUPABASE_URL=
   NEXT_PUBLIC_SUPABASE_ANON_KEY=
   
@@ -87,7 +86,7 @@ To set up your development environment for the Codelab Circle project, follow th
   ADMIN_USERNAME=
   
   USER_AI_GENERATION_LIMIT=50
-  ```
+```
    - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://app.supabase.com/project/_/settings/api).
 
    - `CIRCLE_API_KEY` can be found in the [API Keys](https://console.circle.com/api-keys) section of Circle's console, while `CIRCLE_ENTITY_SECRET` must be shared, or rotated [here](https://console.circle.com/wallets/dev/configurator/entity-secret) in case it's lost.
