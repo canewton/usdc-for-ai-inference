@@ -199,15 +199,36 @@ export const signInAction = async (formData: FormData) => {
     );
   }
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  try {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  if (error) {
-    console.error('Sign in error:', error.message);
-    return encodedRedirect('error', '/sign-in', error.message); // Use Supabase error message directly
+    if (error) {
+      console.error('Sign in error:', error.message);
+      return encodedRedirect('error', '/sign-in', error.message);
+    }
+
+    if (await isUserAdmin()) {
+      return redirect('/admin');
+    }
+  } catch (error: any) {
+    if (error.status === 303) {
+      if (await isUserAdmin()) {
+        return redirect('/admin');
+      } else {
+        return redirect('/dashboard');
+      }
+    }
+    console.error('Unexpected sign in error:', error.message);
   }
+
+  return redirect('/dashboard'); // Default redirect for non-admins
+};
+
+export const isUserAdmin = async () => {
+  const supabase = await createClient();
 
   // Check if the user is admin AFTER successful login
   const { data: user } = await supabase.auth.getUser();
@@ -218,12 +239,9 @@ export const signInAction = async (formData: FormData) => {
       .eq('auth_user_id', user.user.id)
       .single();
 
-    if (profile?.is_admin) {
-      return redirect('/admin');
-    }
+    return profile?.is_admin || false;
   }
-
-  return redirect('/dashboard'); // Default redirect for non-admins
+  return false;
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
