@@ -213,7 +213,10 @@ export const signInAction = async (formData: FormData) => {
     if (await isUserAdmin()) {
       return redirect('/admin');
     }
+    return redirect('/dashboard'); // Default redirect for non-admins
   } catch (error: any) {
+    console.error('Sign in action error:', error);
+
     if (error.status === 303) {
       if (await isUserAdmin()) {
         return redirect('/admin');
@@ -221,10 +224,7 @@ export const signInAction = async (formData: FormData) => {
         return redirect('/dashboard');
       }
     }
-    console.error('Unexpected sign in error:', error.message);
   }
-
-  return redirect('/dashboard'); // Default redirect for non-admins
 };
 
 export const isUserAdmin = async () => {
