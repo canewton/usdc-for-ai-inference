@@ -60,10 +60,19 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  console.log('User from middleware:', user);
+
   const { pathname } = request.nextUrl;
 
   // Define protected routes
-  const protectedRoutes = ['/dashboard', '/admin', '/chat', '/3d', '/video'];
+  const protectedRoutes = [
+    '/dashboard',
+    '/admin',
+    '/chat',
+    '/3d',
+    '/video',
+    '/image',
+  ];
   const adminRoutes = ['/admin'];
   const userOnlyRoutes = ['/dashboard', '/3d', '/chat', '/image', '/video'];
   const authRoutes = ['/sign-in', '/sign-up', '/forgot-password'];
@@ -92,42 +101,13 @@ export async function middleware(request: NextRequest) {
 
     // Admin user specific redirects
     if (profile?.is_admin) {
-      if (request.nextUrl.pathname === '/' || isUserOnlyRoute) {
+      if (request.nextUrl.pathname === '/' || isUserOnlyRoute || isAuthRoute) {
         return NextResponse.redirect(new URL('/admin', request.url));
       }
     } else {
-      if (request.nextUrl.pathname === '/' || isAdminRoute) {
+      if (request.nextUrl.pathname === '/' || isAdminRoute || isAuthRoute) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
       }
-    }
-
-    if (isAuthRoute) {
-      if (profile && !profile.is_admin) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-      } else {
-        return NextResponse.redirect(new URL('/admin', request.url));
-      }
-    }
-  }
-
-  // If user is trying to access the root path '/', redirect based on auth status
-  if (pathname === '/') {
-    if (user) {
-      // Check admin status and redirect accordingly
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (profile?.is_admin) {
-        return NextResponse.redirect(new URL('/admin', request.url));
-      } else {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-      }
-    } else {
-      // Redirect unauthenticated users from root to sign-in
-      return NextResponse.redirect(new URL('/sign-in', request.url));
     }
   }
 
