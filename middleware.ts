@@ -1,6 +1,5 @@
 // middleware.ts
 import { type CookieOptions, createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
@@ -42,10 +41,6 @@ export async function middleware(request: NextRequest) {
   Object.entries(corsOptions).forEach(([key, value]) => {
     response.headers.set(key, value);
   });
-  const cookieStore = await cookies();
-  console.log('Cookie store:', cookieStore);
-  console.log('Request cookies:', request.cookies);
-  console.log('Request headers:', request.headers);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -77,8 +72,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  console.log('User from middleware:', user);
 
   const { pathname } = request.nextUrl;
 
@@ -129,8 +122,6 @@ export async function middleware(request: NextRequest) {
       }
     }
   }
-
-  console.log('response', response);
 
   return response;
 }
