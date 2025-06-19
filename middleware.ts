@@ -91,6 +91,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  console.log('response', response);
+
   return response;
 }
 
