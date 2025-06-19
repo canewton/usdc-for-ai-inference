@@ -89,7 +89,7 @@ export function useWalletBalance(
 
   useEffect(() => {
     const walletChangeSubscription = supabase
-      .channel('wallet:' + walletId)
+      .channel('wallet-change:' + walletId)
       .on(
         'postgres_changes',
         {
@@ -103,7 +103,7 @@ export function useWalletBalance(
       .subscribe();
 
     const walletTransactionSubscription = supabase
-      .channel('wallet:' + walletId)
+      .channel('wallet-transaction:' + walletId)
       .on(
         'postgres_changes',
         {
