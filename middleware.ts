@@ -90,6 +90,7 @@ export async function middleware(request: NextRequest) {
     '/3d',
     '/video',
     '/image',
+    '/',
   ];
   const adminRoutes = ['/admin'];
   const userOnlyRoutes = ['/dashboard', '/3d', '/chat', '/image', '/video'];
