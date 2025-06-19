@@ -43,6 +43,9 @@ export async function middleware(request: NextRequest) {
     response.headers.set(key, value);
   });
   const cookieStore = await cookies();
+  console.log('Cookie store:', cookieStore);
+  console.log('Request cookies:', request.cookies);
+  console.log('Request headers:', request.headers);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -50,17 +53,17 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value;
+          return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({
+          response.cookies.set({
             name,
             value,
             ...options,
           });
         },
         remove(name: string, options: CookieOptions) {
-          cookieStore.set({
+          response.cookies.set({
             name,
             value: '',
             ...options,
