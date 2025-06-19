@@ -88,8 +88,12 @@ export function useWalletBalance(
   }, [fetchBalance]);
 
   useEffect(() => {
+    console.log(
+      `Subscribing to wallet changes for walletId: ${walletId}, circleWalletId: ${circleWalletId}`,
+    );
+
     const walletChangeSubscription = supabase
-      .channel('wallet:' + walletId)
+      .channel('wallet-change:' + walletId)
       .on(
         'postgres_changes',
         {
@@ -103,7 +107,7 @@ export function useWalletBalance(
       .subscribe();
 
     const walletTransactionSubscription = supabase
-      .channel('wallet:' + walletId)
+      .channel('wallet-transaction:' + walletId)
       .on(
         'postgres_changes',
         {
