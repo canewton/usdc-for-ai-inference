@@ -199,32 +199,20 @@ export const signInAction = async (formData: FormData) => {
     );
   }
 
-  try {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-    if (error) {
-      console.error('Sign in error:', error);
-      return encodedRedirect('error', '/sign-in', error.message);
-    }
-
-    if (await isUserAdmin()) {
-      return redirect('/admin');
-    }
-    return redirect('/dashboard'); // Default redirect for non-admins
-  } catch (error: any) {
-    console.error('Sign in action error:', error);
-
-    if (error.status === 303) {
-      if (await isUserAdmin()) {
-        return redirect('/admin');
-      } else {
-        return redirect('/dashboard');
-      }
-    }
+  if (error) {
+    console.error('Sign in error:', error);
+    return encodedRedirect('error', '/sign-in', error.message);
   }
+
+  if (await isUserAdmin()) {
+    return redirect('/admin');
+  }
+  return redirect('/dashboard'); // Default redirect for non-admins
 };
 
 export const isUserAdmin = async () => {
