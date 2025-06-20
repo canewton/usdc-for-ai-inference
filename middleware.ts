@@ -83,7 +83,6 @@ export async function middleware(request: NextRequest) {
     '/3d',
     '/video',
     '/image',
-    '/',
   ];
   const adminRoutes = ['/admin'];
   const userOnlyRoutes = ['/dashboard', '/3d', '/chat', '/image', '/video'];
@@ -98,7 +97,7 @@ export async function middleware(request: NextRequest) {
   );
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
-  if (!user && isProtectedRoute) {
+  if (!user && (isProtectedRoute || request.nextUrl.pathname === '/')) {
     // Redirect unauthenticated users trying to access protected routes
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
