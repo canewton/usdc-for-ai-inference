@@ -1,5 +1,6 @@
 // middleware.ts
-import { type CookieOptions, createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
@@ -42,27 +43,25 @@ export async function middleware(request: NextRequest) {
     response.headers.set(key, value);
   });
 
+  const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
         },
-        set(name: string, value: string, options: CookieOptions) {
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-        },
-        remove(name: string, options: CookieOptions) {
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          });
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch (error) {
+            // The `set` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
         },
       },
     },
