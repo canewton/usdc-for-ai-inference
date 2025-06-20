@@ -4,6 +4,7 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { circleDeveloperSdk } from '@/utils/developer-controlled-wallets-client';
 import { createClient } from '@/utils/supabase/server';
 import { encodedRedirect } from '@/utils/utils'; // Assuming utils/utils.ts exists
 
@@ -54,23 +55,18 @@ export const signUpAction = async (formData: FormData) => {
   // or handle potential cleanup if user never confirms email.
   try {
     // 1. Create Wallet Set
-    const createWalletSetResponse = await fetch(`${baseUrl}/api/wallet-set`, {
-      method: 'PUT',
-      body: JSON.stringify({ entityName: email }), // Use email as entity name for simplicity
-      headers: { 'Content-Type': 'application/json' },
+    const response = await circleDeveloperSdk.createWalletSet({
+      name: email,
     });
 
-    if (!createWalletSetResponse.ok) {
-      const errorBody = await createWalletSetResponse.text();
-      console.error(
-        `Failed to create wallet set: ${createWalletSetResponse.status} ${errorBody}`,
-      );
+    if (!response.data) {
+      console.error(`Failed to create wallet set`);
       // Don't redirect yet, maybe show a generic error, or attempt profile update anyway?
       // For now, we'll proceed but log the error. Consider a more robust recovery/cleanup.
       // Potentially delete the Supabase user if wallet creation fails critically?
     }
 
-    const createdWalletSet = await createWalletSetResponse.json();
+    const createdWalletSet = response.data?.walletSet;
     const walletSetId = createdWalletSet?.id;
 
     if (!walletSetId) {
