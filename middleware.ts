@@ -13,6 +13,7 @@ const corsOptions = {
 };
 
 export async function middleware(request: NextRequest) {
+  console.log('Middleware triggered for:', request.nextUrl.pathname);
   // Check the origin from the request
   const origin = request.headers.get('origin') ?? '';
   const isAllowedOrigin = origin === baseUrl;
@@ -96,10 +97,12 @@ export async function middleware(request: NextRequest) {
   );
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
+  console.log('User:', user);
   if (!user && (isProtectedRoute || request.nextUrl.pathname === '/')) {
     // Redirect unauthenticated users trying to access protected routes
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
+  console.log('not going to sign-in');
 
   if (user) {
     // Fetch profile info to check admin status
@@ -121,6 +124,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  console.log('response', response);
   return response;
 }
 
