@@ -35,7 +35,9 @@ export default function Login() {
     }
 
     try {
+      console.log('signing in');
       await signInAction(formData);
+      console.log('sign in action completed');
       router.push('/');
     } catch (error) {
       console.log('Login submission error:', error);

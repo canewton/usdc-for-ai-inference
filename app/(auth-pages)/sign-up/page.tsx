@@ -35,7 +35,9 @@ export default function SignUp() {
     }
 
     try {
+      console.log('signing up');
       await signUpAction(formData);
+      console.log('sign up action completed');
       router.push('/');
     } catch (error) {
       console.log('Sign up submission error:', error);
