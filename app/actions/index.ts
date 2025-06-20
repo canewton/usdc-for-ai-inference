@@ -38,17 +38,12 @@ export const signUpAction = async (formData: FormData) => {
   });
 
   if (signUpError) {
-    console.error('Sign up error:', signUpError.message);
-    return encodedRedirect('error', '/sign-up', signUpError.message);
+    throw new Error(signUpError.message);
   }
 
   if (!authData.user) {
     console.error('Sign up error: No user data returned.');
-    return encodedRedirect(
-      'error',
-      '/sign-up',
-      'Could not create user. Please try again.',
-    );
+    throw new Error('Could not create user. Please try again.');
   }
 
   // ---- Wallet Creation Logic ----
@@ -73,11 +68,7 @@ export const signUpAction = async (formData: FormData) => {
     if (!walletSetId) {
       console.error('Failed to get walletSetId from response.');
       // Decide how to handle this - maybe delete the user?
-      return encodedRedirect(
-        'error',
-        '/sign-up',
-        'Wallet setup failed (Set ID). Please contact support.',
-      );
+      throw new Error('Failed to create wallet set. Please try again later.');
     }
 
     // 2. Create Wallet
@@ -94,11 +85,7 @@ export const signUpAction = async (formData: FormData) => {
 
     if (!walletResponse.data) {
       console.error(`Failed to create wallet set`);
-      return encodedRedirect(
-        'error',
-        '/sign-up',
-        'Wallet setup failed (Set ID). Please contact support.',
-      );
+      throw new Error('Wallet setup failed (Set ID). Please try again later.');
     }
 
     const [createdWallet] = walletResponse.data.wallets;
@@ -107,10 +94,8 @@ export const signUpAction = async (formData: FormData) => {
 
     if (!circleWalletId || !walletAddress) {
       console.error('Failed to get wallet details from response.');
-      return encodedRedirect(
-        'error',
-        '/sign-up',
-        'Wallet setup failed (Wallet Details). Please contact support.',
+      throw new Error(
+        'Wallet setup failed (Wallet Details). Please try again later.',
       );
     }
 
@@ -128,11 +113,7 @@ export const signUpAction = async (formData: FormData) => {
         profileError?.message ?? 'Profile not found',
       );
       // Critical failure - user exists but profile doesn't match? Cleanup needed.
-      return encodedRedirect(
-        'error',
-        '/sign-up',
-        'User profile setup failed. Please contact support.',
-      );
+      throw new Error('User profile setup failed. Please contact support.');
     }
 
     // 4. Insert Wallet Info into Supabase
@@ -150,38 +131,14 @@ export const signUpAction = async (formData: FormData) => {
     if (walletInsertError) {
       console.error('Error inserting wallet info:', walletInsertError.message);
       // Less critical maybe, but indicates inconsistency.
-      return encodedRedirect(
-        'error',
-        '/sign-up',
-        'Wallet data saving failed. Please contact support.',
-      );
+      throw new Error('Wallet data saving failed. Please contact support');
     }
   } catch (error: any) {
     console.error('Wallet creation process error:', error.message);
     // Generic catch-all
-    return encodedRedirect(
-      'error',
-      '/sign-up',
-      'An unexpected error occurred during wallet setup.',
-    );
+    throw new Error('An unexpected error occurred during wallet setup.');
   }
   // ---- End Wallet Creation Logic ----
-
-  // Redirect based on email confirmation setting
-  const isEmailConfirmationEnabled =
-    process.env.AUTH_EMAIL_CONFIRMATION_ENABLED === 'true'; // Example env var
-
-  if (isEmailConfirmationEnabled) {
-    // Redirect to a page informing the user to check their email
-    return encodedRedirect(
-      'success',
-      '/sign-in', // Redirect to sign-in page with success message
-      'Sign up successful! Please check your email to confirm your account before signing in.',
-    );
-  } else {
-    // If email confirmation is disabled, redirect directly to dashboard
-    return redirect('/dashboard');
-  }
 };
 
 export const signInAction = async (formData: FormData) => {
@@ -203,14 +160,10 @@ export const signInAction = async (formData: FormData) => {
   });
 
   if (error) {
-    console.error('Sign in error:', error);
-    return encodedRedirect('error', '/sign-in', error.message);
+    throw new Error(error.message);
   }
 
-  if (await isUserAdmin()) {
-    return redirect('/admin');
-  }
-  return redirect('/dashboard'); // Default redirect for non-admins
+  return true;
 };
 
 export const isUserAdmin = async () => {

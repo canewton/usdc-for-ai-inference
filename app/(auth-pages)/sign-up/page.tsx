@@ -1,27 +1,55 @@
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { signUpAction } from '@/app/actions';
 import type { Message } from '@/components/common/form-message';
 import { FormMessage } from '@/components/common/form-message';
-import { SubmitButton } from '@/components/common/submit-button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export default async function Signup(props: {
-  searchParams: Promise<Message>;
-}) {
-  const searchParams = await props.searchParams;
-  if ('message' in searchParams) {
-    return (
-      <div className="w-full flex-1 flex items-center h-screen sm:max-w-md justify-center gap-2 p-4">
-        <FormMessage message={searchParams} />
-      </div>
-    );
-  }
+export default function SignUp() {
+  const router = useRouter();
+  const [formMessage, setFormMessage] = useState<Message | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setFormMessage(null);
+
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!email || !password) {
+      setFormMessage({
+        type: 'error',
+        message: 'Email and password are required.',
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      await signUpAction(formData);
+      router.push('/');
+    } catch (error) {
+      console.log('Sign up submission error:', error);
+      setFormMessage({
+        type: 'error',
+        message: 'An error occurred when signing up.',
+      });
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
-      <form className="flex flex-col min-w-64 max-w-64 mx-auto">
+      <form className="flex flex-col w-64 mx-auto" onSubmit={handleSubmit}>
         <h1 className="text-2xl font-semibold">Sign up</h1>
         <p className="text-sm text text-foreground">
           Already have an account?{' '}
@@ -40,16 +68,10 @@ export default async function Signup(props: {
             minLength={6}
             required
           />
-          <SubmitButton
-            formAction={async (data) => {
-              'use server';
-              await signUpAction(data);
-            }}
-            pendingText="Signing up..."
-          >
-            Sign up
-          </SubmitButton>
-          <FormMessage message={searchParams} />
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Signing Up...' : 'Sign up'}
+          </Button>
+          <FormMessage message={formMessage} />{' '}
         </div>
       </form>
     </>

@@ -1,16 +1,54 @@
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { signInAction } from '@/app/actions';
 import type { Message } from '@/components/common/form-message';
 import { FormMessage } from '@/components/common/form-message';
-import { SubmitButton } from '@/components/common/submit-button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-export default async function Login(props: { searchParams: Promise<Message> }) {
-  const searchParams = await props.searchParams;
+export default function Login() {
+  const router = useRouter();
+  const [formMessage, setFormMessage] = useState<Message | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setFormMessage(null);
+
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!email || !password) {
+      setFormMessage({
+        type: 'error',
+        message: 'Email and password are required.',
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      await signInAction(formData);
+      router.push('/');
+    } catch (error) {
+      console.log('Login submission error:', error);
+      setFormMessage({
+        type: 'error',
+        message: 'Unable to sign in. Please check your credentials.',
+      });
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <form className="flex-1 flex flex-col min-w-64">
+    <form className="flex-1 flex flex-col w-64" onSubmit={handleSubmit}>
       <h1 className="text-2xl font-semibold">Sign in</h1>
       <p className="text-sm text-foreground">
         Don't have an account?{' '}
@@ -36,10 +74,10 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
           placeholder="Your password"
           required
         />
-        <SubmitButton pendingText="Signing In..." formAction={signInAction}>
-          Sign in
-        </SubmitButton>
-        <FormMessage message={searchParams} />
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Signing In...' : 'Sign in'}
+        </Button>
+        <FormMessage message={formMessage} />{' '}
       </div>
     </form>
   );
