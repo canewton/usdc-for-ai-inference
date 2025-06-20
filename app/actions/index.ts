@@ -1,6 +1,7 @@
 // app/actions/index.ts
 'use server';
 
+import type { Blockchain } from '@circle-fin/developer-controlled-wallets';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -55,18 +56,18 @@ export const signUpAction = async (formData: FormData) => {
   // or handle potential cleanup if user never confirms email.
   try {
     // 1. Create Wallet Set
-    const response = await circleDeveloperSdk.createWalletSet({
+    const walletSetResponse = await circleDeveloperSdk.createWalletSet({
       name: email,
     });
 
-    if (!response.data) {
+    if (!walletSetResponse.data) {
       console.error(`Failed to create wallet set`);
       // Don't redirect yet, maybe show a generic error, or attempt profile update anyway?
       // For now, we'll proceed but log the error. Consider a more robust recovery/cleanup.
       // Potentially delete the Supabase user if wallet creation fails critically?
     }
 
-    const createdWalletSet = response.data?.walletSet;
+    const createdWalletSet = walletSetResponse.data?.walletSet;
     const walletSetId = createdWalletSet?.id;
 
     if (!walletSetId) {
@@ -80,26 +81,27 @@ export const signUpAction = async (formData: FormData) => {
     }
 
     // 2. Create Wallet
-    const createWalletResponse = await fetch(`${baseUrl}/api/wallet`, {
-      method: 'POST',
-      body: JSON.stringify({ walletSetId }),
-      headers: { 'Content-Type': 'application/json' },
+    if (!process.env.CIRCLE_BLOCKCHAIN) {
+      throw new Error('CIRCLE_BLOCKCHAIN environment variable is not set');
+    }
+
+    const walletResponse = await circleDeveloperSdk.createWallets({
+      accountType: 'SCA',
+      blockchains: [process.env.CIRCLE_BLOCKCHAIN as Blockchain],
+      count: 1,
+      walletSetId,
     });
 
-    if (!createWalletResponse.ok) {
-      const errorBody = await createWalletResponse.text();
-      console.error(
-        `Failed to create wallet: ${createWalletResponse.status} ${errorBody}`,
-      );
-      // Critical failure - maybe delete user and wallet set?
+    if (!walletResponse.data) {
+      console.error(`Failed to create wallet set`);
       return encodedRedirect(
         'error',
         '/sign-up',
-        'Wallet setup failed (Wallet Creation). Please contact support.',
+        'Wallet setup failed (Set ID). Please contact support.',
       );
     }
 
-    const createdWallet = await createWalletResponse.json();
+    const [createdWallet] = walletResponse.data.wallets;
     const circleWalletId = createdWallet?.id;
     const walletAddress = createdWallet?.address;
 
@@ -140,7 +142,7 @@ export const signUpAction = async (formData: FormData) => {
       wallet_type: createdWallet.custodyType, // Make sure these fields match your table
       wallet_set_id: walletSetId,
       wallet_address: walletAddress,
-      account_type: createdWallet.accountType, // Make sure these fields match your table
+      account_type: 'SCA', // Make sure these fields match your table
       blockchain: createdWallet.blockchain,
       currency: 'USDC', // Assuming USDC
     });
