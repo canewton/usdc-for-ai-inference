@@ -154,8 +154,8 @@ export async function login(formData: FormData) {
   if (error) {
     redirect('/error');
   }
-  revalidatePath('/', 'layout');
-  redirect('/');
+  revalidatePath('/dashboard', 'layout');
+  redirect('/dashboard');
 }
 
 export const signInAction = async (formData: FormData) => {
