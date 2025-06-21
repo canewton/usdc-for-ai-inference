@@ -9,7 +9,7 @@ import { FormMessage } from '@/components/common/form-message';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/utils/supabase/client';
 
 export default function Login() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    const supabase = await createClient();
+    const supabase = createClient();
     event.preventDefault();
     setIsSubmitting(true);
     setFormMessage(null);
@@ -39,7 +39,7 @@ export default function Login() {
       console.log('signing in');
       supabase.auth.signInWithPassword({ email, password });
       console.log('sign in action completed');
-      router.push('/');
+      router.push('/dashboard');
     } catch (error) {
       console.log('Login submission error:', error);
       setFormMessage({
