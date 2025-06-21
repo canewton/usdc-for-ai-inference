@@ -100,7 +100,9 @@ export async function middleware(request: NextRequest) {
   console.log('User:', user);
   if (!user && (isProtectedRoute || request.nextUrl.pathname === '/')) {
     // Redirect unauthenticated users trying to access protected routes
-    return NextResponse.redirect(new URL('/sign-in', request.url));
+    const url = request.nextUrl.clone();
+    url.pathname = '/sign-in';
+    return NextResponse.redirect(url);
   }
   console.log('not going to sign-in');
 
@@ -119,7 +121,9 @@ export async function middleware(request: NextRequest) {
       }
     } else {
       if (request.nextUrl.pathname === '/' || isAdminRoute || isAuthRoute) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+        const url = request.nextUrl.clone();
+        url.pathname = '/dashboard';
+        return NextResponse.redirect(url);
       }
     }
   }
