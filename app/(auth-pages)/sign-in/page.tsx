@@ -37,7 +37,7 @@ export default function Login() {
 
     try {
       console.log('signing in');
-      supabase.auth.signInWithPassword({ email, password });
+      await supabase.auth.signInWithPassword({ email, password });
       console.log('sign in action completed');
       router.push('/dashboard');
     } catch (error) {
