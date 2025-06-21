@@ -44,25 +44,22 @@ export async function middleware(request: NextRequest) {
     response.headers.set(key, value);
   });
 
-  const cookieStore = await cookies();
+  const cookie = (await cookies()).getAll();
+  console.log('Cookies:', cookie);
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll();
+          console.log('Getting all cookies', request.cookies.getAll());
+          return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch (error) {
-            // The `set` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
-          }
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          );
         },
       },
     },
