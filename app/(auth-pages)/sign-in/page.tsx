@@ -39,7 +39,7 @@ export default function Login() {
       console.log('signing in');
       await supabase.auth.signInWithPassword({ email, password });
       console.log('sign in action completed');
-      router.push('/dashboard');
+      router.push('/sign-up');
     } catch (error) {
       console.log('Login submission error:', error);
       setFormMessage({
