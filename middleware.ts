@@ -29,12 +29,38 @@ export async function middleware(request: NextRequest) {
     return NextResponse.json({}, { headers: preflightHeaders });
   }
 
-  // Handle simple requests
   let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request,
   });
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            request.cookies.set(name, value),
+          );
+          response = NextResponse.next({
+            request,
+          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          );
+        },
+      },
+    },
+  );
+  // Do not run code between createServerClient and
+  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
+  // issues with users being randomly logged out.
+  // IMPORTANT: DO NOT REMOVE auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (isAllowedOrigin) {
     response.headers.set('Access-Control-Allow-Origin', origin);
@@ -46,29 +72,6 @@ export async function middleware(request: NextRequest) {
 
   const cookie = (await cookies()).getAll();
   console.log('Cookies:', cookie);
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          console.log('Getting all cookies', request.cookies.getAll());
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          );
-        },
-      },
-    },
-  );
-
-  // Refresh session if expired - required for Server Components
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
