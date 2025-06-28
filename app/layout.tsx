@@ -2,14 +2,11 @@
 import './globals.css';
 
 import { Geist } from 'next/font/google';
-import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 
 import Navbar from '@/components/common/navbar';
 import type { Profile, Wallet } from '@/types/database.types';
 import { createClient } from '@/utils/supabase/server';
-
-import { SessionProvider } from './contexts/SessionContext';
 
 const defaultUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
@@ -31,6 +28,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log('RootLayout: Initializing Supabase client');
   const supabase = await createClient(); // Use server client from utils
 
   // Fetch user session server-side
@@ -69,7 +67,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
-        <SessionProvider
+        {/* <SessionProvider
           walletId={wallet?.id ?? null}
           circleWalletId={wallet?.circle_wallet_id ?? null}
           apiKeyStatus={{
@@ -84,16 +82,16 @@ export default async function RootLayout({
             defaultTheme="light" // Defaulting to light theme as per original
             enableSystem={false} // Explicitly disable system theme if you want light/dark only
             disableTransitionOnChange
-          >
-            <main className="h-screen flex flex-col overflow-auto">
-              {/* Pass user and profile (which can be null) to Navbar */}
-              <Navbar user={user} profile={profile} />
-              <div className="flex flex-col flex-1">{children}</div>
-            </main>
-            {/* Add Sonner Toaster for notifications */}
-            <Toaster richColors position="top-right" />
-          </ThemeProvider>
-        </SessionProvider>
+          > */}
+        <main className="h-screen flex flex-col overflow-auto">
+          {/* Pass user and profile (which can be null) to Navbar */}
+          <Navbar user={user} profile={profile} />
+          <div className="flex flex-col flex-1">{children}</div>
+        </main>
+        {/* Add Sonner Toaster for notifications */}
+        <Toaster richColors position="top-right" />
+        {/* </ThemeProvider>
+        </SessionProvider> */}
       </body>
     </html>
   );
