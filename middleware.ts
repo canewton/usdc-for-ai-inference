@@ -46,6 +46,13 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   console.log('User:', user);
+
+  if (!user && !request.nextUrl.pathname.startsWith('/sign-in')) {
+    // no user, potentially respond by redirecting the user to the login page
+    const url = request.nextUrl.clone();
+    url.pathname = '/sign-in';
+    return NextResponse.redirect(url);
+  }
   // if (
   //   !user &&
   //   !request.nextUrl.pathname.startsWith('/sign-in') &&
