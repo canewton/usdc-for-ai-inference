@@ -3,11 +3,7 @@ import Link from 'next/link';
 import { signIn, signUp } from './actions';
 import { SubmitButton } from './submit-button';
 
-export default function Login({
-  searchParams,
-}: {
-  searchParams: { message: string };
-}) {
+export default function Login() {
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
       <Link
@@ -65,11 +61,6 @@ export default function Login({
         >
           Sign Up
         </SubmitButton>
-        {searchParams?.message && (
-          <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
-            {searchParams.message}
-          </p>
-        )}
       </form>
     </div>
   );
