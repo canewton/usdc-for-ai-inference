@@ -26,7 +26,7 @@ export async function signInAction(formData: FormData) {
   if (error) {
     return encodedRedirect(
       'error',
-      '/sign-up',
+      '/sign-in',
       'An error occured signing you in. Your email or password may be incorrect.',
     );
   }
@@ -60,12 +60,17 @@ export const signUpAction = async (formData: FormData) => {
   });
 
   if (signUpError) {
-    throw new Error(signUpError.message);
+    console.error('Sign up error:', signUpError.message);
+    return encodedRedirect('error', '/sign-up', signUpError.message);
   }
 
   if (!authData.user) {
     console.error('Sign up error: No user data returned.');
-    throw new Error('Could not create user. Please try again.');
+    return encodedRedirect(
+      'error',
+      '/sign-up',
+      'Could not create user. Please try again.',
+    );
   }
 
   // ---- Wallet Creation Logic ----
@@ -90,7 +95,11 @@ export const signUpAction = async (formData: FormData) => {
     if (!walletSetId) {
       console.error('Failed to get walletSetId from response.');
       // Decide how to handle this - maybe delete the user?
-      throw new Error('Failed to create wallet set. Please try again later.');
+      return encodedRedirect(
+        'error',
+        '/sign-up',
+        'Wallet setup failed (Set ID). Please contact support.',
+      );
     }
 
     // 2. Create Wallet
@@ -107,7 +116,11 @@ export const signUpAction = async (formData: FormData) => {
 
     if (!walletResponse.data) {
       console.error(`Failed to create wallet set`);
-      throw new Error('Wallet setup failed (Set ID). Please try again later.');
+      return encodedRedirect(
+        'error',
+        '/sign-up',
+        'Wallet setup failed (Set ID). Please contact support.',
+      );
     }
 
     const [createdWallet] = walletResponse.data.wallets;
@@ -116,8 +129,10 @@ export const signUpAction = async (formData: FormData) => {
 
     if (!circleWalletId || !walletAddress) {
       console.error('Failed to get wallet details from response.');
-      throw new Error(
-        'Wallet setup failed (Wallet Details). Please try again later.',
+      return encodedRedirect(
+        'error',
+        '/sign-up',
+        'Wallet setup failed (Wallet Details). Please contact support.',
       );
     }
 
@@ -135,7 +150,11 @@ export const signUpAction = async (formData: FormData) => {
         profileError?.message ?? 'Profile not found',
       );
       // Critical failure - user exists but profile doesn't match? Cleanup needed.
-      throw new Error('User profile setup failed. Please contact support.');
+      return encodedRedirect(
+        'error',
+        '/sign-up',
+        'User profile setup failed. Please contact support.',
+      );
     }
 
     // 4. Insert Wallet Info into Supabase
@@ -153,31 +172,39 @@ export const signUpAction = async (formData: FormData) => {
     if (walletInsertError) {
       console.error('Error inserting wallet info:', walletInsertError.message);
       // Less critical maybe, but indicates inconsistency.
-      throw new Error('Wallet data saving failed. Please contact support');
+      return encodedRedirect(
+        'error',
+        '/sign-up',
+        'Wallet data saving failed. Please contact support.',
+      );
     }
   } catch (error: any) {
     console.error('Wallet creation process error:', error.message);
     // Generic catch-all
-    throw new Error('An unexpected error occurred during wallet setup.');
+    return encodedRedirect(
+      'error',
+      '/sign-up',
+      'An unexpected error occurred during wallet setup.',
+    );
   }
   // ---- End Wallet Creation Logic ----
-};
 
-export async function login(formData: FormData) {
-  const supabase = await createClient();
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  };
-  const { error } = await supabase.auth.signInWithPassword(data);
-  if (error) {
-    redirect('/error');
+  // Redirect based on email confirmation setting
+  const isEmailConfirmationEnabled =
+    process.env.AUTH_EMAIL_CONFIRMATION_ENABLED === 'true'; // Example env var
+
+  if (isEmailConfirmationEnabled) {
+    // Redirect to a page informing the user to check their email
+    return encodedRedirect(
+      'success',
+      '/sign-in', // Redirect to sign-in page with success message
+      'Sign up successful! Please check your email to confirm your account before signing in.',
+    );
+  } else {
+    // If email confirmation is disabled, redirect directly to dashboard
+    return redirect('/dashboard');
   }
-  revalidatePath('/dashboard', 'layout');
-  redirect('/dashboard');
-}
+};
 
 export const isUserAdmin = async () => {
   const supabase = await createClient();

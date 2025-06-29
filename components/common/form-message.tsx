@@ -1,15 +1,17 @@
-export type Message = { type: 'error' | 'success'; message: string };
+export type Message =
+  | { success: string }
+  | { error: string }
+  | { message: string };
 
-export function FormMessage({ message }: { message: Message | null }) {
+export function FormMessage({ message }: { message: Message }) {
   console.log('FormMessage', message);
   return (
     <div>
-      {message?.type == 'success' && (
-        <p className="text-green-600">{message.message}</p>
+      {'success' in message && (
+        <p className="text-green-600">{message.success}</p>
       )}
-      {message?.type == 'error' && (
-        <p className="text-red-600">{message.message}</p>
-      )}
+      {'error' in message && <p className="text-red-600">{message.error}</p>}
+      {'message' in message && <p>{message.message}</p>}
     </div>
   );
 }
