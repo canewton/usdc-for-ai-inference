@@ -21,9 +21,7 @@ export async function signIn(formData: FormData) {
     redirect('/error');
   }
 
-  console.log('revalidating');
   revalidatePath('/', 'layout');
-  console.log('redirecting');
   redirect('/');
 }
 
