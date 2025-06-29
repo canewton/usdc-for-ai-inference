@@ -1,12 +1,8 @@
-// app/layout.tsx
 import './globals.css';
 
 import { Geist } from 'next/font/google';
+import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
-
-import Navbar from '@/components/common/navbar';
-import type { Profile, Wallet } from '@/types/database.types';
-import { createClient } from '@/utils/supabase/server';
 
 const defaultUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
@@ -28,70 +24,21 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  console.log('RootLayout: Initializing Supabase client');
-  const supabase = await createClient(); // Use server client from utils
-
-  // Fetch user session server-side
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Fetch profile data only if user exists
-  let profile: Profile | null = null;
-  let wallet: Wallet | null = null;
-  if (user) {
-    await supabase
-      .from('profiles')
-      .update({ last_active: new Date().toISOString() })
-      .eq('auth_user_id', user.id);
-
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('auth_user_id', user.id)
-      .single();
-    profile = profileData;
-  }
-
-  if (profile) {
-    // Get wallet
-    const { data: walletData } = await supabase
-      .schema('public')
-      .from('wallets')
-      .select()
-      .eq('profile_id', profile.id)
-      .single();
-    wallet = walletData;
-  }
-
   return (
     <html lang="en" className={geistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
-        {/* <SessionProvider
-          walletId={wallet?.id ?? null}
-          circleWalletId={wallet?.circle_wallet_id ?? null}
-          apiKeyStatus={{
-            text: process.env.OPENAI_API_KEY ? true : false,
-            image: process.env.REPLICATE_API_TOKEN ? true : false,
-            model: process.env.MESHY_API_KEY ? true : false,
-            video: process.env.NOVITA_API_KEY ? true : false,
-          }}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light" // Defaulting to light theme as per original
+          enableSystem={false} // Explicitly disable system theme if you want light/dark only
+          disableTransitionOnChange
         >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light" // Defaulting to light theme as per original
-            enableSystem={false} // Explicitly disable system theme if you want light/dark only
-            disableTransitionOnChange
-          > */}
-        <main className="h-screen flex flex-col overflow-auto">
-          {/* Pass user and profile (which can be null) to Navbar */}
-          <Navbar user={user} profile={profile} />
-          <div className="flex flex-col flex-1">{children}</div>
-        </main>
-        {/* Add Sonner Toaster for notifications */}
-        <Toaster richColors position="top-right" />
-        {/* </ThemeProvider>
-        </SessionProvider> */}
+          <main className="h-screen flex flex-col overflow-auto">
+            <div className="flex flex-col flex-1">{children}</div>
+          </main>
+          {/* Add Sonner Toaster for notifications */}
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

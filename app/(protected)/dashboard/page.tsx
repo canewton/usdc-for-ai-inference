@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 
+import { USDCIcon } from '@/app/icons/USDCIcon';
 import { TransactionHistory } from '@/components/usdc-insights/transaction-history';
 import { RequestUsdcButton } from '@/components/usdc-wallet/request-usdc-button';
 import { ScanToPayDialog } from '@/components/usdc-wallet/scan-to-pay-dialog';
@@ -8,8 +9,6 @@ import { USDCButton } from '@/components/usdc-wallet/usdc-button';
 import { WalletBalance } from '@/components/usdc-wallet/wallet-balance';
 import { WalletInformationDialog } from '@/components/usdc-wallet/wallet-information-dialog';
 import { createClient } from '@/utils/supabase/server';
-
-import { USDCIcon } from '../icons/USDCIcon';
 
 export default async function Dashboard() {
   const supabase = await createClient();
