@@ -1,4 +1,18 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {};
+import type { NextConfig } from 'next';
 
-module.exports = nextConfig;
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(
+          'https://',
+          '',
+        ),
+        pathname: '/**',
+      },
+    ],
+  },
+};
+
+export default nextConfig;
