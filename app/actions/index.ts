@@ -1,7 +1,7 @@
-// app/actions/index.ts
 'use server';
 
 import type { Blockchain } from '@circle-fin/developer-controlled-wallets';
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -12,6 +12,28 @@ import { encodedRedirect } from '@/utils/utils'; // Assuming utils/utils.ts exis
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
   : 'http://localhost:3000';
+
+export async function signInAction(formData: FormData) {
+  const supabase = await createClient();
+
+  const data = {
+    email: formData.get('email') as string,
+    password: formData.get('password') as string,
+  };
+
+  const { error } = await supabase.auth.signInWithPassword(data);
+
+  if (error) {
+    return encodedRedirect(
+      'error',
+      '/sign-in',
+      'An error occured signing you in. Your email or password may be incorrect.',
+    );
+  }
+
+  revalidatePath('/', 'layout');
+  redirect('/');
+}
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get('email')?.toString();
@@ -182,35 +204,6 @@ export const signUpAction = async (formData: FormData) => {
     // If email confirmation is disabled, redirect directly to dashboard
     return redirect('/dashboard');
   }
-};
-
-export const signInAction = async (formData: FormData) => {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const supabase = await createClient();
-
-  if (!email || !password) {
-    return encodedRedirect(
-      'error',
-      '/sign-in',
-      'Email and password are required.',
-    );
-  }
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    console.error('Sign in error:', error);
-    return encodedRedirect('error', '/sign-in', error.message);
-  }
-
-  if (await isUserAdmin()) {
-    return redirect('/admin');
-  }
-  return redirect('/dashboard'); // Default redirect for non-admins
 };
 
 export const isUserAdmin = async () => {

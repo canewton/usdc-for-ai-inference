@@ -97,7 +97,7 @@ export async function middleware(request: NextRequest) {
   );
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
-  if (!user && (isProtectedRoute || request.nextUrl.pathname === '/')) {
+  if (!user && (isProtectedRoute || pathname === '/')) {
     // Redirect unauthenticated users trying to access protected routes
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
