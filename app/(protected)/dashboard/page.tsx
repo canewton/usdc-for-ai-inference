@@ -5,7 +5,6 @@ import { TransactionHistory } from '@/components/usdc-insights/transaction-histo
 import { RequestUsdcButton } from '@/components/usdc-wallet/request-usdc-button';
 import { ScanToPayDialog } from '@/components/usdc-wallet/scan-to-pay-dialog';
 import { TransferUSDCButton } from '@/components/usdc-wallet/transfer-usdc-button';
-import { USDCButton } from '@/components/usdc-wallet/usdc-button';
 import { WalletBalance } from '@/components/usdc-wallet/wallet-balance';
 import { WalletInformationDialog } from '@/components/usdc-wallet/wallet-information-dialog';
 import { createClient } from '@/utils/supabase/server';
@@ -54,19 +53,18 @@ export default async function Dashboard() {
         </div>
         <div className="flex gap-4">
           {process.env.NODE_ENV === 'development' && (
-            <RequestUsdcButton walletAddress={wallet?.wallet_address} />
-          )}
-          {process.env.NODE_ENV === 'development' && (
             <TransferUSDCButton
               className="flex-1"
               walletId={wallet?.circle_wallet_id}
             />
           )}
-          <USDCButton
+          <RequestUsdcButton walletAddress={wallet?.wallet_address} />
+          {/* Buy USDC Button functionality is being deprecated */}
+          {/* <USDCButton
             className="flex-1"
             mode="BUY"
             walletAddress={wallet?.wallet_address}
-          />
+          /> */}
           <ScanToPayDialog wallet={wallet} />
           <WalletInformationDialog wallet={wallet} />
         </div>

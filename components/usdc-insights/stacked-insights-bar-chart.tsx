@@ -13,6 +13,7 @@ import type { NameType } from 'recharts/types/component/DefaultTooltipContent';
 import type { ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import type { ContentType } from 'recharts/types/component/Tooltip';
 
+import { useSession } from '@/app/contexts/SessionContext';
 import { aiModel } from '@/types/ai.types';
 
 export interface StackedInsightsBarChartData {
@@ -95,6 +96,8 @@ export const StackedInsightsBarChart = ({
     ),
   );
   const yDomainMax = dataMax < 0.4 ? 0.4 : Math.ceil(dataMax);
+  const session = useSession();
+
   return (
     <div className="h-[200px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -118,42 +121,54 @@ export const StackedInsightsBarChart = ({
             content={tooltip != undefined ? tooltip : <CustomTooltip />}
             cursor={{ fill: 'transparent' }}
           />
-          {data[0]?.value1 !== undefined && (
-            <Bar
-              dataKey="value1"
-              fill={colors[0]}
-              radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
-              stackId={stacked ? 'stack' : undefined}
-              name="Text to Text"
-            />
-          )}
-          {data[0]?.value2 !== undefined && (
-            <Bar
-              dataKey="value2"
-              fill={colors[1]}
-              radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
-              stackId={stacked ? 'stack' : undefined}
-              name="Text to Image"
-            />
-          )}
-          {data[0]?.value3 !== undefined && (
-            <Bar
-              dataKey="value3"
-              fill={colors[2]}
-              radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
-              stackId={stacked ? 'stack' : undefined}
-              name="2D to 3D"
-            />
-          )}
-          {data[0]?.value4 !== undefined && (
-            <Bar
-              dataKey="value4"
-              fill={colors[3]}
-              radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
-              stackId={stacked ? 'stack' : undefined}
-              name="Image to Video"
-            />
-          )}
+          {data[0]?.value1 !== undefined &&
+            (session.apiKeyStatus.text ||
+              data.reduce((sum, entry) => sum + (entry.value1 as number), 0) >
+                0) && (
+              <Bar
+                dataKey="value1"
+                fill={colors[0]}
+                radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
+                stackId={stacked ? 'stack' : undefined}
+                name="Text to Text"
+              />
+            )}
+          {data[0]?.value2 !== undefined &&
+            (session.apiKeyStatus.image ||
+              data.reduce((sum, entry) => sum + (entry.value2 as number), 0) >
+                0) && (
+              <Bar
+                dataKey="value2"
+                fill={colors[1]}
+                radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
+                stackId={stacked ? 'stack' : undefined}
+                name="Text to Image"
+              />
+            )}
+          {data[0]?.value3 !== undefined &&
+            (session.apiKeyStatus.model ||
+              data.reduce((sum, entry) => sum + (entry.value3 as number), 0) >
+                0) && (
+              <Bar
+                dataKey="value3"
+                fill={colors[2]}
+                radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
+                stackId={stacked ? 'stack' : undefined}
+                name="2D to 3D"
+              />
+            )}
+          {data[0]?.value4 !== undefined &&
+            (session.apiKeyStatus.video ||
+              data.reduce((sum, entry) => sum + (entry.value4 as number), 0) >
+                0) && (
+              <Bar
+                dataKey="value4"
+                fill={colors[3]}
+                radius={stacked ? [0, 0, 0, 0] : [4, 4, 0, 0]}
+                stackId={stacked ? 'stack' : undefined}
+                name="Image to Video"
+              />
+            )}
         </BarChart>
       </ResponsiveContainer>
     </div>

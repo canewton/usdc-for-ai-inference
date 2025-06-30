@@ -48,14 +48,18 @@ export const RequestUsdcButton: FunctionComponent<Props> = ({
   };
 
   return (
-    <Button disabled={requesting} onClick={requestFaucetUsdc}>
+    <Button
+      disabled={requesting}
+      onClick={requestFaucetUsdc}
+      className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+    >
       {requesting ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Loading...
         </>
       ) : (
-        'Dev Environment: Request 20 USDC via Faucet'
+        'Request 20 USDC via Faucet'
       )}
     </Button>
   );

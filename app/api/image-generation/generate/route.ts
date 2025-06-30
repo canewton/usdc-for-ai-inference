@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
 import Replicate from 'replicate';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -29,14 +30,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const {
-      prompt,
-      aspect_ratio,
-      output_quality,
-      provider,
-      chat_id,
-      circle_wallet_id,
-    } = await request.json();
+    const { prompt, provider, chat_id, circle_wallet_id, output_quality } =
+      await request.json();
 
     const response = await circleDeveloperSdk.getWalletTokenBalance({
       id: circle_wallet_id,
@@ -49,7 +44,10 @@ export async function POST(request: NextRequest) {
 
     if (
       !parsedAmount ||
-      parseInt(parsedAmount) - IMAGE_MODEL_PRICING.userBilledPrice < 0
+      parseInt(parsedAmount) -
+        IMAGE_MODEL_PRICING[provider as keyof typeof IMAGE_MODEL_PRICING]
+          .userBilledPrice <
+        0
     ) {
       console.log('Insufficient wallet balance');
       return NextResponse.json(
@@ -58,28 +56,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const replicate = new Replicate({
-      auth: process.env.REPLICATE_API_TOKEN,
-    });
+    let imageUrl = undefined;
 
-    const model = 'black-forest-labs/flux-schnell';
+    if (provider === 'openai') {
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
 
-    const input = {
-      prompt,
-      go_fast: true,
-      megapixels: '1',
-      num_outputs: 1,
-      aspect_ratio: aspect_ratio,
-      output_format: 'webp',
-      output_quality: output_quality,
-      num_inference_steps: 4,
-    };
+      const model = 'dall-e-3';
 
-    const output = (await replicate.run(model, { input })) as string[];
-    const imageUrl = output[0];
+      const imageGenerationResponse = await openai.images.generate({
+        model: model,
+        prompt: prompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard',
+        response_format: 'url',
+      });
+
+      imageUrl = imageGenerationResponse.data?.[0].url;
+    } else if (provider === 'flux') {
+      const replicate = new Replicate({
+        auth: process.env.REPLICATE_API_TOKEN,
+      });
+
+      const model = 'black-forest-labs/flux-schnell';
+
+      const input = {
+        prompt,
+        go_fast: true,
+        megapixels: '1',
+        num_outputs: 1,
+        output_format: 'webp',
+        output_quality: output_quality,
+        num_inference_steps: 4,
+      };
+
+      const output = (await replicate.run(model, { input })) as string[];
+      imageUrl = output[0];
+    }
+
     if (!imageUrl) {
       throw new Error(
-        'No image URL returned from Replicate. Please try again later.',
+        'No image URL returned from OpenAI. Please try again later.',
       );
     }
 
@@ -94,7 +113,7 @@ export async function POST(request: NextRequest) {
       imageBlob,
       'user-images',
       `${user.id}_${uuidv4()}.webp`,
-      'image/webp',
+      'image/png',
       '3600',
     );
     const storedImageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucketData?.data?.fullPath}`;

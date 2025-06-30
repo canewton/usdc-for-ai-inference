@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
       user,
       prompt,
       aiModel.TEXT_TO_IMAGE,
-      IMAGE_MODEL_PRICING.userBilledPrice,
+      IMAGE_MODEL_PRICING[provider as keyof typeof IMAGE_MODEL_PRICING]
+        .userBilledPrice,
     );
 
     const { data, error: dbError } = await supabase

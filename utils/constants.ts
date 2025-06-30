@@ -1,8 +1,14 @@
 import type { TextModelPricing } from './types';
 
 export const IMAGE_MODEL_PRICING = {
-  replicatePrice: 0.003,
-  userBilledPrice: 0.01,
+  flux: {
+    replicatePrice: 0.003,
+    userBilledPrice: 0.01,
+  },
+  openai: {
+    replicatePrice: 0.04,
+    userBilledPrice: 0.04,
+  },
 };
 
 export const VIDEO_MODEL_PRICING = {
@@ -10,9 +16,9 @@ export const VIDEO_MODEL_PRICING = {
     novitaPrice: 0.01,
     userBilledPrice: 0.02,
   },
-  SVD: {
-    novitaPrice: 0.01,
-    userBilledPrice: 0.01,
+  'Wan-2.1': {
+    novitaPrice: 0.3,
+    userBilledPrice: 0.3,
   },
 };
 

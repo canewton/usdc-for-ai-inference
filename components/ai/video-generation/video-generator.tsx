@@ -27,7 +27,7 @@ interface VideoGeneratorProps {
 export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
-  const [model, setModel] = useState('SVD-XT');
+  const [model, setModel] = useState('Wan-2.1');
   const [loading, setLoading] = useState(false);
   const [seed, setSeed] = useState('-1');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -325,6 +325,36 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
             />
           </div>
 
+          <div>
+            <label className="block text-sm text-gray-500 mb-1">
+              Model Type
+            </label>
+            <select
+              className="w-full p-2 border rounded-md text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+              style={{
+                borderColor: '#E5E7EB',
+                fontSize: '14px',
+                color: '#374151',
+                paddingRight: '2.5rem',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23374151' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+                backgroundPosition: 'right 0.5rem center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '1.2rem',
+              }}
+              disabled={isInputDisabled}
+              onChange={(e) => setModel(e.target.value)}
+            >
+              <option value="Wan-2.1">
+                Wan 2.1 (5s) - $
+                {VIDEO_MODEL_PRICING['Wan-2.1'].userBilledPrice.toFixed(2)}
+              </option>
+              <option value="SVD-XT">
+                SVD-XT (4s) - $
+                {VIDEO_MODEL_PRICING['SVD-XT'].userBilledPrice.toFixed(2)}
+              </option>
+            </select>
+          </div>
+
           <div className="relative">
             <div
               className="text-gray-500 flex items-center"
@@ -374,42 +404,18 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
 
           <div>
             <label className="block text-sm text-gray-500 mb-1">
-              Model Type
+              {model === 'Wan-2.1' ? 'Prompt' : 'Title'}
             </label>
-            <select
-              className="w-full p-2 border rounded-md text-gray-700 bg-white appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500"
-              style={{
-                borderColor: '#E5E7EB',
-                fontSize: '14px',
-                color: '#374151',
-                paddingRight: '2.5rem',
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23374151' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
-                backgroundPosition: 'right 0.5rem center',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: '1.2rem',
-              }}
-              disabled={isInputDisabled}
-              onChange={(e) => setModel(e.target.value)}
-            >
-              <option value="SVD-XT">
-                SVD-XT (4s) - $
-                {VIDEO_MODEL_PRICING['SVD-XT'].userBilledPrice.toFixed(2)}
-              </option>
-              <option value="SVD">
-                SVD (2s) - $
-                {VIDEO_MODEL_PRICING['SVD'].userBilledPrice.toFixed(2)}
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm text-gray-500 mb-1">Title</label>
             <div className="relative">
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="border border-gray-200 rounded-lg p-3 w-full"
-                placeholder="Name your generation!"
+                placeholder={
+                  model === 'Wan-2.1'
+                    ? 'Describe your generation...'
+                    : 'Name your video'
+                }
                 disabled={isInputDisabled}
               />
             </div>
