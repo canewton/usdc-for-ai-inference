@@ -87,7 +87,9 @@ export function ImageChat({ currChat }: ImageChatProps) {
             role: 'user',
             prompt: generateChatData.prompt,
             imageUrl: generateChatData.url,
-            cost: 0.01,
+            cost: IMAGE_MODEL_PRICING[
+              generateChatData.provider as keyof typeof IMAGE_MODEL_PRICING
+            ].userBilledPrice,
             provider: generateChatData.provider,
             downloadable: false,
           },
@@ -96,7 +98,9 @@ export function ImageChat({ currChat }: ImageChatProps) {
             role: 'assistant',
             prompt: generateChatData.prompt,
             imageUrl: generateChatData.url,
-            cost: 0.01,
+            cost: IMAGE_MODEL_PRICING[
+              generateChatData.provider as keyof typeof IMAGE_MODEL_PRICING
+            ].userBilledPrice,
             provider: generateChatData.provider,
             downloadable: true,
           },
@@ -161,7 +165,9 @@ export function ImageChat({ currChat }: ImageChatProps) {
             role: 'user',
             prompt: chatInput,
             imageUrl: '',
-            cost: 0.01,
+            cost: IMAGE_MODEL_PRICING[
+              provider as keyof typeof IMAGE_MODEL_PRICING
+            ].userBilledPrice,
             provider: provider,
             downloadable: false,
           },
