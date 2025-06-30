@@ -403,13 +403,19 @@ export const VideoGenerator = ({ currVideo }: VideoGeneratorProps) => {
           </div>
 
           <div>
-            <label className="block text-sm text-gray-500 mb-1">{model === 'Wan-2.1' ? 'Prompt' : 'Title'}</label>
+            <label className="block text-sm text-gray-500 mb-1">
+              {model === 'Wan-2.1' ? 'Prompt' : 'Title'}
+            </label>
             <div className="relative">
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="border border-gray-200 rounded-lg p-3 w-full"
-                placeholder="Name your generation!"
+                placeholder={
+                  model === 'Wan-2.1'
+                    ? 'Describe your generation...'
+                    : 'Name your video'
+                }
                 disabled={isInputDisabled}
               />
             </div>

@@ -66,22 +66,6 @@ export default function ControlPanel({
         />
       </div>
 
-      {/* Prompt Section */}
-      <div>
-        <label className="block text-sm text-gray-500 mb-1">
-          Prompt (Optional)
-        </label>
-        <Input
-          placeholder="Describe the model texture..."
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          className="w-full border-[#E5E7EB] rounded-md p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-          disabled={isDisabled}
-          required={false}
-          maxLength={300}
-        />
-      </div>
-
       {/* Model Type Section */}
       <div>
         <label className="block text-sm text-gray-500 mb-1">Model Type</label>
@@ -101,6 +85,22 @@ export default function ControlPanel({
         >
           <option>Meshy - ${MODEL_ASSET_PRICING.userBilledPrice}</option>
         </select>
+      </div>
+
+      {/* Prompt Section */}
+      <div>
+        <label className="block text-sm text-gray-500 mb-1">
+          Prompt (Optional)
+        </label>
+        <Input
+          placeholder="Describe the model texture..."
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          className="w-full border-[#E5E7EB] rounded-md p-2 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          disabled={isDisabled}
+          required={false}
+          maxLength={300}
+        />
       </div>
 
       <div>
