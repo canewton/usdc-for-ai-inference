@@ -99,7 +99,7 @@ export default function ControlPanel({
           }}
           disabled={isDisabled}
         >
-          <option>OpenAI - ${MODEL_ASSET_PRICING.userBilledPrice}</option>
+          <option>Meshy - ${MODEL_ASSET_PRICING.userBilledPrice}</option>
         </select>
       </div>
 
