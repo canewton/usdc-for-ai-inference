@@ -17,9 +17,9 @@ export const VIDEO_MODEL_PRICING = {
     userBilledPrice: 0.02,
   },
   'Wan-2.1': {
-    novitaPrice: 0.30,
-    userBilledPrice: 0.30,
-  }
+    novitaPrice: 0.3,
+    userBilledPrice: 0.3,
+  },
 };
 
 export const MODEL_ASSET_PRICING = {

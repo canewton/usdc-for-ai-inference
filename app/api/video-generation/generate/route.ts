@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { aiGenerationPayment } from '@/app/utils/aiGenerationPayment';
 import { createDatabaseBucketItem } from '@/app/utils/createDatabaseBucketItem';
 import { aiModel } from '@/types/ai.types';
+import { VIDEO_MODEL_PRICING } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 
 const NOVITA_API_SVD_URL = 'https://api.novita.ai/v3/async/img2video';
@@ -31,7 +32,8 @@ export async function POST(req: Request) {
       user,
       prompt,
       aiModel.IMAGE_TO_VIDEO,
-      model_name === 'SVD-XT' ? 0.02 : 0.1,
+      VIDEO_MODEL_PRICING[model_name as keyof typeof VIDEO_MODEL_PRICING]
+        .userBilledPrice,
     );
 
     const base64Data = image_file.split(';base64,').pop();
