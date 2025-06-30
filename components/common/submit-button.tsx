@@ -3,27 +3,25 @@
 import { type ComponentProps } from 'react';
 import { useFormStatus } from 'react-dom';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '../ui/button';
 
-type Props = ComponentProps<typeof Button> & {
+type Props = ComponentProps<'button'> & {
   pendingText?: string;
 };
 
-export function SubmitButton({
-  children,
-  pendingText = 'Submitting...',
-  ...props
-}: Props) {
-  const { pending } = useFormStatus();
+export function SubmitButton({ children, pendingText, ...props }: Props) {
+  const { pending, action } = useFormStatus();
+
+  const isPending = pending && action === props.formAction;
 
   return (
     <Button
-      className="bg-blue-600"
+      {...props}
       type="submit"
       aria-disabled={pending}
-      {...props}
+      className="bg-blue-600"
     >
-      {pending ? pendingText : children}
+      {isPending ? pendingText : children}
     </Button>
   );
 }
