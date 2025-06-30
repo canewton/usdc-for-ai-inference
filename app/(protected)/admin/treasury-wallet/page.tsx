@@ -1,8 +1,7 @@
+import { USDCIcon } from '@/app/icons/USDCIcon';
 import { TreasuryTransactions } from '@/components/usdc-insights/treasury-transactions';
 import { WalletBalance } from '@/components/usdc-wallet/wallet-balance';
 import { createClient } from '@/utils/supabase/server';
-
-import { USDCIcon } from '../../icons/USDCIcon';
 
 export default async function TreasuryWalletPage() {
   const supabase = await createClient();
