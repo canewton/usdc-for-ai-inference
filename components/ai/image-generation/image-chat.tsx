@@ -35,7 +35,7 @@ interface ImageChatProps {
 }
 
 export function ImageChat({ currChat }: ImageChatProps) {
-  const [provider, setProvider] = useState('flux-schnell');
+  const [provider, setProvider] = useState<string>('flux');
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [quality, setQuality] = useState(80);
   const [isEditing, setIsEditing] = useState(false);
@@ -131,7 +131,9 @@ export function ImageChat({ currChat }: ImageChatProps) {
           prompt: chatGenerations.prompt,
           imageUrl: chatGenerations.url,
           provider: chatGenerations.provider,
-          cost: IMAGE_MODEL_PRICING.userBilledPrice,
+          cost: IMAGE_MODEL_PRICING[
+            provider as keyof typeof IMAGE_MODEL_PRICING
+          ].userBilledPrice,
           downloadable: false,
         },
         {
@@ -140,7 +142,9 @@ export function ImageChat({ currChat }: ImageChatProps) {
           prompt: chatGenerations.prompt,
           imageUrl: chatGenerations.url,
           provider: chatGenerations.provider,
-          cost: IMAGE_MODEL_PRICING.userBilledPrice,
+          cost: IMAGE_MODEL_PRICING[
+            provider as keyof typeof IMAGE_MODEL_PRICING
+          ].userBilledPrice,
           downloadable: true,
         },
       ];
@@ -166,7 +170,9 @@ export function ImageChat({ currChat }: ImageChatProps) {
       } else if (session.demoLimit <= 0) {
         toast.error('Demo limit reached.');
       } else if (
-        (session.walletBalance ?? 0) - IMAGE_MODEL_PRICING.userBilledPrice <
+        (session.walletBalance ?? 0) -
+          IMAGE_MODEL_PRICING[provider as keyof typeof IMAGE_MODEL_PRICING]
+            .userBilledPrice <
         0
       ) {
         toast.error('Insufficient wallet balance.');
@@ -257,36 +263,6 @@ export function ImageChat({ currChat }: ImageChatProps) {
         <div className="space-y-[20px] mt-4 w-full">
           <div className="flex flex-col">
             <label className="block text-sm text-gray-500 mb-1">
-              Aspect Ratio
-            </label>
-            <select
-              value={aspectRatio}
-              onChange={(e) => setAspectRatio(e.target.value)}
-              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
-            >
-              <option value="1:1">1:1</option>
-              <option value="3:2">3:2</option>
-              <option value="4:3">4:3</option>
-              <option value="16:9">16:9</option>
-              <option value="21:9">21:9</option>
-            </select>
-          </div>
-          <div className="flex flex-col">
-            <label className="block text-sm text-gray-500 mb-1">
-              Image Quality
-            </label>
-            <select
-              value={quality}
-              onChange={(e) => setQuality(Number(e.target.value))}
-              className="border border-gray-200 rounded-lg p-3 bg-white text-body"
-            >
-              <option value={50}>Low</option>
-              <option value={80}>Medium</option>
-              <option value={100}>High</option>
-            </select>
-          </div>
-          <div className="flex flex-col">
-            <label className="block text-sm text-gray-500 mb-1">
               Model Type
             </label>
             <select
@@ -294,11 +270,30 @@ export function ImageChat({ currChat }: ImageChatProps) {
               onChange={(e) => setProvider(e.target.value)}
               className="border border-gray-200 rounded-lg p-3 bg-white text-body"
             >
-              <option value="flux-schnell">
-                FLUX.1 - ${IMAGE_MODEL_PRICING.userBilledPrice}
+              <option value="flux">
+                FLUX.1 - ${IMAGE_MODEL_PRICING.flux.userBilledPrice}
+              </option>
+              <option value="openai">
+                Open AI - ${IMAGE_MODEL_PRICING.openai.userBilledPrice}
               </option>
             </select>
           </div>
+          {provider === 'flux' && (
+            <div className="flex flex-col">
+              <label className="block text-sm text-gray-500 mb-1">
+                Image Quality
+              </label>
+              <select
+                value={quality}
+                onChange={(e) => setQuality(Number(e.target.value))}
+                className="border border-gray-200 rounded-lg p-3 bg-white text-body"
+              >
+                <option value={50}>Low</option>
+                <option value={80}>Medium</option>
+                <option value={100}>High</option>
+              </select>
+            </div>
+          )}
         </div>
       </RightAiSidebar>
     </>
