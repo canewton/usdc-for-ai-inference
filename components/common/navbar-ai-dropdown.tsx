@@ -77,46 +77,55 @@ const SidebarItem = ({
 
 export const NavbarAIDropdown = () => {
   const pathname = usePathname();
+  const session = useSession();
 
   return (
     <div className="p-3">
       <div className="font-medium text-sm mb-2">BUILD WITH AI</div>
 
-      <SidebarItem
-        title="Image to video"
-        active={pathname.includes('/video')}
-        icon={VideoIcon}
-        alt="Video icon"
-        url="/video"
-        description="Convert an image to a video"
-      />
+      {session.apiKeyStatus.text && (
+        <SidebarItem
+          title="Text to Text"
+          active={pathname.includes('/chat')}
+          icon={ChatIcon}
+          alt="Chat icon"
+          url="/chat"
+          description="Convert text to text"
+        />
+      )}
 
-      <SidebarItem
-        title="Image to 3D"
-        active={pathname.includes('/3d')}
-        icon={MultichainIcon}
-        alt="3D icon"
-        url="/3d"
-        description="Convert an image to 3D"
-      />
+      {session.apiKeyStatus.image && (
+        <SidebarItem
+          title="Text to Image"
+          active={pathname.includes('/image')}
+          icon={ImageIcon}
+          alt="Image icon"
+          url="/image"
+          description="Convert text to an image"
+        />
+      )}
 
-      <SidebarItem
-        title="Text to Image"
-        active={pathname.includes('/image')}
-        icon={ImageIcon}
-        alt="Image icon"
-        url="/image"
-        description="Convert text to an image"
-      />
+      {session.apiKeyStatus.video && (
+        <SidebarItem
+          title="Image to video"
+          active={pathname.includes('/video')}
+          icon={VideoIcon}
+          alt="Video icon"
+          url="/video"
+          description="Convert an image to a video"
+        />
+      )}
 
-      <SidebarItem
-        title="Text to Text"
-        active={pathname.includes('/chat')}
-        icon={ChatIcon}
-        alt="Chat icon"
-        url="/chat"
-        description="Convert text to text"
-      />
+      {session.apiKeyStatus.model && (
+        <SidebarItem
+          title="Image to 3D"
+          active={pathname.includes('/3d')}
+          icon={MultichainIcon}
+          alt="3D icon"
+          url="/3d"
+          description="Convert an image to 3D"
+        />
+      )}
     </div>
   );
 };

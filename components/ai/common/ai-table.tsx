@@ -72,36 +72,46 @@ const SidebarItem = ({
 export default function AiTabs() {
   const pathname = usePathname();
   const tool = pathname.split('/')[1];
+  const session = useSession();
+
   return (
     <div className="space-y-2 h-fit p-2 flex flex-col justify-center">
-      <SidebarItem
-        title="Image to Video"
-        active={tool === 'video'}
-        icon={VideoIcon}
-        alt="Video icon"
-        url="/video"
-      />
-      <SidebarItem
-        title="Image to 3D"
-        active={tool === '3d'}
-        icon={MultichainIcon}
-        alt="Multichain block icon"
-        url="/3d"
-      />
-      <SidebarItem
-        title="Text to Image"
-        active={tool === 'image'}
-        icon={ImageIcon}
-        alt="Image icon"
-        url="/image"
-      />
-      <SidebarItem
-        title="Text to Text"
-        active={tool === 'chat'}
-        icon={ChatIcon}
-        alt="Text bubble icon"
-        url="/chat"
-      />
+      {session.apiKeyStatus.text && (
+        <SidebarItem
+          title="Text to Text"
+          active={tool === 'chat'}
+          icon={ChatIcon}
+          alt="Text bubble icon"
+          url="/chat"
+        />
+      )}
+      {session.apiKeyStatus.image && (
+        <SidebarItem
+          title="Text to Image"
+          active={tool === 'image'}
+          icon={ImageIcon}
+          alt="Image icon"
+          url="/image"
+        />
+      )}
+      {session.apiKeyStatus.video && (
+        <SidebarItem
+          title="Image to Video"
+          active={tool === 'video'}
+          icon={VideoIcon}
+          alt="Video icon"
+          url="/video"
+        />
+      )}
+      {session.apiKeyStatus.model && (
+        <SidebarItem
+          title="Image to 3D"
+          active={tool === '3d'}
+          icon={MultichainIcon}
+          alt="Multichain block icon"
+          url="/3d"
+        />
+      )}
     </div>
   );
 }

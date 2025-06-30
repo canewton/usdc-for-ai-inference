@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
+import { useSession } from '@/app/contexts/SessionContext';
 import { Image3DIcon } from '@/app/icons/Image3DIcon';
 import { ImageIcon } from '@/app/icons/ImageIcon';
 import { TextIcon } from '@/app/icons/TextIcon';
@@ -141,6 +142,7 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
   const [currentMonthIndex, setCurrentMonthIndex] = useState(
     currentDate.getMonth(),
   );
+  const session = useSession();
 
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [textToTextData, setTextToTextData] = useState<any[]>([]);
@@ -260,42 +262,50 @@ export const TransactionGraphs: React.FC<Props> = (props) => {
       </InsightBox>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <SpendingCard
-          title="Text to Text"
-          amount={textToTextTotal}
-          data={textToTextData}
-          className="bg-purple-50"
-          colors={[MODEL_COLORS[aiModel.TEXT_TO_TEXT]]}
-          icon={<TextIcon className="text-purple-600" />}
-          tickFormatter={(value) => `$${value}`}
-        />
-        <SpendingCard
-          title="Text to Image"
-          amount={textToImageTotal}
-          data={textToImageData}
-          className="bg-orange-50"
-          colors={[MODEL_COLORS[aiModel.TEXT_TO_IMAGE]]}
-          icon={<ImageIcon className="text-orange-600" />}
-          tickFormatter={(value) => `$${value}`}
-        />
-        <SpendingCard
-          title="2D to 3D Image"
-          amount={imageToImageTotal}
-          data={imageToImageData}
-          className="bg-green-50"
-          colors={[MODEL_COLORS[aiModel.IMAGE_TO_3D]]}
-          icon={<Image3DIcon className="text-green-600" />}
-          tickFormatter={(value) => `$${value}`}
-        />
-        <SpendingCard
-          title="Image to Video"
-          amount={imageToVideoTotal}
-          data={imageToVideoData}
-          className="bg-blue-50"
-          colors={[MODEL_COLORS[aiModel.IMAGE_TO_VIDEO]]}
-          icon={<VideoIcon className="text-blue-600" />}
-          tickFormatter={(value) => `$${value}`}
-        />
+        {session.apiKeyStatus.text && (
+          <SpendingCard
+            title="Text to Text"
+            amount={textToTextTotal}
+            data={textToTextData}
+            className="bg-purple-50"
+            colors={[MODEL_COLORS[aiModel.TEXT_TO_TEXT]]}
+            icon={<TextIcon className="text-purple-600" />}
+            tickFormatter={(value) => `$${value}`}
+          />
+        )}
+        {session.apiKeyStatus.image && (
+          <SpendingCard
+            title="Text to Image"
+            amount={textToImageTotal}
+            data={textToImageData}
+            className="bg-orange-50"
+            colors={[MODEL_COLORS[aiModel.TEXT_TO_IMAGE]]}
+            icon={<ImageIcon className="text-orange-600" />}
+            tickFormatter={(value) => `$${value}`}
+          />
+        )}
+        {session.apiKeyStatus.model && (
+          <SpendingCard
+            title="2D to 3D Image"
+            amount={imageToImageTotal}
+            data={imageToImageData}
+            className="bg-green-50"
+            colors={[MODEL_COLORS[aiModel.IMAGE_TO_3D]]}
+            icon={<Image3DIcon className="text-green-600" />}
+            tickFormatter={(value) => `$${value}`}
+          />
+        )}
+        {session.apiKeyStatus.video && (
+          <SpendingCard
+            title="Image to Video"
+            amount={imageToVideoTotal}
+            data={imageToVideoData}
+            className="bg-blue-50"
+            colors={[MODEL_COLORS[aiModel.IMAGE_TO_VIDEO]]}
+            icon={<VideoIcon className="text-blue-600" />}
+            tickFormatter={(value) => `$${value}`}
+          />
+        )}
       </div>
     </div>
   );
