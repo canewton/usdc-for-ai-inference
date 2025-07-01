@@ -88,7 +88,6 @@ export const Billing: FunctionComponent<Props> = ({
   }
 
   const toggleExpand = (id: string) => {
-    console.log('toggleExpand', id, paginatedData);
     setPaginatedData(
       paginatedData.map((tx) =>
         tx.id === id ? { ...tx, expanded: !tx.expanded } : tx,
@@ -99,7 +98,6 @@ export const Billing: FunctionComponent<Props> = ({
   const blockchain = process.env.CIRCLE_BLOCKCHAIN ?? 'ARB-SEPOLIA';
 
   function truncateString(text: string): string {
-    console.log(text.length, text);
     if (text.length <= 40) {
       return text;
     }

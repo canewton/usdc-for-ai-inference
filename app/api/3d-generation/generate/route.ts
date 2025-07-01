@@ -73,7 +73,6 @@ export async function POST(req: Request) {
       !parsedAmount ||
       parseInt(parsedAmount) - MODEL_ASSET_PRICING.userBilledPrice < 0
     ) {
-      console.log('Insufficient wallet balance');
       return NextResponse.json(
         { error: 'Insufficient wallet balance' },
         { status: 400 },

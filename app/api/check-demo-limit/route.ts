@@ -18,10 +18,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('Checking demo limit for user:', user.id);
     const { canGenerate, remaining } = await checkDemoLimit(user.id);
-    console.log('Demo limit check result:', { canGenerate, remaining });
-
     return NextResponse.json({ canGenerate, remaining });
   } catch (error) {
     console.error('Error checking demo limit:', error);

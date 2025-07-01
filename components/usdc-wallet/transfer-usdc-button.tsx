@@ -40,7 +40,6 @@ export const TransferUSDCButton: FunctionComponent<Props> = ({
       }
 
       const result = await response.json();
-      console.log('Transfer initiated:', result);
     } catch (error) {
       console.error('Action failed:', error);
     } finally {

@@ -166,7 +166,6 @@ export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
     interval: 5000,
     isPolling: !modelUrl && taskId !== null,
     onCheckPollingFinished: (input: any) => {
-      console.log('check polling finished:', input);
       if (input.status === 'SUCCEEDED') {
         setModelUrl(input.url);
         setTaskId(null);

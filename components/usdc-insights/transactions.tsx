@@ -87,7 +87,6 @@ export const Transactions: FunctionComponent<Props> = ({
   }
 
   const toggleExpand = (id: string) => {
-    console.log('toggleExpand', id, paginatedData);
     setPaginatedData(
       paginatedData.map((tx) =>
         tx.id === id ? { ...tx, expanded: !tx.expanded } : tx,

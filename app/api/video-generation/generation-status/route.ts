@@ -48,8 +48,6 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log('Response from Novita API:', task_id, data.task);
-
     const taskStatus = data.task?.status;
     const videos = data.videos || [];
 
