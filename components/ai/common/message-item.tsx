@@ -251,7 +251,6 @@ export function MessageItem<M extends BaseMessage>({
                 disabled={isAiInferenceLoading}
                 onClick={() => {
                   if (aiGenerate) {
-                    console.log('Regenerating image...', message);
                     aiGenerate(message.prompt ?? message.content ?? '');
                   }
                 }}

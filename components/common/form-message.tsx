@@ -4,7 +4,6 @@ export type Message =
   | { message: string };
 
 export function FormMessage({ message }: { message: Message }) {
-  console.log('FormMessage', message);
   return (
     <div>
       {'success' in message && (

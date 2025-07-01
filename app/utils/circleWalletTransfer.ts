@@ -19,7 +19,6 @@ export async function circleWalletTransfer(
   async function createTransfer(
     transferRequest: WalletTransferRequest,
   ): Promise<any> {
-    console.log('transferRequest', transferRequest);
     const transfer = await buildTransfer(
       transferRequest.circleWalletId,
       transferRequest.amount,
@@ -61,8 +60,6 @@ export async function circleWalletTransfer(
           },
         },
       };
-
-      console.log('transfer', transfer);
 
       return transfer;
     } catch (error) {

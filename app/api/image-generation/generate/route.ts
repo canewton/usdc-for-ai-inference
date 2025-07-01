@@ -49,7 +49,6 @@ export async function POST(request: NextRequest) {
           .userBilledPrice <
         0
     ) {
-      console.log('Insufficient wallet balance');
       return NextResponse.json(
         { error: 'Insufficient wallet balance' },
         { status: 400 },

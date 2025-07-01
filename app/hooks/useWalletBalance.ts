@@ -55,7 +55,6 @@ export function useWalletBalance(
       setError(null);
 
       if (parsedBalance === null || parsedBalance === undefined) {
-        console.log('Wallet has no balance');
         session.setWalletBalance(0);
         return;
       }

@@ -67,7 +67,6 @@ serve(async (req: any) => {
             });
           }
 
-          console.log('Transaction updated:', updatedTransaction);
           new Response(JSON.stringify(updatedTransaction), {
             headers: { 'Content-Type': 'application/json' },
           });
@@ -106,7 +105,6 @@ serve(async (req: any) => {
             });
           }
 
-          console.log('New transaction created:', newTransaction);
           new Response(JSON.stringify(newTransaction), {
             headers: { 'Content-Type': 'application/json' },
           });
