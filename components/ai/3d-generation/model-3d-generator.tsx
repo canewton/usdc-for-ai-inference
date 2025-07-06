@@ -12,10 +12,18 @@ import { ChatSidebar } from '../common/chat-sidebar';
 import { RightAiSidebar } from '../common/right-ai-sidebar';
 import CanvasArea from './canvas';
 import ControlPanel from './control-panel';
-import type { ModelHistoryItem } from './types';
 
 interface Model3dGeneratorProps {
   curr3dModel: string;
+}
+
+interface ModelHistoryItem {
+  id: string;
+  url: string;
+  prompt: string;
+  user_id: string;
+  created_at: string;
+  title: string;
 }
 
 export const Model3dGenerator = ({ curr3dModel }: Model3dGeneratorProps) => {
