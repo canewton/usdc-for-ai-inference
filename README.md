@@ -1,4 +1,5 @@
-# Codelab Circle Project
+# USDC for AI Inference
+Demo Link: https://www.youtube.com/watch?v=XelzqrSEO8U
 
 Tech Stack
 
