@@ -7,10 +7,6 @@ Tech Stack
 - shadcn/ui
 - Tailwind
 - pnpm
-<br>
-<img src="https://github.com/user-attachments/assets/8b0d0265-a8aa-4271-9472-972b141ef5ed" 
-     alt="Diagram" 
-     height="700px" />
 
 ## Setting up your local development environment
 
